@@ -1,4 +1,4 @@
-package com.sulasok
+package com.istarvin
 
 import com.lagradost.api.Log
 import com.lagradost.cloudstream3.HomePageResponse
@@ -9,6 +9,7 @@ import com.lagradost.cloudstream3.SearchResponse
 import com.lagradost.cloudstream3.SearchResponseList
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.TvType
+import com.lagradost.cloudstream3.USER_AGENT
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.mainPageOf
 import com.lagradost.cloudstream3.newHomePageResponse
@@ -25,25 +26,26 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import org.jsoup.nodes.Element
 
-open class Sulasok : MainAPI() {
-    override var mainUrl = "https://sulasok.uno"
-    override var name = "Sulasok"
+open class XPinay : MainAPI() {
+    override var mainUrl = "https://xpinay.one"
+    override var name = "XPinay"
     override val hasMainPage = true
+    override val hasQuickSearch = false
     override var supportedTypes = setOf(TvType.NSFW)
-    override var lang = "ph"
+    override var lang = "fil"
 
     private val videoCount = 20
     private val bgUrlRegex = Regex("""url\("(.+)"""")
 
     override val mainPage = mainPageOf(
-        "load_more.php?limit=$videoCount&filter=best" to "Trending",
-        "load_more.php?limit=$videoCount" to "Latest",
-        "load_more.php?limit=$videoCount&filter=longest" to "Longest",
-        "load_more_random.php?limit=$videoCount" to "Random",
+        "?filter=best" to "Trending",
+        "" to "Latest",
+        "?random" to "Random",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val url = "$mainUrl/${request.data}&start=${(page - 1) * videoCount}"
+        val separator = if (request.data.contains("?")) "&" else "?"
+        val url = "$mainUrl/${request.data}${separator}page=$page"
         val document = app.get(url).document
         val home = document.select("div.col").mapNotNull { it.toSearchResult() }
         val newRequest = request.copy(horizontalImages = true)
@@ -51,12 +53,12 @@ open class Sulasok : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title = selectFirst(".video_title")?.text() ?: return null
+        val title = selectFirst(".vid-title")?.text() ?: return null
         val href = selectFirst("a")?.attr("href")
             ?.replace("watch.php", "video.php")
             ?: return null
 
-        val posterUrl = selectFirst("div.itemsContainer")?.attr("style")
+        val posterUrl = selectFirst("div.container-thumb")?.attr("style")
             ?.let { bgUrlRegex.find(it)?.groupValues?.get(1) }
             ?.let { "$mainUrl/$it" }
 
@@ -67,7 +69,7 @@ open class Sulasok : MainAPI() {
 
     override suspend fun search(query: String, page: Int): SearchResponseList? {
         val url =
-            "$mainUrl/load_more_search.php?start=${(page - 1) * videoCount}&limit=$videoCount&search=$query"
+            "$mainUrl/?page=$page&search=$query"
         val document = app.get(url).document
         val list = document.select("div.col").mapNotNull { it.toSearchResult() }
         return newSearchResponseList(list, list.size == videoCount)
@@ -86,7 +88,7 @@ open class Sulasok : MainAPI() {
         }
     }
 
-    private val sources = listOf("vidara", "streamruby")
+    private val sources = listOf("lulustream", "streamruby")
     private val iframeSrcRegex = Regex("""iframe.src = "(.*)";""")
 
     override suspend fun loadLinks(

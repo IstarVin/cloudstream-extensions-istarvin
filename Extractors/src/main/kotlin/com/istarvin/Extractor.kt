@@ -1,18 +1,24 @@
-package com.extractors
+package com.istarvin
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.USER_AGENT
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.newExtractorLink
 
-class LuluStream : ExtractorApi() {
+class LuluVid : ExtractorApi() {
     override val name = "LuluStream"
     override val mainUrl = "https://luluvid.com"
     override val requiresReferer = false
 
     private val urlRegex = Regex("""sources.*file:"(.*)"""")
+
+    private val headers = mapOf(
+        "user-agent" to USER_AGENT,
+        "accept-language" to "en-US,en;q=0.8"
+    )
 
     override suspend fun getUrl(
         url: String,
@@ -20,10 +26,12 @@ class LuluStream : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        val res = app.get(url).text
+        val res = app.get(url, headers = headers).text
         val videoUrl = urlRegex.find(res)?.groupValues?.get(1) ?: return
 
-        callback(newExtractorLink(name, name, videoUrl))
+        callback(newExtractorLink(name, name, videoUrl) {
+            this.headers = this@LuluVid.headers
+        })
     }
 }
 

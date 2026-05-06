@@ -3,7 +3,7 @@ version = 1
 cloudstream {
     authors = listOf("IstarVin")
     language = "fil"
-    description = "Otits"
+    description = "XPinay"
 
     /**
      * Status int as the following:
@@ -14,7 +14,7 @@ cloudstream {
      **/
     status = 1 // will be 3 if unspecified
     tvTypes = listOf("NSFW")
-    iconUrl = "https://otitsvid.com/00ICON_JN3NDMVQ0J.png"
+    iconUrl = "https://xpinay.one/00ICON_73DCHYCYWD.png"
 
     isCrossPlatform = true
 }
