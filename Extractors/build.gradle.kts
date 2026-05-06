@@ -2,7 +2,7 @@ version = 2
 
 cloudstream {
     authors = listOf("IstarVin")
-    language = "ph"
+    language = "fil"
     description = "Extractors for my sources"
 
     /**
