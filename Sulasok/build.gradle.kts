@@ -1,8 +1,8 @@
 version = 2
 
 cloudstream {
-    authors     = listOf("IstarVin")
-    language    = "fil"
+    authors = listOf("IstarVin")
+    language = "en"
     description = "Sulasok"
 
     /**
@@ -11,10 +11,10 @@ cloudstream {
      * 1: Ok
      * 2: Slow
      * 3: Beta only
-    **/
-    status  = 1 // will be 3 if unspecified
-    tvTypes = listOf("Movie")
-    iconUrl = "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://pinoymoviepedia.ru&size=16"
+     **/
+    status = 1 // will be 3 if unspecified
+    tvTypes = listOf("NSFW")
+    iconUrl = "https://sulasok.uno/00ICON_7IFI9DWVV1.png"
 
     isCrossPlatform = true
 }
