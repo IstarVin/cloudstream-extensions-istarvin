@@ -1,11 +1,12 @@
 package com.istarvin
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.extractors.StreamWishExtractor
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.newExtractorLink
+import com.lagradost.cloudstream3.utils.M3u8Helper.Companion.generateM3u8
 
 class LuluVid : StreamWishExtractor() {
     override val name = "LuluStream"
@@ -17,15 +18,20 @@ class Vidara : ExtractorApi() {
     override val mainUrl = "https://vidara.so"
     override val requiresReferer = false
 
-    override suspend fun getUrl(url: String, referer: String?): List<ExtractorLink>? {
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
         val id = url.substringBefore('?').trimEnd('/').substringAfterLast('/')
-        if (id.isBlank()) return null
+        if (id.isBlank()) return
 
         val res = app.post("https://vidara.so/api/stream", json = mapOf("filecode" to id))
-            .parsedSafe<Result>() ?: return null
-        return listOf(
-            newExtractorLink(name, name, res.url)
-        )
+            .parsedSafe<Result>() ?: return
+
+        generateM3u8(name, res.url, mainUrl)
+            .forEach(callback)
     }
 
     data class Result(
@@ -38,9 +44,14 @@ class StreamRuby : ExtractorApi() {
     override val mainUrl = "https://rubyvidhub.com"
     override val requiresReferer = false
 
-    override suspend fun getUrl(url: String, referer: String?): List<ExtractorLink>? {
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
         val id = url.substringBefore('?').trimEnd('/').substringAfterLast('/')
-        if (id.isBlank()) return null
+        if (id.isBlank()) return
 
         val res = app.post(
             "$mainUrl/dl",
@@ -55,9 +66,10 @@ class StreamRuby : ExtractorApi() {
         val videoUrls = allUrls.filter { videoHintRe.containsMatchIn(it) }.distinct()
         val mediaUrls =
             allUrls.filter { mediaHintRe.containsMatchIn(it) && it !in videoUrls }.distinct()
-        val directUrl = videoUrls.firstOrNull() ?: mediaUrls.firstOrNull() ?: return null
+        val directUrl = videoUrls.firstOrNull() ?: mediaUrls.firstOrNull() ?: return
 
-        return listOf(newExtractorLink(name, name, directUrl))
+        generateM3u8(name, directUrl, mainUrl)
+            .forEach(callback)
     }
 
     private val packedEvalRe = Regex(
