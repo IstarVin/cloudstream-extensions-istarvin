@@ -1,4 +1,4 @@
-package com.sulasok
+package com.otits
 
 import com.lagradost.cloudstream3.plugins.BasePlugin
 import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
@@ -6,6 +6,6 @@ import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
 @CloudstreamPlugin
 class SulasokPlugin : BasePlugin() {
     override fun load() {
-        registerMainAPI(Sulasok())
+        registerMainAPI(Otits())
     }
 }

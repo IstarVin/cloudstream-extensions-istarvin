@@ -1,10 +1,31 @@
-package com.sulasok
+package com.extractors
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.newExtractorLink
+
+class LuluStream : ExtractorApi() {
+    override val name = "LuluStream"
+    override val mainUrl = "https://luluvid.com"
+    override val requiresReferer = false
+
+    private val urlRegex = Regex("""sources.*file:"(.*)"""")
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        val res = app.get(url).text
+        val videoUrl = urlRegex.find(res)?.groupValues?.get(1) ?: return
+
+        callback(newExtractorLink(name, name, videoUrl))
+    }
+}
 
 class Vidara : ExtractorApi() {
     override val name = "Vidara"

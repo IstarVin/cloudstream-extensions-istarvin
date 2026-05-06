@@ -1,4 +1,4 @@
-package com.sulasok
+package com.otits
 
 import com.lagradost.api.Log
 import com.lagradost.cloudstream3.HomePageResponse
@@ -25,9 +25,9 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import org.jsoup.nodes.Element
 
-open class Sulasok : MainAPI() {
-    override var mainUrl = "https://sulasok.uno"
-    override var name = "Sulasok"
+open class Otits : MainAPI() {
+    override var mainUrl = "https://otitsvid.com"
+    override var name = "Otits"
     override val hasMainPage = true
     override var supportedTypes = setOf(TvType.NSFW)
     override var lang = "ph"
@@ -36,7 +36,7 @@ open class Sulasok : MainAPI() {
     private val bgUrlRegex = Regex("""url\("(.+)"""")
 
     override val mainPage = mainPageOf(
-        "load_more.php?limit=$videoCount&filter=best" to "Trending",
+        "load_more.php?limit=$videoCount&filter=best" to "Top Rated",
         "load_more.php?limit=$videoCount" to "Latest",
         "load_more.php?limit=$videoCount&filter=longest" to "Longest",
         "load_more_random.php?limit=$videoCount" to "Random",
@@ -51,12 +51,11 @@ open class Sulasok : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title = selectFirst(".video_title")?.text() ?: return null
+        val title = selectFirst(".op_title > p")?.text() ?: return null
         val href = selectFirst("a")?.attr("href")
-            ?.replace("watch.php", "video.php")
             ?: return null
 
-        val posterUrl = selectFirst("div.itemsContainer")?.attr("style")
+        val posterUrl = selectFirst("div.thumb-cont")?.attr("style")
             ?.let { bgUrlRegex.find(it)?.groupValues?.get(1) }
             ?.let { "$mainUrl/$it" }
 
@@ -86,7 +85,7 @@ open class Sulasok : MainAPI() {
         }
     }
 
-    private val sources = listOf("vidara", "streamruby")
+    private val sources = listOf("lulustream", "streamruby")
     private val iframeSrcRegex = Regex("""iframe.src = "(.*)";""")
 
     override suspend fun loadLinks(

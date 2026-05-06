@@ -1,9 +1,9 @@
-version = 3
+version = 1
 
 cloudstream {
     authors = listOf("IstarVin")
     language = "ph"
-    description = "Sulasok"
+    description = "Extractors for my sources"
 
     /**
      * Status int as the following:
@@ -13,8 +13,7 @@ cloudstream {
      * 3: Beta only
      **/
     status = 1 // will be 3 if unspecified
-    tvTypes = listOf("NSFW")
-    iconUrl = "https://sulasok.uno/00ICON_7IFI9DWVV1.png"
+    tvTypes = listOf("Others")
 
     isCrossPlatform = true
 }
