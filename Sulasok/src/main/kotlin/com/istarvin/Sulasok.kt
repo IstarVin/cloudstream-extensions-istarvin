@@ -25,13 +25,13 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import org.jsoup.nodes.Element
 
-open class Sulasok : MainAPI() {
+class Sulasok : MainAPI() {
     override var mainUrl = "https://sulasok.uno"
     override var name = "Sulasok"
     override val hasMainPage = true
     override val hasQuickSearch = false
     override var supportedTypes = setOf(TvType.NSFW)
-    override var lang = "ph"
+    override var lang = "fil"
 
     private val videoCount = 20
     private val bgUrlRegex = Regex("""url\("(.+)"""")
@@ -66,7 +66,7 @@ open class Sulasok : MainAPI() {
         }
     }
 
-    override suspend fun search(query: String, page: Int): SearchResponseList? {
+    override suspend fun search(query: String, page: Int): SearchResponseList {
         val url =
             "$mainUrl/load_more_search.php?start=${(page - 1) * videoCount}&limit=$videoCount&search=$query"
         val document = app.get(url).document
@@ -74,7 +74,7 @@ open class Sulasok : MainAPI() {
         return newSearchResponseList(list, list.size == videoCount)
     }
 
-    override suspend fun load(url: String): LoadResponse? {
+    override suspend fun load(url: String): LoadResponse {
         val request = app.get(url)
         val document = request.document
         val title = document.title()
@@ -82,7 +82,7 @@ open class Sulasok : MainAPI() {
             .attr("content")
             .let { "$mainUrl/$it" }
 
-        return newMovieLoadResponse(title, url, TvType.Movie, url) {
+        return newMovieLoadResponse(title, url, TvType.NSFW, url) {
             this.posterUrl = posterUrl
         }
     }

@@ -1,22 +1,33 @@
-# 🎯 Phisher Cloudstream Plugin Server
+# 🎯 IstarVin Cloudstream Extensions
 
-**Shortcode**: `phisherrepo`
+**Shortcode**: `istarvin`
 
 ---
 
-### ❤️ Support
+## 🌐 Plugin Repository
 
-If you find this project helpful, consider supporting its development!
+This repository contains Cloudstream extensions maintained by **IstarVin**.
 
-<a href="https://buymeacoffee.com/phisher98" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+---
 
-## 🌐 Plugin Servers
+## 🔌 Available Plugins
 
-### 🔹 Phisher Cloudstream Plugin Server
-[![Discord](https://invidget.switchblade.xyz/3VmSzGeCTz)](https://discord.com/invite/3VmSzGeCTz)
+| Plugin | Language | Type | Description |
+| --- | --- | --- | --- |
+| **Javtiful** | English | NSFW | Watch more than 60,000 Full HD JAV Online For Free at Javtiful |
+| **Otits** | Filipino | NSFW | Pinoy NSFW content from Otits |
+| **Sulasok** | Filipino | NSFW | Pinoy NSFW content from Sulasok |
+| **XPinay** | Filipino | NSFW | Pinoy NSFW content from XPinay |
 
-### 🔸 Cloudstream Plugin Server
-[![Discord](https://invidget.switchblade.xyz/JrGk2MjX7S)](https://discord.com/invite/JrGk2MjX7S)
+---
+
+## 📲 Installation
+
+1. Copy the **Shortcode**: `istarvin`
+2. Open the **Cloudstream** app.
+3. Go to **Settings** -> **Extensions**.
+4. Click **Add Repository**.
+5. Paste the shortcode and click **Download**.
 
 ---
 
@@ -27,33 +38,6 @@ If you find this project helpful, consider supporting its development!
     <img src="https://skillicons.dev/icons?i=kotlin,androidstudio,gradle,github,githubactions&theme=light&perline=5" />
   </a>
 </p>
-
----
-
-## 🔄 Ultima Sync Setup
-
-Want to sync your devices using **Ultima’s Cross Device Watch Sync**?
-
-📘 [View the full setup guide →](docs/ULTIMA_SYNC_SETUP.md)
-
-📘 [View YouTube guide →](https://cloudstream.miraheze.org/wiki/Ultima)
-
-This guide will show you how to use a **private GitHub project** and a **personal access token** to sync playback history across devices.
-
----
-
-## STREMIO ADDON SETUPS
-
-Want to learn how to add and manage Stremio addons more effectively?
-
-📘 **StremioX / StremioC – Written Guide**  
-Detailed explanation of StremioX (stream addons) and StremioC (catalogue addons), including usage and limitations.  
-✨ **StremioC: Wrap stream & catalogue in [AIOStreams](https://github.com/Viren070/AIOStreams) addon for dual support.**  
-[Open guide →](https://github.com/phisher98/cloudstream-extensions-phisher/blob/master/docs/README-StremioX.md)
-
-📘 **Stremio Addon – Written Guide**  
-Step-by-step instructions for adding, managing, and using Stremio addon links in Cloudstream.  
-[Open guide →](https://github.com/phisher98/cloudstream-extensions-phisher/blob/master/docs/README-StremioAddon.md)
 
 ---
 
@@ -79,4 +63,4 @@ If you believe content is violating copyright laws, please contact the **actual 
 
 ---
 
-**Thank You for using Phisher Repo!**
+**Thank You for using IstarVin Repo!**

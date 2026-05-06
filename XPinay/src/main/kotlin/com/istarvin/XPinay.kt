@@ -82,7 +82,7 @@ open class XPinay : MainAPI() {
             .attr("content")
             .let { "$mainUrl/$it" }
 
-        return newMovieLoadResponse(title, url, TvType.Movie, url) {
+        return newMovieLoadResponse(title, url, TvType.NSFW, url) {
             this.posterUrl = posterUrl
         }
     }

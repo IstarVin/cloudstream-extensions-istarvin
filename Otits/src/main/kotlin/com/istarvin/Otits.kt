@@ -25,7 +25,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import org.jsoup.nodes.Element
 
-open class Otits : MainAPI() {
+class Otits : MainAPI() {
     override var mainUrl = "https://otits.net"
     override var name = "Otits"
     override val hasMainPage = true
@@ -65,7 +65,7 @@ open class Otits : MainAPI() {
         }
     }
 
-    override suspend fun search(query: String, page: Int): SearchResponseList? {
+    override suspend fun search(query: String, page: Int): SearchResponseList {
         val url =
             "$mainUrl/load_more_search.php?start=${(page - 1) * videoCount}&limit=$videoCount&search=$query"
         val document = app.get(url).document
@@ -73,7 +73,7 @@ open class Otits : MainAPI() {
         return newSearchResponseList(list, list.size == videoCount)
     }
 
-    override suspend fun load(url: String): LoadResponse? {
+    override suspend fun load(url: String): LoadResponse {
         val request = app.get(url)
         val document = request.document
         val title = document.title()
@@ -81,7 +81,7 @@ open class Otits : MainAPI() {
             .attr("content")
             .let { "$mainUrl/$it" }
 
-        return newMovieLoadResponse(title, url, TvType.Movie, url) {
+        return newMovieLoadResponse(title, url, TvType.NSFW, url) {
             this.posterUrl = posterUrl
         }
     }
