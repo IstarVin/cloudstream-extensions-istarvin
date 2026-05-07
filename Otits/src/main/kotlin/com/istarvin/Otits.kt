@@ -16,6 +16,7 @@ import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newSearchResponseList
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.getExtractorApiFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -99,6 +100,17 @@ class Otits : MainAPI() {
             suspend {
                 val text = app.get("$data&s=$source").text
                 val src = iframeSrcRegex.find(text)?.groupValues?.get(1) ?: return@map
+
+                // Force use my own streamruby extractor
+                // Remove if StreamPlay rubyvidhub extractor is updated
+                if (source == "streamruby") {
+                    getExtractorApiFromName("RubyVidHub").getUrl(
+                        src,
+                        subtitleCallback = subtitleCallback,
+                        callback = callback
+                    )
+                    return@map
+                }
 
                 loadExtractor(src, subtitleCallback, callback)
             }

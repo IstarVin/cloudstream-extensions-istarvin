@@ -8,6 +8,6 @@ class ExtractorPlugin : BasePlugin() {
     override fun load() {
         registerExtractorAPI(LuluVid())
         registerExtractorAPI(Vidara())
-        registerExtractorAPI(StreamRuby())
+        registerExtractorAPI(RubyVidHub())
     }
 }

@@ -39,8 +39,8 @@ class Vidara : ExtractorApi() {
     )
 }
 
-class StreamRuby : ExtractorApi() {
-    override val name = "StreamRuby"
+class RubyVidHub : ExtractorApi() {
+    override val name = "RubyVidHub"
     override val mainUrl = "https://rubyvidhub.com"
     override val requiresReferer = false
 
