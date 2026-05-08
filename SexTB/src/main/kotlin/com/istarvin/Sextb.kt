@@ -1,19 +1,36 @@
 package com.istarvin
 
 import android.util.Log
-import com.lagradost.cloudstream3.*
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.lagradost.cloudstream3.Actor
+import com.lagradost.cloudstream3.HomePageList
+import com.lagradost.cloudstream3.HomePageResponse
+import com.lagradost.cloudstream3.LoadResponse
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
-import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.MainAPI
 import com.lagradost.cloudstream3.MainPageRequest
 import com.lagradost.cloudstream3.SearchResponse
+import com.lagradost.cloudstream3.SearchResponseList
+import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.TvType
-import com.lagradost.cloudstream3.MainAPI
 import com.lagradost.cloudstream3.app
-import com.lagradost.cloudstream3.newHomePageResponse
-import com.lagradost.cloudstream3.newMovieSearchResponse
-import com.lagradost.cloudstream3.newSearchResponseList
+import com.lagradost.cloudstream3.base64Decode
 import com.lagradost.cloudstream3.fixUrl
 import com.lagradost.cloudstream3.fixUrlNull
+import com.lagradost.cloudstream3.mainPageOf
+import com.lagradost.cloudstream3.newHomePageResponse
+import com.lagradost.cloudstream3.newMovieLoadResponse
+import com.lagradost.cloudstream3.newMovieSearchResponse
+import com.lagradost.cloudstream3.newSearchResponseList
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.getExtractorApiFromName
+import com.lagradost.cloudstream3.utils.loadExtractor
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import org.jsoup.nodes.Element
 
 class Sextb : MainAPI() {
@@ -23,6 +40,10 @@ class Sextb : MainAPI() {
     override var lang = "en"
     override val hasQuickSearch = false
     override val supportedTypes = setOf(TvType.NSFW)
+
+    private val apiKey =
+        "Y1ZGUWNVSnROVlJOTUVWMlZsUldVMjlsWjBGelFUMDk6T0ZaNksxQmhjVTFhTHpCdFlWZDFNbE5CUm01Qlp6MDk="
+
 
     private val commonHeaders = mapOf(
         "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -38,7 +59,7 @@ class Sextb : MainAPI() {
         "${mainUrl}/jav-subtitle" to "Subtitle"
     )
 
-    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse? {
+    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val url = if (page <= 1) {
             request.data
         } else {
@@ -51,8 +72,7 @@ class Sextb : MainAPI() {
         }
 
         return newHomePageResponse(
-            listOf(HomePageList(request.name, items)),
-            hasNext = items.isNotEmpty()
+            listOf(HomePageList(request.name, items)), hasNext = items.isNotEmpty()
         )
     }
 
@@ -69,7 +89,7 @@ class Sextb : MainAPI() {
         }
 
         if (items.isEmpty()) {
-            Log.d("STB_Search", "Arama listesi boş döndü! URL: $url")
+            Log.d("STB_Search", "Search list returned empty! URL: $url")
         }
 
         return newSearchResponseList(items, hasNext = items.isNotEmpty())
@@ -82,14 +102,13 @@ class Sextb : MainAPI() {
         if (href.startsWith("/search") || href.contains("javascript") || href.startsWith("/genre")) return null
 
         val fullHref = fixUrl(href)
-        val title = this.selectFirst("div.tray-item-title")?.text()?.trim()
-            ?: this.selectFirst("img")?.attr("alt")?.trim()
-            ?: return null
+        val title =
+            this.selectFirst("div.tray-item-title")?.text()?.trim() ?: this.selectFirst("img")
+                ?.attr("alt")?.trim() ?: return null
 
-        val posterUrl = fixUrlNull(
-            this.selectFirst("img")?.attr("data-src")?.takeIf { it.isNotBlank() }
-                ?: this.selectFirst("img")?.attr("src")
-        )
+        val posterUrl =
+            fixUrlNull(this.selectFirst("img")?.attr("data-src")?.takeIf { it.isNotBlank() }
+                ?: this.selectFirst("img")?.attr("src"))
 
         return newMovieSearchResponse(title, fullHref, TvType.NSFW) {
             this.posterUrl = posterUrl
@@ -131,12 +150,10 @@ class Sextb : MainAPI() {
                     )
                     recommendations.add(
                         newMovieSearchResponse(
-                            recName,
-                            recHref,
-                            TvType.NSFW
+                            recName, recHref, TvType.NSFW
                         ) { this.posterUrl = recPoster })
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
 
@@ -160,85 +177,79 @@ class Sextb : MainAPI() {
         Log.d("sextb", data)
         val res = app.get(data, headers = commonHeaders)
 
-        val filmid = Regex("""var filmId\s*=\s*(\d+)""").find(res.text)?.groupValues?.get(1)
-        var currentpt = Regex("""__pt\s*=\s*['"](.*?)['"]""").find(res.text)?.groupValues?.get(1)
-        var currentpk = Regex("""__pk\s*=\s*['"](.*?)['"]""").find(res.text)?.groupValues?.get(1)
+        val tasks = mutableListOf<suspend () -> Unit>()
 
-        Log.d("sextb", "$filmid")
-        Log.d("sextb", "$currentpt")
-
-        if (filmid == null || currentpt == null) {
-            return false
-        }
-
-        res.document.select(".short-text").text().substringBefore(" ").let { code ->
-            getExtractorApiFromName("SubtitleCat").getUrl(
-                code,
-                subtitleCallback = subtitleCallback,
-                callback = callback
-            )
-        }
-
-        val episodes = res.document.select(".episode-list button.btn-player")
-        Log.d("sextb", "${episodes.size}")
-        var foundanylink = false
-
-        for (ep in episodes) {
-            val episodeid = ep.attr("data-id")
-            val sourceid = ep.attr("data-source").ifEmpty { filmid }
-            Log.d("sextb", episodeid)
-
-            try {
-                val safept = currentpt ?: ""
-                val postdata = mapOf(
-                    "episode" to episodeid,
-                    "filmId" to sourceid,
-                    "pt" to safept
-                )
-
-                val ajaxresponse = app.post(
-                    "${mainUrl}/ajax/player",
-                    headers = mapOf(
-                        "Referer" to data,
-                        "X-Requested-With" to "XMLHttpRequest",
-                        "Authorization" to "Basic Y1ZGUWNVSnROVlJOTUVWMlZsUldVMjlsWjBGelFUMDk6T0ZaNksxQmhjVTFhTHpCdFlWZDFNbE5CUm01Qlp6MDk=",
-                        "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
-                        "Accept" to "*/*",
-                        "Origin" to mainUrl
-                    ),
-                    data = postdata
-                )
-
-                Log.d("sextb", ajaxresponse.text)
-
-                val responsedata = ajaxresponse.parsedSafe<PlayerResponse>()
-                val encryptedplayer = responsedata?.player_enc
-                val key = currentpk ?: ""
-
-                responsedata?.next_pt?.let { currentpt = it }
-                responsedata?.next_pk?.let { currentpk = it }
-
-                if (encryptedplayer != null && key.isNotEmpty()) {
-                    val decryptedraw = decryptPlayer(encryptedplayer, key)
-                    Log.d("sextb", decryptedraw)
-
-                    val iframeurl = Regex("""src=\\?["'](https:.*?)(?:\?|\\?["']|["'])""")
-                        .find(decryptedraw)?.groupValues?.get(1)
-                        ?.replace("\\/", "/")
-
-                    if (iframeurl != null && !iframeurl.contains("upgrade")) {
-                        val wasextracted =
-                            loadExtractor(iframeurl, data, subtitleCallback, callback)
-                        Log.d("sextb", "$wasextracted")
-                        if (wasextracted) foundanylink = true
-                    }
+        tasks.add(
+            suspend {
+                res.document.select(".short-text").text().substringBefore(" ").let { code ->
+                    getExtractorApiFromName("SubtitleCat").getUrl(
+                        code, subtitleCallback = subtitleCallback, callback = callback
+                    )
                 }
-            } catch (e: Exception) {
-                Log.d("sextb", "${e.message}")
-            }
+            })
+
+        res.document.select(".episode-list button.btn-player").forEach { ep ->
+            tasks.add(suspend suspend@{
+                val res = app.get(data, headers = commonHeaders)
+
+                val filmId = Regex("""var filmId\s*=\s*(\d+)""").find(res.text)?.groupValues?.get(1)
+                val currentPt =
+                    Regex("""__pt\s*=\s*['"](.*?)['"]""").find(res.text)?.groupValues?.get(1)
+                val currentPk =
+                    Regex("""__pk\s*=\s*['"](.*?)['"]""").find(res.text)?.groupValues?.get(1)
+
+                if (filmId == null || currentPt == null) {
+                    return@suspend
+                }
+
+                val episodeId = ep.attr("data-id")
+                val sourceId = ep.attr("data-source").ifEmpty { filmId }
+                Log.d("sextb", episodeId)
+
+                try {
+                    val postData = mapOf(
+                        "episode" to episodeId, "filmId" to sourceId, "pt" to currentPt
+                    )
+
+                    val ajaxResponse = app.post(
+                        "${mainUrl}/ajax/player", headers = mapOf(
+                            "Referer" to data,
+                            "X-Requested-With" to "XMLHttpRequest",
+                            "Authorization" to "Basic $apiKey",
+                            "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
+                            "Accept" to "*/*",
+                            "Origin" to mainUrl
+                        ), data = postData
+                    )
+
+                    Log.d("sextb", "${ep.text().trim()} ${ajaxResponse.text}")
+
+                    val responseData = ajaxResponse.parsedSafe<PlayerResponse>()
+                    val encryptedPlayer = responseData?.playerEnc
+                    val key = currentPk ?: ""
+
+                    if (encryptedPlayer != null && key.isNotEmpty()) {
+                        val decryptedRaw = decryptPlayer(encryptedPlayer, key)
+                        Log.d("sextb", decryptedRaw)
+
+                        val iframeUrl =
+                            Regex("""src=\\?["'](https:.*?)(?:\?|\\?["']|["'])""").find(decryptedRaw)?.groupValues?.get(
+                                    1
+                                )?.replace("\\/", "/")
+
+                        if (iframeUrl != null && !iframeUrl.contains("upgrade")) {
+                            loadExtractor(iframeUrl, data, subtitleCallback, callback)
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.d("sextb", "${e.message}")
+                }
+            })
         }
-        Log.d("sextb", "$foundanylink")
-        return foundanylink
+
+        runLimitedAsync(tasks = tasks.toTypedArray())
+
+        return true
     }
 
     private fun decryptPlayer(encoded: String, key: String): String {
@@ -246,7 +257,7 @@ class Sextb : MainAPI() {
             val decoded = base64Decode(encoded)
             val result = StringBuilder()
             for (i in decoded.indices) {
-                result.append((decoded[i].toInt() xor key[i % key.length].toInt()).toChar())
+                result.append((decoded[i].code xor key[i % key.length].code).toChar())
             }
             result.toString()
         } catch (e: Exception) {
@@ -255,9 +266,29 @@ class Sextb : MainAPI() {
         }
     }
 
+    private suspend fun runLimitedAsync(
+        concurrency: Int = 10, vararg tasks: suspend () -> Unit
+    ) = coroutineScope {
+        if (tasks.isEmpty()) return@coroutineScope
+
+        val semaphore = Semaphore(concurrency)
+
+        tasks.map { task ->
+            async(Dispatchers.IO) {
+                semaphore.withPermit {
+                    try {
+                        task()
+                    } catch (e: Exception) {
+                        com.lagradost.api.Log.e("SulasokConcurrency", "Task failed: ${e.message}")
+                    }
+                }
+            }
+        }.awaitAll()
+    }
+
     data class PlayerResponse(
-        val player_enc: String? = null,
-        val next_pt: String? = null,
-        val next_pk: String? = null
+        @JsonProperty("player_enc") val playerEnc: String? = null,
+        @JsonProperty("next_pt") val nextPt: String? = null,
+        @JsonProperty("next_pk") val nextPk: String? = null
     )
 }

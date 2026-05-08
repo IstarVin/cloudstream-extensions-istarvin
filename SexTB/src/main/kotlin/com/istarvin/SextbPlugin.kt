@@ -51,5 +51,6 @@ class SextbPlugin : Plugin() {
         registerExtractorAPI(Playerupnone())
         registerExtractorAPI(Turtleviplay())
         registerExtractorAPI(Turboviplay())
+        registerExtractorAPI(Hanerix())
     }
 }

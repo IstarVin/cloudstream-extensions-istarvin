@@ -17,6 +17,10 @@ import com.lagradost.cloudstream3.USER_AGENT
 import com.lagradost.cloudstream3.extractors.VidStack
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.M3u8Helper.Companion.generateM3u8
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.runBlocking
+import kotlin.coroutines.suspendCoroutine
+import kotlin.sequences.forEach
 
 open class DoodStream : ExtractorApi() {
     override var name = "DoodStream"
@@ -245,9 +249,56 @@ class Dintezuvio : VidHidePro() {
     override var mainUrl = "https://dintezuvio.com"
 }
 
-class HgLink : VidHidePro() {
+class Hanerix : ExtractorApi() {
+    override var name = "HGLink";
+    override var mainUrl = "https://hanerix.com"
+    override val requiresReferer = false
+
+    private val m3u8Regex = Regex("""[:=]\s*"([^"\s]+(\.m3u8)[^"\s]*)""")
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+
+        val text = app.get(url).text
+
+        val script = getAndUnpack(text)
+
+        m3u8Regex.findAll(script).forEach { m3u8Match ->
+            val url = fixUrl(m3u8Match.groupValues[1])
+            if (!url.contains("?")) return@forEach
+            generateM3u8(
+                name,
+                url,
+                referer = "$mainUrl/",
+            ).forEach(callback)
+        }
+    }
+}
+
+class HgLink : ExtractorApi() {
     override var name = "HGLink";
     override var mainUrl = "https://hglink.to"
+    override val requiresReferer = false
+
+    private val redirectUrl = "https://hanerix.com"
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        val id = url.substringBefore('?').trimEnd('/').substringAfterLast('/')
+        if (id.isBlank()) return
+
+        val newUrl = "$redirectUrl/e/$id"
+
+        loadExtractor(newUrl, referer, subtitleCallback, callback)
+    }
 }
 
 class RyderJet : VidHidePro() {
@@ -260,9 +311,31 @@ class MyCloudZ : VidHidePro() {
     override var name = "MyCloudZ"
 }
 
-class Turboplayers : StreamTape() {
+class Turboplayers : ExtractorApi() {
     override var mainUrl = "https://turboplayers.xyz";
-    override var name = "Streamtape"
+    override var name = "TurboPlayer"
+    override val requiresReferer = false
+
+    private val urlRegex = Regex("""var urlPlay = '(.*)';""")
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        val text = app.get(url).text
+
+        urlRegex.find(text)?.groupValues?.get(1)?.let {
+            if (it.contains("m3u8")) {
+                generateM3u8(name, it, mainUrl).forEach(callback)
+            } else {
+                callback(
+                    newExtractorLink(name, name, it)
+                )
+            }
+        }
+    }
 }
 
 class LulusStream : ExtractorApi() {
