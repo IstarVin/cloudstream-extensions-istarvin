@@ -49,7 +49,8 @@ class Javtiful : MainAPI() {
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val url = if (page <= 1) request.data else "${request.data}?page=$page"
         val res = app.get(url).document
-        val home = res.select("article.front-video-card:not(.front-ad-card)").mapNotNull {
+        val home = res.select("article.front-video-card").mapNotNull {
+            if (it.classNames().contains("front-partner-card")) return@mapNotNull null
             it.mainPageResults()
         }
         return newHomePageResponse(request.name, home, true)
@@ -59,7 +60,7 @@ class Javtiful : MainAPI() {
         val url =
             if (page <= 1) "$mainUrl/search?q=$query" else "$mainUrl/search?page=$page&q=$query"
         val res = app.get(url).document
-        val results = res.select("article.front-video-card:not(.front-ad-card)").mapNotNull {
+        val results = res.select("article.front-video-card:not(.front-partner-card)").mapNotNull {
             it.mainPageResults()
         }
         return newSearchResponseList(results, results.isNotEmpty())
@@ -70,7 +71,7 @@ class Javtiful : MainAPI() {
         val title = link.text().trim()
         val href = fixUrl(link.attr("href"))
         val img = this.selectFirst("img") ?: return null
-        val poster = fixUrl(img.attr("src"))
+        val poster = fixUrl(img.attr("data-front-lazy-src"))
 
         return newMovieSearchResponse(title, href, TvType.NSFW) {
             this.posterUrl = poster
