@@ -181,9 +181,11 @@ class Sextb : MainAPI() {
 
         tasks.add(
             suspend {
-                res.document.select(".short-text").text().substringBefore(" ").let { code ->
+                res.document.select(".full-text-desc").text().substringBefore(" ").let { code ->
                     getExtractorApiFromName("SubtitleCat").getUrl(
-                        code, subtitleCallback = subtitleCallback, callback = callback
+                        url = code,
+                        subtitleCallback = subtitleCallback,
+                        callback = callback
                     )
                 }
             })
@@ -234,8 +236,8 @@ class Sextb : MainAPI() {
 
                         val iframeUrl =
                             Regex("""src=\\?["'](https:.*?)(?:\?|\\?["']|["'])""").find(decryptedRaw)?.groupValues?.get(
-                                    1
-                                )?.replace("\\/", "/")
+                                1
+                            )?.replace("\\/", "/")
 
                         if (iframeUrl != null && !iframeUrl.contains("upgrade")) {
                             loadExtractor(iframeUrl, data, subtitleCallback, callback)

@@ -136,7 +136,7 @@ class Javtiful : MainAPI() {
 
         configData.videoTitle?.substringBefore(" ")?.let { code ->
             getExtractorApiFromName("SubtitleCat").getUrl(
-                url = "https://example.com/?code=$code",
+                url = code,
                 subtitleCallback = subtitleCallback,
                 callback = callback
             )

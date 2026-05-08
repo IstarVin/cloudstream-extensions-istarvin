@@ -156,7 +156,7 @@ class MissAV : MainAPI() {
             if (playlistId != null) {
                 data.substringBefore(":").let { code ->
                     getExtractorApiFromName("SubtitleCat").getUrl(
-                        "https://example.com/?code=$code",
+                        url = code,
                         subtitleCallback = subtitleCallback,
                         callback = callback
                     )

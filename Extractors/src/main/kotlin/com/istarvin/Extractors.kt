@@ -87,8 +87,8 @@ class SubtitleCat : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        val code = url.substringAfter("code=")
-        val queryUrl = "${mainUrl}/index.php?search=$code"
+        val query = url.substringAfter("query=")
+        val queryUrl = "${mainUrl}/index.php?search=$query"
         val doc = app.get(queryUrl).document
         val subs = doc.select(".sub-table a")
             .map { mainUrl + '/' + it.attr("href") }
