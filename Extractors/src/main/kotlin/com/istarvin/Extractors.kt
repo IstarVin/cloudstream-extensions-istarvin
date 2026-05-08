@@ -4,9 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.extractors.StreamWishExtractor
+import com.lagradost.cloudstream3.newSubtitleFile
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.M3u8Helper.Companion.generateM3u8
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 
 class LuluVid : StreamWishExtractor() {
     override val name = "LuluStream"
@@ -214,5 +217,37 @@ class RubyVidHub : ExtractorApi() {
             }
         }
         return out.toString()
+    }
+}
+
+class SubtitleCat : ExtractorApi() {
+    override val name = "SubtitleCat"
+    override val mainUrl = "https://subtitlecat.com"
+    override val requiresReferer = false
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        val code = url.substringAfter("code=")
+        val queryUrl = "${mainUrl}/index.php?search=$code"
+        val doc = app.get(queryUrl).document
+        val subs = doc.select(".sub-table a")
+            .map { mainUrl + '/' + it.attr("href") }
+            .take(3)
+
+        coroutineScope {
+            subs.map { subUrl ->
+                async {
+                    val subPageDoc = app.get(subUrl).document
+                    val href =
+                        subPageDoc.getElementById("download_en")?.attr("href") ?: return@async null
+
+                    subtitleCallback(newSubtitleFile("English", mainUrl + href))
+                }
+            }
+        }
     }
 }

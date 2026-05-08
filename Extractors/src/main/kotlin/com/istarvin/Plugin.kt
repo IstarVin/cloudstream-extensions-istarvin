@@ -9,5 +9,6 @@ class ExtractorPlugin : BasePlugin() {
         registerExtractorAPI(LuluVid())
         registerExtractorAPI(Vidara())
         registerExtractorAPI(RubyVidHub())
+        registerExtractorAPI(SubtitleCat())
     }
 }
