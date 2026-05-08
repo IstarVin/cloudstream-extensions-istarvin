@@ -33,7 +33,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import org.jsoup.nodes.Element
 
-class Sextb : MainAPI() {
+class SexTB : MainAPI() {
     override var mainUrl = "https://sextb.net"
     override var name = "SexTB"
     override val hasMainPage = true
@@ -43,7 +43,6 @@ class Sextb : MainAPI() {
 
     private val apiKey =
         "Y1ZGUWNVSnROVlJOTUVWMlZsUldVMjlsWjBGelFUMDk6T0ZaNksxQmhjVTFhTHpCdFlWZDFNbE5CUm01Qlp6MDk="
-
 
     private val commonHeaders = mapOf(
         "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -174,21 +173,24 @@ class Sextb : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        Log.d("sextb", data)
+        Log.d(name, data)
         val res = app.get(data, headers = commonHeaders)
 
         val tasks = mutableListOf<suspend () -> Unit>()
 
         tasks.add(
             suspend {
-                res.document.select(".full-text-desc").text().substringBefore(" ").let { code ->
-                    getExtractorApiFromName("SubtitleCat").getUrl(
-                        url = code,
-                        subtitleCallback = subtitleCallback,
-                        callback = callback
-                    )
-                }
-            })
+                res.document.select(".film-info-title a").attr("href")
+                    .substringAfterLast("/")
+                    .let { code ->
+                        getExtractorApiFromName("SubtitleCat").getUrl(
+                            url = code,
+                            subtitleCallback = subtitleCallback,
+                            callback = callback
+                        )
+                    }
+            }
+        )
 
         res.document.select(".episode-list button.btn-player").forEach { ep ->
             tasks.add(suspend suspend@{
@@ -206,7 +208,7 @@ class Sextb : MainAPI() {
 
                 val episodeId = ep.attr("data-id")
                 val sourceId = ep.attr("data-source").ifEmpty { filmId }
-                Log.d("sextb", episodeId)
+                Log.d(name, episodeId)
 
                 try {
                     val postData = mapOf(
@@ -224,7 +226,7 @@ class Sextb : MainAPI() {
                         ), data = postData
                     )
 
-                    Log.d("sextb", "${ep.text().trim()} ${ajaxResponse.text}")
+                    Log.d(name, "${ep.text().trim()} ${ajaxResponse.text}")
 
                     val responseData = ajaxResponse.parsedSafe<PlayerResponse>()
                     val encryptedPlayer = responseData?.playerEnc
@@ -232,7 +234,7 @@ class Sextb : MainAPI() {
 
                     if (encryptedPlayer != null && key.isNotEmpty()) {
                         val decryptedRaw = decryptPlayer(encryptedPlayer, key)
-                        Log.d("sextb", decryptedRaw)
+                        Log.d(name, decryptedRaw)
 
                         val iframeUrl =
                             Regex("""src=\\?["'](https:.*?)(?:\?|\\?["']|["'])""").find(decryptedRaw)?.groupValues?.get(
@@ -244,7 +246,7 @@ class Sextb : MainAPI() {
                         }
                     }
                 } catch (e: Exception) {
-                    Log.d("sextb", "${e.message}")
+                    Log.d(name, "${e.message}")
                 }
             })
         }
@@ -263,7 +265,7 @@ class Sextb : MainAPI() {
             }
             result.toString()
         } catch (e: Exception) {
-            Log.d("sextb", "${e.message}")
+            Log.d(name, "${e.message}")
             ""
         }
     }
@@ -281,7 +283,7 @@ class Sextb : MainAPI() {
                     try {
                         task()
                     } catch (e: Exception) {
-                        com.lagradost.api.Log.e("SulasokConcurrency", "Task failed: ${e.message}")
+                        Log.e(name, "Task failed: ${e.message}")
                     }
                 }
             }

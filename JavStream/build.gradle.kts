@@ -1,10 +1,9 @@
-version = 5
+version = 1
 
 cloudstream {
     authors = listOf("IstarVin")
     language = "en"
-    description =
-        "The Best Free JAV online, JAV DVD online, Stream JAV Online High Quality always updated daily."
+    description = "#1 best extention for JAV"
     status = 1 // will be 3 if unspecified
     tvTypes = listOf("NSFW")
     iconUrl =
