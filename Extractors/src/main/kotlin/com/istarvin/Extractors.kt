@@ -81,6 +81,10 @@ class SubtitleCat : ExtractorApi() {
     override val mainUrl = "https://subtitlecat.com"
     override val requiresReferer = false
 
+    private fun String.toAlphaNumeric(): String {
+        return this.filter { c -> c.isLetterOrDigit() }
+    }
+
     override suspend fun getUrl(
         url: String,
         referer: String?,
@@ -93,6 +97,10 @@ class SubtitleCat : ExtractorApi() {
         val subs = doc.select(".sub-table a")
             .map { mainUrl + '/' + it.attr("href") }
             .take(3)
+            .filter {
+                it.toAlphaNumeric().contains(query.toAlphaNumeric())
+            }
+            .ifEmpty { return }
 
         coroutineScope {
             subs.map { subUrl ->
