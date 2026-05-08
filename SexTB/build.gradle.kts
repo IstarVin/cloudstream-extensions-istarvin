@@ -2,7 +2,7 @@ version = 2
 
 cloudstream {
     authors = listOf("IstarVin")
-    language = "jp"
+    language = "en"
     description =
         "The Best Free JAV online, JAV DVD online, Stream JAV Online High Quality always updated daily."
     status = 1 // will be 3 if unspecified
