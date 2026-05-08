@@ -30,7 +30,6 @@ class ExtractorPlugin : BasePlugin() {
         registerExtractorAPI(Peytonepre())
         registerExtractorAPI(Movearnpre())
         registerExtractorAPI(Dintezuvio())
-//        registerExtractorAPI(Streamwish())
         registerExtractorAPI(Streamhihi())
         registerExtractorAPI(Javsw())
         registerExtractorAPI(Swhoi())
@@ -47,5 +46,6 @@ class ExtractorPlugin : BasePlugin() {
         registerExtractorAPI(Turtleviplay())
         registerExtractorAPI(Turboviplay())
         registerExtractorAPI(Hanerix())
+        registerExtractorAPI(JavVids())
     }
 }

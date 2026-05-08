@@ -267,6 +267,11 @@ class Movearnpre : VidHidePro() {
     override var mainUrl = "https://movearnpre.com"
 }
 
+class JavVids : VidHidePro() {
+    override var name = "JavVids"
+    override var mainUrl = "https://jav-vids.xyz"
+}
+
 class Dintezuvio : VidHidePro() {
     override var name = "EarnVids"
     override var mainUrl = "https://dintezuvio.com"
@@ -413,12 +418,24 @@ class Javggvideo : ExtractorApi() {
     override var name = "Javgg Video"
     override var mainUrl = "https://javggvideo.xyz"
     override val requiresReferer = false
-    override suspend fun getUrl(url: String, referer: String?): List<ExtractorLink> {
+
+    override suspend fun getUrl(
+        url: String, referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
         val response = app.get(url).text
         val link = response.substringAfter("var urlPlay = '").substringBefore("';")
-        return listOf(newExtractorLink(name, name, link, INFER_TYPE) {
-            this.quality = Qualities.Unknown.value
-        })
+        if (link.contains("m3u8")) {
+            generateM3u8(name, link, mainUrl).forEach(callback)
+        } else {
+            callback.invoke(
+                newExtractorLink(name, name, link, INFER_TYPE) {
+                    this.quality = Qualities.Unknown.value
+                }
+            )
+        }
+
     }
 }
 

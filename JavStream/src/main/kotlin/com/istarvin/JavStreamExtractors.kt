@@ -31,13 +31,11 @@ class JavtifulExtractor : ExtractorApi() {
     ) {
         val code = url.substringAfter("code=")
 
-        Log.d(name, code)
-
         val searchDoc = app.get("$mainUrl/search?q=$code").document
-        val matchedUrl = searchDoc.select("article.front-video-card:not(.front-partner-card) a")
-            .firstOrNull()
-            ?.attr("href")?.let { fixUrl(it) }
-            ?: return
+        val matchedUrl =
+            searchDoc.selectFirst("article.front-video-card:not(.front-partner-card) a")
+                ?.attr("href")?.let { fixUrl(it) }
+                ?: return
 
         val res = app.get(matchedUrl).text
         val configRaw = res.substringAfter("id=\"frontWatchConfig\" type=\"application/json\">")
@@ -102,10 +100,9 @@ class SexTBExtractor : ExtractorApi() {
         callback: (ExtractorLink) -> Unit
     ) {
         val code = url.substringAfter("code=")
-        Log.d(name, code)
 
         val searchDoc = app.get("$mainUrl/search/$code").document
-        val matchedUrl = searchDoc.select("div.tray-item a").firstOrNull()
+        val matchedUrl = searchDoc.selectFirst("div.tray-item a")
             ?.attr("href")?.let { fixUrl(it) }
             ?: return
 
@@ -220,10 +217,9 @@ class MissAvExtractor : ExtractorApi() {
         callback: (ExtractorLink) -> Unit
     ) {
         val code = url.substringAfter("code=")
-        Log.d(name, code)
 
         val searchDoc = app.get("$mainUrl/en/search/$code").document
-        val matchedUrl = searchDoc.select("div.grid.grid-cols-2 > div a").firstOrNull()
+        val matchedUrl = searchDoc.selectFirst("div.grid.grid-cols-2 > div a")
             ?.attr("href")?.let { fixUrl(it) }
             ?: return
 
@@ -239,5 +235,93 @@ class MissAvExtractor : ExtractorApi() {
                 headers = mapOf("Referer" to "$mainUrl/")
             ).forEach(callback)
         }
+    }
+}
+
+class JavGGStreamExtractor : ExtractorApi() {
+    override val name = "JavGG"
+    override var mainUrl = "https://javgg.net"
+    override val requiresReferer = false
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        val code = url.substringAfter("code=")
+
+        val searchDoc = app.get("$mainUrl/?s=$code").document
+        val matchedUrl = searchDoc.selectFirst(".result-item > article a")
+            ?.attr("href")?.let { fixUrl(it) }
+            ?: return
+
+        val document = app.get(matchedUrl).document
+
+        val tasks =
+            document.select(".pframe > iframe").map { el ->
+                suspend {
+                    val src = el.attr("src").ifEmpty { return@map }
+                    loadExtractor(src, subtitleCallback, callback)
+                    Unit
+                }
+            }
+
+        JavStreamUtils.runLimitedAsync(tasks = tasks.toTypedArray())
+    }
+}
+
+class SupJavExtractor : ExtractorApi() {
+    override val name = "SupJav"
+    override var mainUrl = "https://supjav.com"
+    override val requiresReferer = false
+
+    private val supjavApi = "https://lk1.supremejav.com/supjav.php"
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        val code = url.substringAfter("code=")
+
+        val searchDoc = app.get("$mainUrl/?s=$code").document
+        val matchedUrl = searchDoc.selectFirst(".post a")
+            ?.attr("href")?.let { fixUrl(it) }
+            ?: return
+
+        val document = app.get(matchedUrl).document
+
+        val tasks = document.select(".btn-server").map { btn ->
+            suspend {
+                val dataLink = btn.attr("data-link")
+
+                val res1 = app.get(
+                    url = "$supjavApi?l=$dataLink",
+                    referer = mainUrl,
+                    headers = mapOf("referer" to mainUrl)
+                )
+
+                val olid = res1.text.substringAfter("var OLID = '").substringBefore("'").reversed()
+                val res2 = app.get(
+                    "$supjavApi?c=$olid",
+                    referer = res1.url,
+                    headers = mapOf("referer" to res1.url),
+                    allowRedirects = false
+                )
+                res2.headers["location"]?.let { loc ->
+                    loadExtractor(
+                        loc,
+                        referer = supjavApi,
+                        subtitleCallback = subtitleCallback,
+                        callback = callback
+                    )
+                }
+                Unit
+            }
+        }
+
+        JavStreamUtils.runLimitedAsync(tasks = tasks.toTypedArray())
     }
 }

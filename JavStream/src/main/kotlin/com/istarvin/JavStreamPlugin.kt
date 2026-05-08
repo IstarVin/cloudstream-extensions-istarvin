@@ -15,6 +15,8 @@ class JavStreamPlugin : Plugin() {
         myRegisterExtractorAPI(JavtifulExtractor())
         myRegisterExtractorAPI(SexTBExtractor())
         myRegisterExtractorAPI(MissAvExtractor())
+        myRegisterExtractorAPI(JavGGStreamExtractor())
+        myRegisterExtractorAPI(SupJavExtractor())
     }
 
     private fun myRegisterExtractorAPI(element: ExtractorApi) {
