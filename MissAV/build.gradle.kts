@@ -2,7 +2,7 @@ version = 1
 
 cloudstream {
     authors = listOf("IstarVin")
-    language = "en"
+    language = "jp"
     description =
         "Best Japan AV porn site, free forever, high speed, no lag, over 100,000 videos with daily update."
     status = 1 // will be 3 if unspecified

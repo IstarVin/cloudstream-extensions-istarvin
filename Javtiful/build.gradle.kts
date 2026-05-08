@@ -2,7 +2,7 @@ version = 3
 
 cloudstream {
     authors = listOf("IstarVin")
-    language = "en"
+    language = "jp"
     description = "Watch more than 60,000 Full HD JAV Online For Free at Javtiful"
     status = 1
     tvTypes = listOf("NSFW")
