@@ -1,9 +1,10 @@
-version = 11
+version = 1
 
 cloudstream {
     authors = listOf("IstarVin")
     language = "en"
-    description = "Extractors for my sources"
+    description =
+        "Stream short dramas and mini series online with no signup required. Discover addictive stories in bite-sized episodes."
 
     /**
      * Status int as the following:
@@ -13,7 +14,7 @@ cloudstream {
      * 3: Beta only
      **/
     status = 1 // will be 3 if unspecified
-    tvTypes = listOf("Others")
+    tvTypes = listOf("AsianDrama")
 
     isCrossPlatform = true
 }

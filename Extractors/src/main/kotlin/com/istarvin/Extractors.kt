@@ -9,6 +9,7 @@ import com.lagradost.cloudstream3.extractors.MixDrop
 import com.lagradost.cloudstream3.extractors.StreamWishExtractor
 import com.lagradost.cloudstream3.extractors.VidHidePro
 import com.lagradost.cloudstream3.extractors.VidStack
+import com.lagradost.cloudstream3.extractors.VidhideExtractor
 import com.lagradost.cloudstream3.newSubtitleFile
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
@@ -262,9 +263,34 @@ class Peytonepre : VidHidePro() {
     override var mainUrl = "https://peytonepre.com"
 }
 
-class Movearnpre : VidHidePro() {
+class Movearnpre : ExtractorApi() {
     override var name = "EarnVids"
     override var mainUrl = "https://movearnpre.com"
+    override val requiresReferer = false
+
+    private val m3u8Regex = Regex("""[:=]\s*"([^"\s]+(\.m3u8)[^"\s]*)""")
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+
+        val text = app.get(url).text
+
+        val script = getAndUnpack(text)
+
+        m3u8Regex.findAll(script).forEach { m3u8Match ->
+            val url = fixUrl(m3u8Match.groupValues[1])
+            if (url.contains("?")) return@forEach
+            generateM3u8(
+                name,
+                url,
+                referer = "$mainUrl/",
+            ).forEach(callback)
+        }
+    }
 }
 
 class JavVids : VidHidePro() {
@@ -499,4 +525,24 @@ open class Turtleviplay : ExtractorApi() {
 class Turboviplay : Turtleviplay() {
     override var name = "Turboviplay"
     override var mainUrl = "https://turboviplay.com"
+}
+
+class Reely : ExtractorApi() {
+    override val name = "Reely"
+    override val mainUrl = "https://embed.reely.live"
+    override val requiresReferer = true
+
+    private val reelxiaProxy = "https://reelxia-proxy.istarvin.workers.dev"
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        val videoId = url.substringAfter("v=").substringBefore("&")
+
+        generateM3u8(name, "$reelxiaProxy/$videoId/2", mainUrl).forEach(callback)
+        subtitleCallback(newSubtitleFile("English", "$reelxiaProxy/$videoId/subtitle/en"))
+    }
 }

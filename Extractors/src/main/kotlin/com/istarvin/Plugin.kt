@@ -47,5 +47,6 @@ class ExtractorPlugin : BasePlugin() {
         registerExtractorAPI(Turboviplay())
         registerExtractorAPI(Hanerix())
         registerExtractorAPI(JavVids())
+        registerExtractorAPI(Reely())
     }
 }
