@@ -1,4 +1,4 @@
-version = 1
+version = 2
 
 cloudstream {
     authors = listOf("IstarVin")
@@ -15,6 +15,7 @@ cloudstream {
      **/
     status = 1 // will be 3 if unspecified
     tvTypes = listOf("AsianDrama")
+    iconUrl = "https://reelxia.com/favicon-32x32.png"
 
     isCrossPlatform = true
 }
