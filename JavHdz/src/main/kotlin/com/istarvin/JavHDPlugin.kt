@@ -6,6 +6,6 @@ import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
 @CloudstreamPlugin
 class JavHDPlugin : BasePlugin() {
     override fun load() {
-        registerMainAPI(JavHd())
+        registerMainAPI(JavHD())
     }
 }

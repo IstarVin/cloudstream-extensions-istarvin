@@ -25,7 +25,7 @@ import org.jsoup.nodes.Element
 import java.net.URLEncoder
 import kotlin.io.encoding.Base64
 
-class JavHd : MainAPI() {
+class JavHD : MainAPI() {
     override var mainUrl = "https://javhdz.men"
     override var name = "JavHD"
     override val hasMainPage = true
@@ -49,7 +49,11 @@ class JavHd : MainAPI() {
             it.mainPageResults()
         }
 
-        return newHomePageResponse(request.name, home, true)
+        return newHomePageResponse(
+            data = request.copy(horizontalImages = true),
+            list = home,
+            hasNext = true
+        )
     }
 
     override suspend fun search(query: String, page: Int): SearchResponseList {
