@@ -1,6 +1,7 @@
 package com.istarvin
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.lagradost.api.Log
 import com.lagradost.cloudstream3.AcraApplication.Companion.getKey
 import com.lagradost.cloudstream3.AcraApplication.Companion.setKey
 import com.lagradost.cloudstream3.HomePageResponse
@@ -20,10 +21,17 @@ import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newSearchResponseList
 import com.lagradost.cloudstream3.utils.AppUtils.parseJson
+import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.M3u8Helper.Companion.generateM3u8
 import com.lagradost.cloudstream3.utils.getExtractorApiFromName
+import com.lagradost.cloudstream3.utils.loadExtractor
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import org.jsoup.nodes.Element
 import java.net.URLEncoder
@@ -120,7 +128,6 @@ class JavHD : MainAPI() {
         return cache
     }
 
-    private val getBase64LinkRegex = Regex("""window\.atob\("(.+?)"\)""")
 
     override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url).document
@@ -131,17 +138,25 @@ class JavHD : MainAPI() {
             document.selectFirst("#film-content-wrapper")?.text()?.trim()?.substringBefore(" ")
         val poster = fixUrlNull(document.selectFirst("img.thumb")?.attr("src"))
 
-        val videoUrlBase64 = document.selectFirst("#video > script:last-child")?.html()?.let {
-            getBase64LinkRegex.find(it)?.groups[1]?.value
-        } ?: return null
+        val data = document.select(".user-action > .server").mapNotNull {
+            val onclick = it.attr("onclick").substringAfter("(")
+            val id = onclick.substringBefore(",")
+            val serverNum = onclick.substringAfter(",").substringBefore(")")
+            id to serverNum
+        }
 
-        val videoUrl = Base64.decode(videoUrlBase64).decodeToString()
-
-        return newMovieLoadResponse(title, url, TvType.NSFW, "$code:$videoUrl") {
+        return newMovieLoadResponse(
+            name = title,
+            url = url,
+            type = TvType.NSFW,
+            data = DataObject(code, data).toJson()
+        ) {
             this.posterUrl = poster
         }
     }
 
+    private val getBase64LinkRegex = Regex("""window\.atob\("(.+?)"\)""")
+    private val urlRegex = Regex("""(https?://)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*/?""")
 
     override suspend fun loadLinks(
         data: String,
@@ -149,27 +164,84 @@ class JavHD : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        data.substringBefore(":").let { code ->
+        val dataObject = parseJson<DataObject>(data)
+
+        val tasks = mutableListOf<suspend () -> Unit>()
+
+        tasks.add(suspend suspend@{
+            val code = dataObject.code ?: return@suspend
             getExtractorApiFromName("SubtitleCat").run {
-                if (name == "SubtitleCat") {
-                    getUrl(
-                        url = code,
+                if (name != "SubtitleCat") {
+                    return@run
+                }
+
+                getUrl(
+                    url = code,
+                    subtitleCallback = subtitleCallback,
+                    callback = callback
+                )
+            }
+        })
+
+        dataObject.data.forEach { (id, serverId) ->
+            tasks.add(suspend suspend@{
+                val res = app.post(
+                    url = "$mainUrl/ajax",
+                    data = mapOf(
+                        "id" to id,
+                        "server" to serverId
+                    )
+                ).parsedSafe<AjaxRes>() ?: return@suspend
+
+                if ("jwplayer.js" in res.player) {
+                    getBase64LinkRegex.find(res.player)?.groups?.get(1)?.value?.let {
+                        val url = Base64.decode(it).decodeToString()
+
+                        generateM3u8(
+                            source = name,
+                            streamUrl = url,
+                            referer = mainUrl,
+                            headers = mapOf("referer" to mainUrl)
+                        ).forEach(callback)
+                    }
+                    return@suspend
+                }
+
+                urlRegex.find(res.player)?.value?.let {
+                    loadExtractor(
+                        url = it,
+                        referer = mainUrl,
                         subtitleCallback = subtitleCallback,
                         callback = callback
                     )
                 }
-            }
+            })
         }
 
-        val videoUrl = data.substringAfter(":")
-
-        generateM3u8(
-            source = name,
-            streamUrl = videoUrl,
-            referer = mainUrl
-        ).forEach(callback)
+        runLimitedAsync(tasks = tasks.toTypedArray())
 
         return true
+    }
+
+    private suspend fun runLimitedAsync(
+        concurrency: Int = 5,
+        vararg tasks: suspend () -> Unit
+    ) = coroutineScope {
+        if (tasks.isEmpty()) return@coroutineScope
+
+        val semaphore = Semaphore(concurrency)
+
+        tasks.map { task ->
+            async(Dispatchers.IO) {
+                semaphore.withPermit {
+                    try {
+                        task()
+                    } catch (e: Exception) {
+                        Log.e("SulasokConcurrency", "Task failed: ${e.message}")
+                    }
+                }
+            }
+        }.awaitAll()
     }
 
     data class GoogleTranslateResponse(
@@ -183,4 +255,11 @@ class JavHD : MainAPI() {
     data class GoogleTranslateTranslation(
         @JsonProperty("translatedText") val translatedText: String? = null
     )
+
+    data class DataObject(
+        val code: String?,
+        val data: List<Pair<String, String>>
+    )
+
+    data class AjaxRes(val player: String)
 }
