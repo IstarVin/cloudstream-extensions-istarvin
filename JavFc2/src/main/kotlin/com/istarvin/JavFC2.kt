@@ -137,8 +137,6 @@ class JavFC2 : MainAPI() {
         val videoUrl = document.select("#player-div script").html().let {
             srcRegex.find(it)?.groups[1]?.value
         } ?: return false
-        println(videoUrl)
-
 
         document.select("track[kind=\"subtitles\"]").forEach { sub ->
             val subUrl = sub.attr("src")
@@ -154,6 +152,13 @@ class JavFC2 : MainAPI() {
                     callback = callback
                 )
             }
+        }
+
+        val hlsProxyName = "HLSProxy"
+
+        val hlsProxy = getExtractorApiFromName(hlsProxyName)
+        if (hlsProxy.name == hlsProxyName) {
+            hlsProxy.getUrl(videoUrl, callback = callback, subtitleCallback = subtitleCallback)
         }
 
         val urlEncoded = withContext(Dispatchers.IO) {

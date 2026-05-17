@@ -12,7 +12,7 @@ import androidx.core.content.edit
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.lagradost.cloudstream3.plugins.Plugin
 
-const val HLS_PROXY_DEFAULT_URL = "http://sample-proxy.com"
+const val HLS_PROXY_DEFAULT_URL = "https://hls-proxy.istarvin.uk"
 const val HLS_PROXY_URL_PREF_KEY = "hls_proxy_url"
 private const val RESOURCE_PACKAGE = "com.istarvin"
 

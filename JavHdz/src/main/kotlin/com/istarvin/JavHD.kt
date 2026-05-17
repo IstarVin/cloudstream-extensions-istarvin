@@ -170,6 +170,13 @@ class JavHD : MainAPI() {
             )
         }
 
+        val hlsProxyName = "HLSProxy"
+
+        val hlsProxy = getExtractorApiFromName(hlsProxyName)
+        if (hlsProxy.name == hlsProxyName) {
+            hlsProxy.getUrl(videoUrl, callback = callback, subtitleCallback = subtitleCallback)
+        }
+
         generateM3u8(
             source = name,
             streamUrl = "$hlsPngProxy/proxy?referer=$mainUrl&url=$urlEncoded",

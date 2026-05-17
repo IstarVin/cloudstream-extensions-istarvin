@@ -24,6 +24,8 @@ import com.lagradost.cloudstream3.utils.newExtractorLink
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.net.URLEncoder
 
 class LuluVid : StreamWishExtractor() {
     override val name = "LuluStream"
@@ -552,8 +554,8 @@ class Reely : ExtractorApi() {
 class HLSProxy(
     private val sharedPref: SharedPreferences? = null
 ) : ExtractorApi() {
-    override val name = "HLSPNGProxy"
-    override val mainUrl = "https://hls-proxy.istarvin.uk"
+    override val name = "HLSProxy"
+    override val mainUrl = "http://hls-proxy"
     override val requiresReferer = false
 
     override suspend fun getUrl(
@@ -565,6 +567,20 @@ class HLSProxy(
         val proxy = sharedPref?.getString(HLS_PROXY_URL_PREF_KEY, HLS_PROXY_DEFAULT_URL)
             ?.takeIf { it.isNotBlank() }
             ?: HLS_PROXY_DEFAULT_URL
-        generateM3u8(name, "$proxy/proxy?url=$url", mainUrl).forEach(callback)
+
+        val urlEncoded = withContext(Dispatchers.IO) {
+            URLEncoder.encode(
+                url,
+                "utf-8"
+            )
+        }
+
+        generateM3u8(
+            source = name,
+            streamUrl = "$proxy/proxy?url=$urlEncoded",
+            referer = referer ?: mainUrl
+        ).forEach(
+            callback
+        )
     }
 }
