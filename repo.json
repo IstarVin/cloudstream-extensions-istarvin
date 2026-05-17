@@ -1,0 +1,9 @@
+{
+    "name": "IstarVin Repo",
+    "iconUrl": "https://avatars.githubusercontent.com/u/89844706",
+    "description": "IstarVin Repository",
+    "manifestVersion": 1,
+    "pluginLists": [
+      "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/refs/heads/builds/plugins.json"
+    ]
+}
