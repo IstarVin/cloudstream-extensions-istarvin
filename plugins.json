@@ -1,0 +1,259 @@
+[
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Extractors.cs3",
+        "status": 1,
+        "version": 16,
+        "name": "Extractors",
+        "internalName": "Extractors",
+        "authors": [
+            "IstarVin"
+        ],
+        "description": "Extractors for my sources",
+        "fileSize": 38841,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Others"
+        ],
+        "apiVersion": 1,
+        "fileHash": "sha256-dedc08c83d57fe369f3ff0703c3403b05604d57fb4c8cae890a3b2370b680efc"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/JavFc2.cs3",
+        "status": 1,
+        "version": 6,
+        "name": "JavFc2",
+        "internalName": "JavFc2",
+        "authors": [
+            "IstarVin"
+        ],
+        "description": "JAVFC2.XYZ a site watch Free All Best JAV FC2PPV Online HD Porn Streaming, FC2 PPV AMATER PORN, FC2 PPV Sex Video, Free Japanese Porn with English subtitles",
+        "fileSize": 15762,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "NSFW"
+        ],
+        "iconUrl": "https://img.javfc2vid.top/image/javfc2.xyz/uploads/system_logo/logo.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-ea23ef61a2cc76542b6bac969dd40dd959d45dd82583f845db707978c0097ca7",
+        "jarFileSize": 59485,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/JavFc2.jar",
+        "jarHash": "sha256-50c58c75dfa9385437323d40f845779f2155ca0370126ca386cbed2cee394078"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/JavHdz.cs3",
+        "status": 1,
+        "version": 10,
+        "name": "JavHdz",
+        "internalName": "JavHdz",
+        "authors": [
+            "IstarVin"
+        ],
+        "description": "Japanese Adult Video from Vietnam Server",
+        "fileSize": 30391,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "NSFW"
+        ],
+        "iconUrl": "https://javhdz.men/favicon.ico",
+        "apiVersion": 1,
+        "fileHash": "sha256-956f4aa16bf024bdf99b7db1d726551efdf8fc20bb752b5423d742dd36ce9d49"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/JavStream.cs3",
+        "status": 1,
+        "version": 4,
+        "name": "JavStream",
+        "internalName": "JavStream",
+        "authors": [
+            "IstarVin"
+        ],
+        "description": "#1 best extention for JAV",
+        "fileSize": 37728,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "NSFW"
+        ],
+        "iconUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://sextb.net/&size=128",
+        "apiVersion": 1,
+        "fileHash": "sha256-e633be05e31319886ea61c9a7c348bfc09138b987b3c89eb3f2a677878ae4e62"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Javtiful.cs3",
+        "status": 1,
+        "version": 10,
+        "name": "Javtiful",
+        "internalName": "Javtiful",
+        "authors": [
+            "IstarVin"
+        ],
+        "description": "Watch more than 60,000 Full HD JAV Online For Free at Javtiful",
+        "fileSize": 17800,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "NSFW"
+        ],
+        "iconUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://javtiful.com/main&size=128",
+        "apiVersion": 1,
+        "fileHash": "sha256-3d49e4154ee83e78e91a0ceefb9f3a89ae73fffc76aa65c550b9706dc5706c13"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/MissAV.cs3",
+        "status": 1,
+        "version": 3,
+        "name": "MissAV",
+        "internalName": "MissAV",
+        "authors": [
+            "IstarVin"
+        ],
+        "description": "Best Japan AV porn site, free forever, high speed, no lag, over 100,000 videos with daily update.",
+        "fileSize": 14216,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "NSFW"
+        ],
+        "iconUrl": "https://missav.ws/missav/logo-square.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-ce326f4a9c9ca95c747be24883b56d4b90e72a6358c905bdb29ec6f26aaf444f"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/MkvDrama.cs3",
+        "status": 0,
+        "version": 1,
+        "name": "MkvDrama",
+        "internalName": "MkvDrama",
+        "authors": [
+            "IstarVin"
+        ],
+        "description": "Download Korean, Chinese, Thai & Japanese dramas, movies & shows in HD with subs. Enjoy free, fast access to the latest content at MkvDrama.net.",
+        "fileSize": 21233,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "AsianDrama"
+        ],
+        "iconUrl": "https://mkvdrama.org/static/assets/favicon/apple-touch-icon.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-e2e7b2584f6cdf5a11f3823d02297635338aaaf890eea935120a521dc2b63f34",
+        "jarFileSize": 92682,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/MkvDrama.jar",
+        "jarHash": "sha256-db99607904f037fa57a67beffbbe7d46b22b22e4ff73cfc59a7fd10460c160e5"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Otits.cs3",
+        "status": 1,
+        "version": 4,
+        "name": "Otits",
+        "internalName": "Otits",
+        "authors": [
+            "IstarVin"
+        ],
+        "description": "Otits",
+        "fileSize": 12921,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "fil",
+        "tvTypes": [
+            "NSFW"
+        ],
+        "iconUrl": "https://otitsvid.com/00ICON_JN3NDMVQ0J.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-b5a28fe96507c81d34a5d214a5f767ad080a871b71b7847b4f702b11b47032f5",
+        "jarFileSize": 50908,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Otits.jar",
+        "jarHash": "sha256-92cd3c9db48bbd0dbf675714ccdfadd4daf3c3700ebc80c0264baa698d53bccc"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Reelxia.cs3",
+        "status": 1,
+        "version": 2,
+        "name": "Reelxia",
+        "internalName": "Reelxia",
+        "authors": [
+            "IstarVin"
+        ],
+        "description": "Stream short dramas and mini series online with no signup required. Discover addictive stories in bite-sized episodes.",
+        "fileSize": 16455,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "AsianDrama"
+        ],
+        "iconUrl": "https://reelxia.com/favicon-32x32.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-097e9a6258d9a3e329e19f8e405d75bfbcdf939d9159a30c27460c5633220021",
+        "jarFileSize": 59899,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Reelxia.jar",
+        "jarHash": "sha256-ca2dbd8b69ebe9acf0bffa6535ae9df369b7ada4bfeaf2e6a67d42795a7d9038"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/SexTB.cs3",
+        "status": 1,
+        "version": 6,
+        "name": "SexTB",
+        "internalName": "SexTB",
+        "authors": [
+            "IstarVin"
+        ],
+        "description": "The Best Free JAV online, JAV DVD online, Stream JAV Online High Quality always updated daily.",
+        "fileSize": 21173,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "NSFW"
+        ],
+        "iconUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://sextb.net/&size=128",
+        "apiVersion": 1,
+        "fileHash": "sha256-1da2a642e175aafeae0360f88afa909da3467d6b10d3c3f823064c525660cccd"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Sulasok.cs3",
+        "status": 1,
+        "version": 6,
+        "name": "Sulasok",
+        "internalName": "Sulasok",
+        "authors": [
+            "IstarVin"
+        ],
+        "description": "Sulasok",
+        "fileSize": 12984,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "fil",
+        "tvTypes": [
+            "NSFW"
+        ],
+        "iconUrl": "https://sulasok.uno/00ICON_7IFI9DWVV1.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-dd1bef735cd36c470f85475370a8ffec6481f92fd570d652e475aaa32c4573de",
+        "jarFileSize": 51433,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Sulasok.jar",
+        "jarHash": "sha256-c8f77dc5383783c4eb87984475c2e9dfd0e1d91efe147a92ae7baceb2ae2301d"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/XPinay.cs3",
+        "status": 1,
+        "version": 4,
+        "name": "XPinay",
+        "internalName": "XPinay",
+        "authors": [
+            "IstarVin"
+        ],
+        "description": "XPinay",
+        "fileSize": 13654,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "fil",
+        "tvTypes": [
+            "NSFW"
+        ],
+        "iconUrl": "https://xpinay.one/00ICON_73DCHYCYWD.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-119d96f13a7622da2683e83e93ef4274b92de91a8374efbbfb046c96d0797e66",
+        "jarFileSize": 53653,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/XPinay.jar",
+        "jarHash": "sha256-58ab70c4e277efc8199b0ead1d028890f7a94bbe5a95bdb7e16c33065c8e692c"
+    }
+]
