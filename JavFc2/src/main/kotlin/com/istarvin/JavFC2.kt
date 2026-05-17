@@ -70,7 +70,6 @@ class JavFC2 : MainAPI() {
 
     override suspend fun search(query: String, page: Int): SearchResponseList {
         val url = "$mainUrl/search/?q=$query&per_page=${(page - 1) * 24}"
-        println(url)
         val document = app.get(url).document
 
         val results = document.select(".movie-container > div").mapNotNull {
