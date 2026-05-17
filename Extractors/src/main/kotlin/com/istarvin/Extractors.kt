@@ -26,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URLEncoder
+import kotlin.sequences.forEach
 
 class LuluVid : StreamWishExtractor() {
     override val name = "LuluStream"
@@ -280,7 +281,6 @@ class Movearnpre : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-
         val text = app.get(url).text
 
         val script = getAndUnpack(text)
@@ -531,6 +531,24 @@ class Turboviplay : Turtleviplay() {
     override var mainUrl = "https://turboviplay.com"
 }
 
+class Emturbovid : ExtractorApi() {
+    override var name = "Emturbovid"
+    override var mainUrl = "https://emturbovid.com"
+    override val requiresReferer = true
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        val doc = app.get(url, referer = referer).document
+        val videoUrl = doc.selectFirst("#video_player")?.attr("data-hash") ?: return
+
+        generateM3u8(name, videoUrl, url).forEach(callback)
+    }
+}
+
 class Reely : ExtractorApi() {
     override val name = "Reely"
     override val mainUrl = "https://embed.reely.live"
@@ -582,5 +600,34 @@ class HLSProxy(
         ).forEach(
             callback
         )
+    }
+}
+
+class AsnWish : ExtractorApi() {
+    override val name = "AsnWish"
+    override val mainUrl = "https://asnwish.com"
+    override val requiresReferer = true
+
+    private val m3u8Regex = Regex("""[:=]\s*"([^"\s]+(\.m3u8)[^"\s]*)""")
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        val text = app.get(url, referer = referer).text
+
+        val script = getAndUnpack(text)
+
+        m3u8Regex.findAll(script).forEach { m3u8Match ->
+            val url = fixUrl(m3u8Match.groupValues[1])
+            if (url.contains("?")) return@forEach
+            generateM3u8(
+                source = name,
+                streamUrl = url,
+                referer = mainUrl,
+            ).forEach(callback)
+        }
     }
 }
