@@ -56,6 +56,8 @@ class ExtractorPlugin : Plugin() {
         registerExtractorAPI(JavVids())
         registerExtractorAPI(Reely())
         registerExtractorAPI(HLSProxy(sharedPref))
+        registerExtractorAPI(Emturbovid())
+        registerExtractorAPI(AsnWish())
 
         openSettings = { ctx ->
             val activity = ctx as AppCompatActivity
