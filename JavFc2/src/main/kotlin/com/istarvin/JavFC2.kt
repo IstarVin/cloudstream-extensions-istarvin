@@ -12,11 +12,12 @@ import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.fixUrl
 import com.lagradost.cloudstream3.fixUrlNull
 import com.lagradost.cloudstream3.mainPageOf
+import com.lagradost.cloudstream3.newEpisode
 import com.lagradost.cloudstream3.newHomePageResponse
-import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newSearchResponseList
 import com.lagradost.cloudstream3.newSubtitleFile
+import com.lagradost.cloudstream3.newTvSeriesLoadResponse
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.M3u8Helper.Companion.generateM3u8
 import com.lagradost.cloudstream3.utils.getExtractorApiFromName
@@ -106,24 +107,19 @@ class JavFC2 : MainAPI() {
         val document = app.get(url).document
 
         val title = document.selectFirst(".title")?.text()?.trim() ?: return null
-        val code = url.substringAfterLast("/").substringBefore(".html")
         val poster = fixUrlNull(document.selectFirst("#info img")?.attr("src"))
 
-        val videoUrl = document.select("#player-div script").html().let {
-            srcRegex.find(it)?.groups[1]?.value
-        } ?: return null
+        val episodes = document.select(".season a:not([data-toggle])").mapIndexedNotNull { i, a ->
+            val href = fixUrlNull(a.attr("href")) ?: return@mapIndexedNotNull null
+            val title = a.text().ifEmpty { "Ep ${i + 1}" }
 
-        val subtitleUrl = document.selectFirst("track[kind=\"subtitles\"]")?.attr("src")
+            newEpisode(href) {
+                name = title
+            }
+        }
 
-        val data = "$code:$videoUrl**$subtitleUrl"
-
-        return newMovieLoadResponse(
-            name = title,
-            url = url,
-            type = TvType.NSFW,
-            data = data
-        ) {
-            this.posterUrl = poster
+        return newTvSeriesLoadResponse(title, url, TvType.NSFW, episodes) {
+            posterUrl = poster
         }
     }
 
@@ -134,19 +130,32 @@ class JavFC2 : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        data.substringBefore(":").let { code ->
-            getExtractorApiFromName("SubtitleCat").getUrl(
-                url = code,
-                subtitleCallback = subtitleCallback,
-                callback = callback
-            )
+        val document = app.get(data).document
+
+        val code = data.substringAfterLast("/").substringBefore(".html")
+
+        val videoUrl = document.select("#player-div script").html().let {
+            srcRegex.find(it)?.groups[1]?.value
+        } ?: return false
+        println(videoUrl)
+
+
+        document.select("track[kind=\"subtitles\"]").forEach { sub ->
+            val subUrl = sub.attr("src")
+            val label = sub.attr("label")
+            subtitleCallback(newSubtitleFile(label, subUrl))
         }
 
-        val subtitleUrl = data.substringAfter("**")
+        getExtractorApiFromName("SubtitleCat").run {
+            if (name == "SubtitleCat") {
+                getUrl(
+                    url = code,
+                    subtitleCallback = subtitleCallback,
+                    callback = callback
+                )
+            }
+        }
 
-        subtitleCallback(newSubtitleFile("En", subtitleUrl))
-
-        val videoUrl = data.substringAfter(":").substringBefore("**")
         val urlEncoded = withContext(Dispatchers.IO) {
             URLEncoder.encode(
                 videoUrl,
