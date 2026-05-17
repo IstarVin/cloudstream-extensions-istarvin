@@ -1,5 +1,6 @@
 package com.istarvin
 
+import android.content.SharedPreferences
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.api.Log
 import com.lagradost.cloudstream3.AcraApplication.Companion.getKey
@@ -40,8 +41,11 @@ import java.net.URLEncoder
 import kotlin.io.encoding.Base64
 
 private const val TRANSLATION_CACHE_KEY = "javhd_translated_titles"
+const val GOOGLE_TRANSLATE_API_KEY_PREF_KEY = "google_translate_api_key"
 
-class JavHD : MainAPI() {
+class JavHD(
+    private val sharedPref: SharedPreferences? = null
+) : MainAPI() {
     override var mainUrl = "https://javhdz.men"
     override var name = "JavHD"
     override val hasMainPage = true
@@ -55,7 +59,8 @@ class JavHD : MainAPI() {
         "category/beauty-4" to "Beauty and more",
     )
 
-    private val googleTranslateApiKey = BuildConfig.GOOGLE_TRANSLATE_API_KEY
+    private val googleTranslateApiKey: String
+        get() = sharedPref?.getString(GOOGLE_TRANSLATE_API_KEY_PREF_KEY, "")?.trim().orEmpty()
     private var translatedTitleCache: MutableMap<String, String>? = null
     private val translatedTitleCacheMutex = Mutex()
 
