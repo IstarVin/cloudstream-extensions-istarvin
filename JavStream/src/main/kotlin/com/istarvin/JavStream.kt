@@ -176,11 +176,15 @@ class JavStream : MainAPI() {
         // Subtitle
         tasks.add(
             suspend {
-                getExtractorApiFromName("SubtitleCat").getUrl(
-                    url = data,
-                    subtitleCallback = subtitleCallback,
-                    callback = callback
-                )
+                getExtractorApiFromName("SubtitleCat").run {
+                    if (name == "SubtitleCat") {
+                        getUrl(
+                            url = data,
+                            subtitleCallback = subtitleCallback,
+                            callback = callback
+                        )
+                    }
+                }
             }
         )
 

@@ -44,11 +44,15 @@ class JavtifulExtractor : ExtractorApi() {
         val configData = parseJson<WatchConfig>(configRaw)
 
         configData.videoTitle?.substringBefore(" ")?.let { code ->
-            getExtractorApiFromName("SubtitleCat").getUrl(
-                url = code,
-                subtitleCallback = subtitleCallback,
-                callback = callback
-            )
+            getExtractorApiFromName("SubtitleCat").run {
+                if (name == "SubtitleCat") {
+                    getUrl(
+                        url = code,
+                        subtitleCallback = subtitleCallback,
+                        callback = callback
+                    )
+                }
+            }
         }
 
         configData.playerSources?.forEach { source ->
@@ -113,11 +117,15 @@ class SexTBExtractor : ExtractorApi() {
         tasks.add(
             suspend {
                 res.document.select(".full-text-desc").text().substringBefore(" ").let { code ->
-                    getExtractorApiFromName("SubtitleCat").getUrl(
-                        url = code,
-                        subtitleCallback = subtitleCallback,
-                        callback = callback
-                    )
+                    getExtractorApiFromName("SubtitleCat").run {
+                        if (name == "SubtitleCat") {
+                            getUrl(
+                                url = code,
+                                subtitleCallback = subtitleCallback,
+                                callback = callback
+                            )
+                        }
+                    }
                 }
             }
         )

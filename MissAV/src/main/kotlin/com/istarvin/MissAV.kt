@@ -155,11 +155,15 @@ class MissAV : MainAPI() {
 
             if (playlistId != null) {
                 data.substringBefore(":").let { code ->
-                    getExtractorApiFromName("SubtitleCat").getUrl(
-                        url = code,
-                        subtitleCallback = subtitleCallback,
-                        callback = callback
-                    )
+                    getExtractorApiFromName("SubtitleCat").run {
+                        if (name == "SubtitleCat") {
+                            getUrl(
+                                url = code,
+                                subtitleCallback = subtitleCallback,
+                                callback = callback
+                            )
+                        }
+                    }
                 }
                 generateM3u8(
                     source = name,

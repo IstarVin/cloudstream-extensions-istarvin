@@ -151,11 +151,15 @@ class JavHD : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         data.substringBefore(":").let { code ->
-            getExtractorApiFromName("SubtitleCat").getUrl(
-                url = code,
-                subtitleCallback = subtitleCallback,
-                callback = callback
-            )
+            getExtractorApiFromName("SubtitleCat").run {
+                if (name == "SubtitleCat") {
+                    getUrl(
+                        url = code,
+                        subtitleCallback = subtitleCallback,
+                        callback = callback
+                    )
+                }
+            }
         }
 
         val videoUrl = data.substringAfter(":")
