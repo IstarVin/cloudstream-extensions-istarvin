@@ -45,7 +45,6 @@ class JavHD : MainAPI() {
         "category/beauty-4" to "Beauty and more",
     )
 
-    private val hlsPngProxy = "https://hls-proxy.istarvin.uk"
     private val googleTranslateApiKey = BuildConfig.GOOGLE_TRANSLATE_API_KEY
     private var translatedTitleCache: MutableMap<String, String>? = null
 
@@ -163,23 +162,10 @@ class JavHD : MainAPI() {
         }
 
         val videoUrl = data.substringAfter(":")
-        val urlEncoded = withContext(Dispatchers.IO) {
-            URLEncoder.encode(
-                videoUrl,
-                "utf-8"
-            )
-        }
-
-        val hlsProxyName = "HLSProxy"
-
-        val hlsProxy = getExtractorApiFromName(hlsProxyName)
-        if (hlsProxy.name == hlsProxyName) {
-            hlsProxy.getUrl(videoUrl, callback = callback, subtitleCallback = subtitleCallback)
-        }
 
         generateM3u8(
             source = name,
-            streamUrl = "$hlsPngProxy/proxy?referer=$mainUrl&url=$urlEncoded",
+            streamUrl = videoUrl,
             referer = mainUrl
         ).forEach(callback)
 

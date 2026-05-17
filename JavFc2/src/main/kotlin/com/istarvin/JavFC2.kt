@@ -21,10 +21,7 @@ import com.lagradost.cloudstream3.newTvSeriesLoadResponse
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.M3u8Helper.Companion.generateM3u8
 import com.lagradost.cloudstream3.utils.getExtractorApiFromName
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.jsoup.nodes.Element
-import java.net.URLEncoder
 
 class JavFC2 : MainAPI() {
     override var mainUrl = "https://javfc2.xyz"
@@ -45,8 +42,6 @@ class JavFC2 : MainAPI() {
         "home/ranking?year=2023&month=all" to "Top 2023",
         "home/ranking?year=2022&month=all" to "Top 2022",
     )
-
-    private val hlsPngProxy = "https://hls-proxy.istarvin.uk"
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         var trueData = request.data
@@ -154,23 +149,9 @@ class JavFC2 : MainAPI() {
             }
         }
 
-        val hlsProxyName = "HLSProxy"
-
-        val hlsProxy = getExtractorApiFromName(hlsProxyName)
-        if (hlsProxy.name == hlsProxyName) {
-            hlsProxy.getUrl(videoUrl, callback = callback, subtitleCallback = subtitleCallback)
-        }
-
-        val urlEncoded = withContext(Dispatchers.IO) {
-            URLEncoder.encode(
-                videoUrl,
-                "utf-8"
-            )
-        }
-
         generateM3u8(
             source = name,
-            streamUrl = "$hlsPngProxy/proxy?referer=$mainUrl&url=$urlEncoded",
+            streamUrl = videoUrl,
             referer = mainUrl
         ).forEach(callback)
 

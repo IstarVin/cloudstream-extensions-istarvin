@@ -13,7 +13,7 @@ cloudstream {
      * 2: Slow
      * 3: Beta only
      **/
-    status = 3 // will be 3 if unspecified
+    status = 0 // will be 3 if unspecified
     tvTypes = listOf("AsianDrama")
     iconUrl = "https://mkvdrama.org/static/assets/favicon/apple-touch-icon.png"
 
