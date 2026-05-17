@@ -30,7 +30,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import org.jsoup.nodes.Element
@@ -55,14 +57,13 @@ class JavHD : MainAPI() {
 
     private val googleTranslateApiKey = BuildConfig.GOOGLE_TRANSLATE_API_KEY
     private var translatedTitleCache: MutableMap<String, String>? = null
+    private val translatedTitleCacheMutex = Mutex()
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val url = "$mainUrl/${request.data}/page/$page"
         val document = app.get(url).document
 
-        val home = document.select("#movie-last-movie > li").mapNotNull {
-            it.mainPageResults()
-        }
+        val home = document.select("#movie-last-movie > li").mainPageResults()
 
         return newHomePageResponse(
             data = request.copy(horizontalImages = true),
@@ -75,30 +76,45 @@ class JavHD : MainAPI() {
         val url = "$mainUrl/search/$query/page/$page"
         val document = app.get(url).document
 
-        val results = document.select("#movie-last-movie > li").mapNotNull {
-            it.mainPageResults()
-        }
+        val results = document.select("#movie-last-movie > li").mainPageResults()
 
         return newSearchResponseList(results, results.isNotEmpty())
     }
 
-    private suspend fun Element.mainPageResults(): SearchResponse? {
-        val link = this.selectFirst("a") ?: return null
-        val title = translateVietnameseTitle(link.attr("title").trim())
-        val href = fixUrl(link.attr("href"))
-        val img = this.selectFirst("img") ?: return null
-        val poster = fixUrl(img.attr("src"))
+    private suspend fun Iterable<Element>.mainPageResults(): List<SearchResponse> {
+        val items = mapNotNull {
+            val link = it.selectFirst("a") ?: return@mapNotNull null
+            val img = it.selectFirst("img") ?: return@mapNotNull null
 
-        return newMovieSearchResponse(title, href, TvType.NSFW) {
-            this.posterUrl = poster
+            MainPageResult(
+                title = link.attr("title").trim(),
+                href = fixUrl(link.attr("href")),
+                poster = fixUrl(img.attr("src"))
+            )
+        }
+
+        val translatedTitles = items.map { it.title }.toMutableList()
+        val tasks = items.mapIndexed { index, item ->
+            suspend {
+                translatedTitles[index] = translateVietnameseTitle(item.title)
+            }
+        }
+
+        runLimitedAsync(tasks = tasks.toTypedArray())
+
+        return items.mapIndexed { index, item ->
+            newMovieSearchResponse(translatedTitles[index], item.href, TvType.NSFW) {
+                this.posterUrl = item.poster
+            }
         }
     }
 
     private suspend fun translateVietnameseTitle(title: String): String {
         if (title.isBlank() || googleTranslateApiKey.isBlank()) return title
 
-        val cache = getTranslatedTitleCache()
-        cache[title]?.let { return it }
+        translatedTitleCacheMutex.withLock {
+            getTranslatedTitleCache()[title]?.let { return it }
+        }
 
         val translatedTitle = runCatching {
             val encodedTitle = withContext(Dispatchers.IO) {
@@ -114,8 +130,11 @@ class JavHD : MainAPI() {
                 ?.takeIf { it.isNotBlank() }
         }.getOrNull() ?: return title
 
-        cache[title] = translatedTitle
-        setKey(TRANSLATION_CACHE_KEY, cache)
+        translatedTitleCacheMutex.withLock {
+            val cache = getTranslatedTitleCache()
+            cache[title] = translatedTitle
+            setKey(TRANSLATION_CACHE_KEY, cache)
+        }
         return translatedTitle
     }
 
@@ -224,7 +243,7 @@ class JavHD : MainAPI() {
     }
 
     private suspend fun runLimitedAsync(
-        concurrency: Int = 5,
+        concurrency: Int = 50,
         vararg tasks: suspend () -> Unit
     ) = coroutineScope {
         if (tasks.isEmpty()) return@coroutineScope
@@ -254,6 +273,12 @@ class JavHD : MainAPI() {
 
     data class GoogleTranslateTranslation(
         @JsonProperty("translatedText") val translatedText: String? = null
+    )
+
+    private data class MainPageResult(
+        val title: String,
+        val href: String,
+        val poster: String
     )
 
     data class DataObject(
