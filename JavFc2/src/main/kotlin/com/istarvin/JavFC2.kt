@@ -1,5 +1,6 @@
 package com.istarvin
 
+import com.lagradost.api.Log
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.LoadResponse
 import com.lagradost.cloudstream3.MainAPI
@@ -21,6 +22,12 @@ import com.lagradost.cloudstream3.newTvSeriesLoadResponse
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.M3u8Helper.Companion.generateM3u8
 import com.lagradost.cloudstream3.utils.getExtractorApiFromName
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import org.jsoup.nodes.Element
 
 class JavFC2 : MainAPI() {
@@ -138,22 +145,51 @@ class JavFC2 : MainAPI() {
             subtitleCallback(newSubtitleFile(label, subUrl))
         }
 
-        getExtractorApiFromName("SubtitleCat").run {
-            if (name == "SubtitleCat") {
-                getUrl(
-                    url = code,
-                    subtitleCallback = subtitleCallback,
-                    callback = callback
-                )
-            }
-        }
+        val tasks = mutableListOf<suspend () -> Unit>()
 
-        generateM3u8(
-            source = name,
-            streamUrl = videoUrl,
-            referer = mainUrl
-        ).forEach(callback)
+        tasks.add(suspend {
+            getExtractorApiFromName("SubtitleCat").run {
+                if (name == "SubtitleCat") {
+                    getUrl(
+                        url = code,
+                        subtitleCallback = subtitleCallback,
+                        callback = callback
+                    )
+                }
+            }
+        })
+
+        tasks.add(suspend {
+            generateM3u8(
+                source = name,
+                streamUrl = videoUrl,
+                referer = mainUrl
+            ).forEach(callback)
+        })
+
+        runLimitedAsync(tasks = tasks.toTypedArray())
 
         return true
+    }
+
+    private suspend fun runLimitedAsync(
+        concurrency: Int = 5,
+        vararg tasks: suspend () -> Unit
+    ) = coroutineScope {
+        if (tasks.isEmpty()) return@coroutineScope
+
+        val semaphore = Semaphore(concurrency)
+
+        tasks.map { task ->
+            async(Dispatchers.IO) {
+                semaphore.withPermit {
+                    try {
+                        task()
+                    } catch (e: Exception) {
+                        Log.e("SulasokConcurrency", "Task failed: ${e.message}")
+                    }
+                }
+            }
+        }.awaitAll()
     }
 }

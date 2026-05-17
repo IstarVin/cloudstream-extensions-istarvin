@@ -21,12 +21,33 @@ import com.lagradost.cloudstream3.utils.fixUrl
 import com.lagradost.cloudstream3.utils.getAndUnpack
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.newExtractorLink
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URLEncoder
-import kotlin.sequences.forEach
+
+private const val FIREFOX_USER_AGENT =
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0"
+private val firefoxHeaders = mapOf("User-Agent" to FIREFOX_USER_AGENT)
+private val m3u8Regex = Regex("""[:=]\s*"([^"\s]+(\.m3u8)[^"\s]*)""")
+private val m3u8OrMasterRegex = Regex("""[:=]\s*"([^"\s]+(\.m3u8|master\.txt)[^"\s]*)""")
+
+private fun String.fileCode(): String = substringBefore('?').trimEnd('/').substringAfterLast('/')
+
+private fun String.unpack(): String = getAndUnpack(this)
+
+private suspend fun ExtractorApi.emitPackedM3u8(
+    source: String,
+    text: String,
+    referer: String,
+    keep: (String) -> Boolean,
+    callback: (ExtractorLink) -> Unit,
+) {
+    m3u8Regex.findAll(text.unpack()).forEach { match ->
+        val streamUrl = fixUrl(match.groupValues[1])
+        if (!keep(streamUrl)) return@forEach
+        generateM3u8(source, streamUrl, referer).forEach(callback)
+    }
+}
 
 class LuluVid : StreamWishExtractor() {
     override val name = "LuluStream"
@@ -44,10 +65,10 @@ class Vidara : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        val id = url.substringBefore('?').trimEnd('/').substringAfterLast('/')
+        val id = url.fileCode()
         if (id.isBlank()) return
 
-        val res = app.post("https://vidara.so/api/stream", json = mapOf("filecode" to id))
+        val res = app.post("$mainUrl/api/stream", json = mapOf("filecode" to id))
             .parsedSafe<Result>() ?: return
 
         generateM3u8(name, res.url, mainUrl)
@@ -60,11 +81,9 @@ class Vidara : ExtractorApi() {
 }
 
 class RubyVidHub : ExtractorApi() {
-    override var name = "RubyVidHub"
-    override var mainUrl = "https://rubyvidhub.com"
+    override val name = "RubyVidHub"
+    override val mainUrl = "https://rubyvidhub.com"
     override val requiresReferer = false
-
-    private val m3u8Regex = Regex("""[:=]\s*"([^"\s]+(\.m3u8|master\.txt)[^"\s]*)""")
 
     override suspend fun getUrl(
         url: String,
@@ -72,7 +91,7 @@ class RubyVidHub : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        val id = url.substringBefore('?').trimEnd('/').substringAfterLast('/')
+        val id = url.fileCode()
         if (id.isBlank()) return
 
         val text = app.post(
@@ -80,56 +99,12 @@ class RubyVidHub : ExtractorApi() {
             data = mapOf("file_code" to id, "op" to "embed")
         ).text
 
-        val res = getAndUnpack(text)
-
-        m3u8Regex.findAll(res).forEach { match ->
+        m3u8OrMasterRegex.findAll(text.unpack()).forEach { match ->
             generateM3u8(
                 source = name,
                 streamUrl = match.groupValues[1],
                 referer = mainUrl
             ).forEach(callback)
-        }
-    }
-}
-
-class SubtitleCat : ExtractorApi() {
-    override val name = "SubtitleCat"
-    override val mainUrl = "https://subtitlecat.com"
-    override val requiresReferer = false
-
-    private fun String.normalize(): String {
-        return this.filter { c -> c.isLetterOrDigit() }.lowercase()
-    }
-
-    private val codeRegex = Regex("""[a-z]+-\d+""", RegexOption.IGNORE_CASE)
-
-    override suspend fun getUrl(
-        url: String,
-        referer: String?,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit
-    ) {
-        val query = url.substringAfter("query=").let { codeRegex.find(it)?.value } ?: return
-        val queryUrl = "${mainUrl}/index.php?search=$query"
-        val doc = app.get(queryUrl).document
-        val subs = doc.select(".sub-table a")
-            .map { mainUrl + '/' + it.attr("href") }
-            .take(3)
-            .filter {
-                it.normalize().contains(query.normalize())
-            }
-            .ifEmpty { return }
-
-        CoroutineScope(Dispatchers.IO).launch {
-            subs.forEach { subUrl ->
-                launch {
-                    val subPageDoc = app.get(subUrl).document
-                    val href =
-                        subPageDoc.getElementById("download_en")?.attr("href") ?: return@launch
-
-                    subtitleCallback(newSubtitleFile("English", mainUrl + href))
-                }
-            }
         }
     }
 }
@@ -151,7 +126,7 @@ open class DoodStream : ExtractorApi() {
         val response = app.get(
             embedUrl,
             referer = mainUrl,
-            headers = mapOf("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0")
+            headers = firefoxHeaders
         ).text
 
         val md5Regex = Regex("/pass_md5/([^/]*)/([^/']*)")
@@ -164,7 +139,7 @@ open class DoodStream : ExtractorApi() {
         val md5Response = app.get(
             md5Url,
             referer = embedUrl,
-            headers = mapOf("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0")
+            headers = firefoxHeaders
         ).text
 
         val baseLink = md5Response.trim()
@@ -174,14 +149,13 @@ open class DoodStream : ExtractorApi() {
             baseLink
         }
 
-        callback.invoke(
+        callback(
             newExtractorLink(
                 source = this.name, name = this.name, url = directLink, type = INFER_TYPE
             ) {
                 this.referer = "https://myvidplay.com"
                 this.quality = Qualities.Unknown.value
-                this.headers =
-                    mapOf("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0")
+                this.headers = firefoxHeaders
             })
     }
 }
@@ -269,11 +243,9 @@ class Peytonepre : VidHidePro() {
 }
 
 class Movearnpre : ExtractorApi() {
-    override var name = "EarnVids"
-    override var mainUrl = "https://movearnpre.com"
+    override val name = "EarnVids"
+    override val mainUrl = "https://movearnpre.com"
     override val requiresReferer = false
-
-    private val m3u8Regex = Regex("""[:=]\s*"([^"\s]+(\.m3u8)[^"\s]*)""")
 
     override suspend fun getUrl(
         url: String,
@@ -281,19 +253,13 @@ class Movearnpre : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        val text = app.get(url).text
-
-        val script = getAndUnpack(text)
-
-        m3u8Regex.findAll(script).forEach { m3u8Match ->
-            val url = fixUrl(m3u8Match.groupValues[1])
-            if (url.contains("?")) return@forEach
-            generateM3u8(
-                name,
-                url,
-                referer = "$mainUrl/",
-            ).forEach(callback)
-        }
+        emitPackedM3u8(
+            source = name,
+            text = app.get(url).text,
+            referer = "$mainUrl/",
+            keep = { !it.contains("?") },
+            callback = callback,
+        )
     }
 }
 
@@ -308,11 +274,9 @@ class Dintezuvio : VidHidePro() {
 }
 
 class Hanerix : ExtractorApi() {
-    override var name = "HGLink"
-    override var mainUrl = "https://hanerix.com"
+    override val name = "HGLink"
+    override val mainUrl = "https://hanerix.com"
     override val requiresReferer = false
-
-    private val m3u8Regex = Regex("""[:=]\s*"([^"\s]+(\.m3u8)[^"\s]*)""")
 
     override suspend fun getUrl(
         url: String,
@@ -320,26 +284,19 @@ class Hanerix : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-
-        val text = app.get(url).text
-
-        val script = getAndUnpack(text)
-
-        m3u8Regex.findAll(script).forEach { m3u8Match ->
-            val url = fixUrl(m3u8Match.groupValues[1])
-            if (!url.contains("?")) return@forEach
-            generateM3u8(
-                name,
-                url,
-                referer = "$mainUrl/",
-            ).forEach(callback)
-        }
+        emitPackedM3u8(
+            source = name,
+            text = app.get(url).text,
+            referer = "$mainUrl/",
+            keep = { it.contains("?") },
+            callback = callback,
+        )
     }
 }
 
 class HgLink : ExtractorApi() {
-    override var name = "HGLink"
-    override var mainUrl = "https://hglink.to"
+    override val name = "HGLink"
+    override val mainUrl = "https://hglink.to"
     override val requiresReferer = false
 
     private val redirectUrl = "https://hanerix.com"
@@ -350,7 +307,7 @@ class HgLink : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        val id = url.substringBefore('?').trimEnd('/').substringAfterLast('/')
+        val id = url.fileCode()
         if (id.isBlank()) return
 
         val newUrl = "$redirectUrl/e/$id"
@@ -370,8 +327,8 @@ class MyCloudZ : VidHidePro() {
 }
 
 class Turboplayers : ExtractorApi() {
-    override var mainUrl = "https://turboplayers.xyz"
-    override var name = "TurboPlayer"
+    override val mainUrl = "https://turboplayers.xyz"
+    override val name = "TurboPlayer"
     override val requiresReferer = false
 
     private val urlRegex = Regex("""var urlPlay = '(.*)';""")
@@ -397,8 +354,8 @@ class Turboplayers : ExtractorApi() {
 }
 
 class LulusStream : ExtractorApi() {
-    override var name = "LuluStream"
-    override var mainUrl = "https://luluvid.com"
+    override val name = "LuluStream"
+    override val mainUrl = "https://luluvid.com"
     override val requiresReferer = true
 
     override suspend fun getUrl(
@@ -429,8 +386,8 @@ class LulusStream : ExtractorApi() {
 }
 
 class Javclan : ExtractorApi() {
-    override var name = "Javclan"
-    override var mainUrl = "https://javclan.com"
+    override val name = "Javclan"
+    override val mainUrl = "https://javclan.com"
     override val requiresReferer = true
     override suspend fun getUrl(url: String, referer: String?): List<ExtractorLink>? {
         val res = app.get(url, referer = referer)
@@ -445,8 +402,8 @@ class Javclan : ExtractorApi() {
 }
 
 class Javggvideo : ExtractorApi() {
-    override var name = "Javgg Video"
-    override var mainUrl = "https://javggvideo.xyz"
+    override val name = "Javgg Video"
+    override val mainUrl = "https://javggvideo.xyz"
     override val requiresReferer = false
 
     override suspend fun getUrl(
@@ -459,7 +416,7 @@ class Javggvideo : ExtractorApi() {
         if (link.contains("m3u8")) {
             generateM3u8(name, link, mainUrl).forEach(callback)
         } else {
-            callback.invoke(
+            callback(
                 newExtractorLink(name, name, link, INFER_TYPE) {
                     this.quality = Qualities.Unknown.value
                 }
@@ -508,7 +465,7 @@ open class Turtleviplay : ExtractorApi() {
         val res = app.get(url, referer = referer).document
         val m3u8 = res.selectFirst("#video_player")?.attr("data-hash") ?: return
 
-        callback.invoke(
+        callback(
             newExtractorLink(
                 source = name,
                 name = name,
@@ -532,8 +489,8 @@ class Turboviplay : Turtleviplay() {
 }
 
 class Emturbovid : ExtractorApi() {
-    override var name = "Emturbovid"
-    override var mainUrl = "https://emturbovid.com"
+    override val name = "Emturbovid"
+    override val mainUrl = "https://emturbovid.com"
     override val requiresReferer = true
 
     override suspend fun getUrl(
@@ -608,26 +565,18 @@ class AsnWish : ExtractorApi() {
     override val mainUrl = "https://asnwish.com"
     override val requiresReferer = true
 
-    private val m3u8Regex = Regex("""[:=]\s*"([^"\s]+(\.m3u8)[^"\s]*)""")
-
     override suspend fun getUrl(
         url: String,
         referer: String?,
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        val text = app.get(url, referer = referer).text
-
-        val script = getAndUnpack(text)
-
-        m3u8Regex.findAll(script).forEach { m3u8Match ->
-            val url = fixUrl(m3u8Match.groupValues[1])
-            if (url.contains("?")) return@forEach
-            generateM3u8(
-                source = name,
-                streamUrl = url,
-                referer = mainUrl,
-            ).forEach(callback)
-        }
+        emitPackedM3u8(
+            source = name,
+            text = app.get(url, referer = referer).text,
+            referer = mainUrl,
+            keep = { !it.contains("?") },
+            callback = callback,
+        )
     }
 }
