@@ -1,5 +1,6 @@
 package com.istarvin
 
+import android.content.SharedPreferences
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.api.Log
 import com.lagradost.cloudstream3.SubtitleFile
@@ -97,7 +98,7 @@ class SubtitleCat : ExtractorApi() {
         return this.filter { c -> c.isLetterOrDigit() }.lowercase()
     }
 
-    private val codeRegex = Regex("""[a-zA-Z]+-\d+""")
+    private val codeRegex = Regex("""[a-z]+-\d+""", RegexOption.IGNORE_CASE)
 
     override suspend fun getUrl(
         url: String,
@@ -545,5 +546,25 @@ class Reely : ExtractorApi() {
 
         generateM3u8(name, "$reelxiaProxy/$videoId/2", mainUrl).forEach(callback)
         subtitleCallback(newSubtitleFile("English", "$reelxiaProxy/$videoId/subtitle/en"))
+    }
+}
+
+class HLSProxy(
+    private val sharedPref: SharedPreferences? = null
+) : ExtractorApi() {
+    override val name = "HLSPNGProxy"
+    override val mainUrl = "https://hls-proxy.istarvin.uk"
+    override val requiresReferer = false
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        val proxy = sharedPref?.getString(HLS_PROXY_URL_PREF_KEY, HLS_PROXY_DEFAULT_URL)
+            ?.takeIf { it.isNotBlank() }
+            ?: HLS_PROXY_DEFAULT_URL
+        generateM3u8(name, "$proxy/proxy?url=$url", mainUrl).forEach(callback)
     }
 }
