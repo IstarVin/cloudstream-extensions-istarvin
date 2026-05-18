@@ -18,14 +18,24 @@ import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newSearchResponseList
 import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.M3u8Helper.Companion.generateM3u8
 import com.lagradost.cloudstream3.utils.getAndUnpack
 import com.lagradost.cloudstream3.utils.getExtractorApiFromName
-import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.nodes.Element
 
 class MissAV : MainAPI() {
+    private companion object {
+        const val TITLE_PREFIX = "Uncensored - "
+        const val VIDEO_CARD_SELECTOR = "div.grid.grid-cols-2 > div"
+        const val MAIN_PAGE_CARD_SELECTOR = "$VIDEO_CARD_SELECTOR, div.thumbnail.group"
+        const val VIDEO_LINK_SELECTOR = "a[href*='/en/'], a[href*='/dm']"
+        const val TITLE_SELECTOR = "div.my-2 a, div.title a, a.text-secondary"
+        const val SUBTITLE_EXTRACTOR = "SubtitleCat"
+        val ignoredTitles = setOf("Recent update", "Contact", "Support", "DMCA", "Home")
+        val uncensoredPattern = Regex("uncensored[-_ ]?leak", RegexOption.IGNORE_CASE)
+        val playlistIdPattern = Regex("/([a-f0-9\\-]{36})/")
+    }
+
     override var mainUrl = "https://missav.live"
     override var name = "MissAV"
     override val hasMainPage = true
@@ -63,40 +73,39 @@ class MissAV : MainAPI() {
 
         val document = app.get(url).document
 
-        val home = document.select("div.grid.grid-cols-2 > div, div.thumbnail.group")
-            .mapNotNull { it.toMainPageResult() }
+        val results = document.select(MAIN_PAGE_CARD_SELECTOR)
+            .mapNotNull { it.toSearchResult() }
             .distinctBy { it.url }
 
-        return newHomePageResponse(request.name, home, hasNext = home.isNotEmpty())
+        return newHomePageResponse(request.name, results, hasNext = results.isNotEmpty())
     }
 
-    private fun Element.toMainPageResult(): SearchResponse? {
-        val link = selectFirst("a[href*='/en/'], a[href*='/dm']") ?: return null
-        val url = fixUrlNull(link.attr("abs:href")) ?: return null
+    private fun Element.toSearchResult(): SearchResponse? {
+        val linkElement = selectFirst(VIDEO_LINK_SELECTOR) ?: return null
+        val videoUrl = fixUrlNull(linkElement.attr("abs:href")) ?: return null
+        val baseTitle = selectFirst(TITLE_SELECTOR)?.text()?.trim() ?: linkElement.text().trim()
 
-        val baseTitle = selectFirst("div.my-2 a, div.title a, a.text-secondary")?.text()?.trim()
-            ?: link.text().trim()
+        if (baseTitle.isBlank() || ignoredTitles.any { baseTitle.equals(it, ignoreCase = true) }) {
+            return null
+        }
 
-        if (baseTitle.isBlank()) return null
-
-        val blacklist = listOf("Recent update", "Contact", "Support", "DMCA", "Home")
-        if (blacklist.any { baseTitle.equals(it, ignoreCase = true) }) return null
-
-        val isUncensored = (link.attr("alt") + link.attr("href") + this.outerHtml())
-            .contains(Regex("uncensored[-_ ]?leak", RegexOption.IGNORE_CASE))
-
-        val title = if (isUncensored && !baseTitle.startsWith("Uncensored - ", ignoreCase = true))
-            "Uncensored - $baseTitle" else baseTitle
-
-        val posterUrl = fixUrlNull(
-            selectFirst("img")?.let { img ->
-                img.attr("abs:data-src").ifEmpty { img.attr("abs:src") }
-            }
+        val isUncensoredLeak = uncensoredPattern.containsMatchIn(
+            linkElement.attr("alt") + linkElement.attr("href") + outerHtml()
         )
+        val title = when {
+            isUncensoredLeak && !baseTitle.startsWith(
+                TITLE_PREFIX,
+                ignoreCase = true
+            ) -> "$TITLE_PREFIX$baseTitle"
 
-        if (posterUrl == null) return null
+            else -> baseTitle
+        }
+        val image = selectFirst("img") ?: return null
+        val posterUrl = fixUrlNull(
+            image.attr("abs:data-src").ifEmpty { image.attr("abs:src") }
+        ) ?: return null
 
-        return newMovieSearchResponse(title, url, TvType.NSFW) {
+        return newMovieSearchResponse(title, videoUrl, TvType.NSFW) {
             this.posterUrl = posterUrl
         }
     }
@@ -109,12 +118,9 @@ class MissAV : MainAPI() {
         }
 
         val document = app.get(url).document
+        val results = document.select(VIDEO_CARD_SELECTOR).mapNotNull { it.toSearchResult() }
 
-        val aramaCevap =
-            document.select("div.grid.grid-cols-2 > div").mapNotNull { it.toMainPageResult() }
-
-
-        return newSearchResponseList(aramaCevap, hasNext = true)
+        return newSearchResponseList(results, hasNext = results.isNotEmpty())
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query)
@@ -123,21 +129,19 @@ class MissAV : MainAPI() {
         val document = app.get(url).document
 
         val title = document.selectFirst("h1.text-base")?.text()?.trim() ?: return null
-        val code = title.substringBefore(" ")
-        val poster = fixUrlNull(document.selectFirst("meta[property='og:image']")?.attr("content"))
-        val year = document.selectFirst("time")?.text()?.split("-")?.firstOrNull()?.toIntOrNull()
+        val videoCode = title.substringBefore(" ")
+        val posterUrl =
+            fixUrlNull(document.selectFirst("meta[property='og:image']")?.attr("content"))
+        val releaseYear = document.selectFirst("time")?.text()?.substringBefore("-")?.toIntOrNull()
+        val tags = document.select("div.text-secondary:contains(genre) a").map { it.text().trim() }
+        val actors = document.select("div.text-secondary:contains(actress) a")
+            .map { Actor(it.text().trim()) }
 
-        val tags = document.select("div.text-secondary:contains(genre) a").map {
-            it.text().trim()
-        }
-        val actresses = document.select("div.text-secondary:contains(actress) a").map {
-            Actor(it.text().trim())
-        }
-        return newMovieLoadResponse(title, url, TvType.NSFW, "$code:$url") {
-            this.posterUrl = poster
-            this.year = year
+        return newMovieLoadResponse(title, url, TvType.NSFW, "$videoCode:$url") {
+            this.posterUrl = posterUrl
+            this.year = releaseYear
             this.tags = tags
-            addActors(actresses)
+            addActors(actors)
         }
     }
 
@@ -147,32 +151,26 @@ class MissAV : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val url = data.substringAfter(":")
+        val videoCode = data.substringBefore(":")
+        val videoUrl = data.substringAfter(":")
+        val packedScript = app.get(videoUrl).text
+        val playlistId = playlistIdPattern.find(getAndUnpack(packedScript))?.groupValues?.get(1)
+            ?: return false
 
-        val response = app.get(url).text
-        getAndUnpack(response).let { unpacked ->
-            val playlistId = """/([a-f0-9\-]{36})/""".toRegex().find(unpacked)?.groupValues?.get(1)
+        getExtractorApiFromName(SUBTITLE_EXTRACTOR).takeIf { it.name == SUBTITLE_EXTRACTOR }
+            ?.getUrl(
+                url = videoCode,
+                subtitleCallback = subtitleCallback,
+                callback = callback
+            )
 
-            if (playlistId != null) {
-                data.substringBefore(":").let { code ->
-                    getExtractorApiFromName("SubtitleCat").run {
-                        if (name == "SubtitleCat") {
-                            getUrl(
-                                url = code,
-                                subtitleCallback = subtitleCallback,
-                                callback = callback
-                            )
-                        }
-                    }
-                }
-                generateM3u8(
-                    source = name,
-                    streamUrl = "https://surrit.com/$playlistId/playlist.m3u8",
-                    referer = "$mainUrl/",
-                    headers = mapOf("Referer" to "$mainUrl/")
-                ).forEach(callback)
-            }
-        }
+        generateM3u8(
+            source = name,
+            streamUrl = "https://surrit.com/$playlistId/playlist.m3u8",
+            referer = mainUrl,
+            headers = mapOf("Referer" to mainUrl)
+        ).forEach(callback)
+
         return true
     }
 }
