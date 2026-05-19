@@ -135,15 +135,11 @@ class Javtiful : MainAPI() {
         val configData = parseJson<WatchConfig>(configRaw)
 
         configData.videoTitle?.substringBefore(" ")?.let { code ->
-            getExtractorApiFromName("SubtitleCat").run {
-                if (name == "SubtitleCat") {
-                    getUrl(
-                        url = code,
-                        subtitleCallback = subtitleCallback,
-                        callback = callback
-                    )
-                }
-            }
+            getExtractorApiFromName("SubtitleCat").takeIf { it.name == "SubtitleCat" }?.getUrl(
+                url = code,
+                subtitleCallback = subtitleCallback,
+                callback = callback
+            )
         }
 
         configData.playerSources?.forEach { source ->

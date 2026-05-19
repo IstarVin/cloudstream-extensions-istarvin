@@ -194,17 +194,11 @@ class JavHD(
 
         tasks.add(suspend suspend@{
             val code = dataObject.code ?: return@suspend
-            getExtractorApiFromName("SubtitleCat").run {
-                if (name != "SubtitleCat") {
-                    return@run
-                }
-
-                getUrl(
-                    url = code,
-                    subtitleCallback = subtitleCallback,
-                    callback = callback
-                )
-            }
+            getExtractorApiFromName("SubtitleCat").takeIf { it.name == "SubtitleCat" }?.getUrl(
+                url = code,
+                subtitleCallback = subtitleCallback,
+                callback = callback
+            )
         })
 
         dataObject.data.forEach { (id, serverId) ->
