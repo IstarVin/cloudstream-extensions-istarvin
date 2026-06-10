@@ -183,15 +183,12 @@ class SexTB : MainAPI() {
                 res.document.select(".film-info-title a").attr("href")
                     .substringAfterLast("/")
                     .let { code ->
-                        getExtractorApiFromName("SubtitleCat").run {
-                            if (name == "SubtitleCat") {
-                                getUrl(
-                                    url = code,
-                                    subtitleCallback = subtitleCallback,
-                                    callback = callback
-                                )
-                            }
-                        }
+                        getExtractorApiFromName("SubtitleCat").takeIf { it.name == "SubtitleCat" }
+                            ?.getUrl(
+                                url = code,
+                                subtitleCallback = subtitleCallback,
+                                callback = callback
+                            )
                     }
             }
         )

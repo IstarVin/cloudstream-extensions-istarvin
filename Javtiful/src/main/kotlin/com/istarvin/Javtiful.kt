@@ -1,9 +1,30 @@
 package com.istarvin
 
-import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.Actor
+import com.lagradost.cloudstream3.HomePageResponse
+import com.lagradost.cloudstream3.LoadResponse
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
+import com.lagradost.cloudstream3.MainAPI
+import com.lagradost.cloudstream3.MainPageRequest
+import com.lagradost.cloudstream3.SearchResponse
+import com.lagradost.cloudstream3.SearchResponseList
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.TvType
+import com.lagradost.cloudstream3.VPNStatus
+import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.fixUrl
+import com.lagradost.cloudstream3.fixUrlNull
+import com.lagradost.cloudstream3.mainPageOf
+import com.lagradost.cloudstream3.newHomePageResponse
+import com.lagradost.cloudstream3.newMovieLoadResponse
+import com.lagradost.cloudstream3.newMovieSearchResponse
+import com.lagradost.cloudstream3.newSearchResponseList
 import com.lagradost.cloudstream3.utils.AppUtils.parseJson
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
+import com.lagradost.cloudstream3.utils.Qualities
+import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.nodes.Element
 
 class Javtiful : MainAPI() {
@@ -135,19 +156,15 @@ class Javtiful : MainAPI() {
         val configData = parseJson<WatchConfig>(configRaw)
 
         configData.videoTitle?.substringBefore(" ")?.let { code ->
-            getExtractorApiFromName("SubtitleCat").takeIf { it.name == "SubtitleCat" }?.getUrl(
-                url = code,
-                subtitleCallback = subtitleCallback,
-                callback = callback
-            )
+            loadExtractor("https://subtitlecat.com/?query=$code", subtitleCallback, callback)
         }
 
         configData.playerSources?.forEach { source ->
-            callback.invoke(
+            callback(
                 newExtractorLink(
-                    this.name,
-                    this.name,
-                    source.src
+                    source = this.name,
+                    name = this.name,
+                    url = source.src
                 ) {
                     this.quality = source.size ?: Qualities.Unknown.value
                     this.referer = "$mainUrl/"
