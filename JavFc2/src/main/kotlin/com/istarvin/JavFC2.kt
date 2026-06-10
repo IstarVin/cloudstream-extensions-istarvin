@@ -159,7 +159,8 @@ class JavFC2 : MainAPI() {
             generateM3u8(
                 source = name,
                 streamUrl = videoUrl,
-                referer = mainUrl
+                referer = "$mainUrl/",
+                headers = mapOf("referer" to "$mainUrl/")
             ).forEach(callback)
         })
 
