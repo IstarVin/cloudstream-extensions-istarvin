@@ -46,7 +46,7 @@ const val GOOGLE_TRANSLATE_API_KEY_PREF_KEY = "google_translate_api_key"
 class JavHD(
     private val sharedPref: SharedPreferences? = null
 ) : MainAPI() {
-    override var mainUrl = "https://javhdz.mobi"
+    override var mainUrl = "https://javhdz.ws"
     override var name = "JavHD"
     override val hasMainPage = true
     override var lang = "en"
