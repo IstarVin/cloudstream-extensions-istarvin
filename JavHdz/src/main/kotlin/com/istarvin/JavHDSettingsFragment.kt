@@ -32,15 +32,27 @@ class JavHDSettingsFragment(
 
         val apiKeyInputId = res.getIdentifier("googleTranslateApiKeyInput", "id", RESOURCE_PACKAGE)
         val saveButtonId = res.getIdentifier("saveGoogleTranslateApiKeyButton", "id", RESOURCE_PACKAGE)
+        val baseUrlInputId = res.getIdentifier("baseUrlInput", "id", RESOURCE_PACKAGE)
+        val saveBaseUrlButtonId = res.getIdentifier("saveBaseUrlButton", "id", RESOURCE_PACKAGE)
         if (apiKeyInputId == 0) throw Exception("View ID googleTranslateApiKeyInput not found")
         if (saveButtonId == 0) throw Exception("View ID saveGoogleTranslateApiKeyButton not found")
+        if (baseUrlInputId == 0) throw Exception("View ID baseUrlInput not found")
+        if (saveBaseUrlButtonId == 0) throw Exception("View ID saveBaseUrlButton not found")
 
         val apiKeyInput = view.findViewById<EditText>(apiKeyInputId)
         val saveButton = view.findViewById<Button>(saveButtonId)
+        val baseUrlInput = view.findViewById<EditText>(baseUrlInputId)
+        val saveBaseUrlButton = view.findViewById<Button>(saveBaseUrlButtonId)
 
         apiKeyInput.setText(sharedPref.getString(GOOGLE_TRANSLATE_API_KEY_PREF_KEY, "") ?: "")
         saveButton.setOnClickListener {
             sharedPref.edit { putString(GOOGLE_TRANSLATE_API_KEY_PREF_KEY, apiKeyInput.text.toString().trim()) }
+            dismiss()
+        }
+
+        baseUrlInput.setText(sharedPref.getString(BASE_URL_PREF_KEY, "") ?: "")
+        saveBaseUrlButton.setOnClickListener {
+            sharedPref.edit { putString(BASE_URL_PREF_KEY, baseUrlInput.text.toString().trim()) }
             dismiss()
         }
 

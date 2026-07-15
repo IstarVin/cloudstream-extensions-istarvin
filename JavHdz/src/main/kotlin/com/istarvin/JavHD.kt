@@ -41,12 +41,18 @@ import java.net.URLEncoder
 import kotlin.io.encoding.Base64
 
 private const val TRANSLATION_CACHE_KEY = "javhd_translated_titles"
+private const val DEFAULT_MAIN_URL = "https://javhdz.im"
 const val GOOGLE_TRANSLATE_API_KEY_PREF_KEY = "google_translate_api_key"
+const val BASE_URL_PREF_KEY = "base_url"
 
 class JavHD(
     private val sharedPref: SharedPreferences? = null
 ) : MainAPI() {
-    override var mainUrl = "https://javhdz.mobi"
+    override var mainUrl
+        get() = sharedPref?.getString(BASE_URL_PREF_KEY, null)
+            ?.trim()?.ifBlank { null }
+            ?: DEFAULT_MAIN_URL
+        set(_) {}
     override var name = "JavHD"
     override val hasMainPage = true
     override var lang = "en"

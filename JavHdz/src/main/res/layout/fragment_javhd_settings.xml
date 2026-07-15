@@ -26,4 +26,27 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:text="Save" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="12dp"
+        android:text="Base URL"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/baseUrlInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="https://javhdz.im"
+        android:inputType="textUri" />
+
+    <Button
+        android:id="@+id/saveBaseUrlButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Save" />
 </LinearLayout>
