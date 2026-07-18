@@ -164,12 +164,11 @@ class Javtiful : MainAPI() {
                 newExtractorLink(
                     source = this.name,
                     name = this.name,
-                    url = source.src
+                    url = this.mainUrl + source.src
                 ) {
                     this.quality = source.size ?: Qualities.Unknown.value
                     this.referer = "$mainUrl/"
-                    this.type =
-                        if (source.src.contains(".mp4")) ExtractorLinkType.VIDEO else ExtractorLinkType.M3U8
+                    this.type = ExtractorLinkType.VIDEO
                 }
             )
         }
