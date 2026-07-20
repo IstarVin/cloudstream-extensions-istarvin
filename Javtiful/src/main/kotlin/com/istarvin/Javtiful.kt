@@ -160,11 +160,13 @@ class Javtiful : MainAPI() {
         }
 
         configData.playerSources?.forEach { source ->
+            var url = source.src
+            if (url.startsWith('/')) url = mainUrl + url
             callback(
                 newExtractorLink(
                     source = this.name,
                     name = this.name,
-                    url = this.mainUrl + source.src
+                    url = url
                 ) {
                     this.quality = source.size ?: Qualities.Unknown.value
                     this.referer = "$mainUrl/"
