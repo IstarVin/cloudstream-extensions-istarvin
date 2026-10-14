@@ -1,7 +1,7 @@
 version = 2
 
 cloudstream {
-    authors = listOf("IstarVin")
+    authors = listOf("NropVox")
     language = "en"
     description =
         "Stream short dramas and mini series online with no signup required. Discover addictive stories in bite-sized episodes."

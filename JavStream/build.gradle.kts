@@ -1,7 +1,7 @@
 version = 5
 
 cloudstream {
-    authors = listOf("IstarVin")
+    authors = listOf("NropVox")
     language = "en"
     description = "#1 best extention for JAV"
     status = 1 // will be 3 if unspecified

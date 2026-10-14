@@ -1,7 +1,7 @@
 version = 11
 
 cloudstream {
-    authors = listOf("IstarVin")
+    authors = listOf("NropVox")
     language = "en"
     description =
         "Japanese Adult Video from Vietnam Server"

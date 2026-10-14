@@ -1,7 +1,7 @@
 version = 1
 
 cloudstream {
-    authors = listOf("IstarVin")
+    authors = listOf("NropVox")
     language = "en"
     description =
         "Download Korean, Chinese, Thai & Japanese dramas, movies & shows in HD with subs. Enjoy free, fast access to the latest content at MkvDrama.net."

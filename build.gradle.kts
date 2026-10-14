@@ -62,11 +62,11 @@ subprojects {
             System.getenv("GITHUB_REPOSITORY")
                 ?: "https://github.com/NropVox/cloudstream-extensions-nropvox"
         )
-        authors = listOf("IstarVin")
+        authors = listOf("NropVox")
     }
 
     android {
-        namespace = "com.istarvin"
+        namespace = "com.nropvox"
         compileSdk = 36
 
         defaultConfig {

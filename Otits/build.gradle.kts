@@ -1,7 +1,7 @@
 version = 4
 
 cloudstream {
-    authors = listOf("IstarVin")
+    authors = listOf("NropVox")
     language = "fil"
     description = "Otits"
 

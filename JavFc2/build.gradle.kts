@@ -1,7 +1,7 @@
 version = 7
 
 cloudstream {
-    authors = listOf("IstarVin")
+    authors = listOf("NropVox")
     language = "en"
     description =
         "JAVFC2.XYZ a site watch Free All Best JAV FC2PPV Online HD Porn Streaming, FC2 PPV AMATER PORN, FC2 PPV Sex Video, Free Japanese Porn with English subtitles"

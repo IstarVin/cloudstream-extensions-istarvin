@@ -1,12 +1,12 @@
-# 🎯 IstarVin Cloudstream Extensions
+# 🎯 NropVox Cloudstream Extensions
 
-**Shortcode**: `istarvin`
+**Shortcode**: `nropvox`
 
 ---
 
 ## 🌐 Plugin Repository
 
-This repository contains Cloudstream extensions maintained by **IstarVin**.
+This repository contains Cloudstream extensions maintained by **NropVox**.
 
 ---
 
@@ -23,7 +23,7 @@ This repository contains Cloudstream extensions maintained by **IstarVin**.
 
 ## 📲 Installation
 
-1. Copy the **Shortcode**: `istarvin`
+1. Copy the **Shortcode**: `nropvox`
 2. Open the **Cloudstream** app.
 3. Go to **Settings** -> **Extensions**.
 4. Click **Add Repository**.
@@ -63,4 +63,4 @@ If you believe content is violating copyright laws, please contact the **actual 
 
 ---
 
-**Thank You for using IstarVin Repo!**
+**Thank You for using NropVox Repo!**

@@ -1,7 +1,7 @@
 version = 7
 
 cloudstream {
-    authors = listOf("IstarVin")
+    authors = listOf("NropVox")
     language = "en"
     description =
         "The Best Free JAV online, JAV DVD online, Stream JAV Online High Quality always updated daily."
