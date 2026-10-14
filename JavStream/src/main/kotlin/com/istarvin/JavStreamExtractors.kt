@@ -5,6 +5,8 @@ import com.lagradost.api.Log
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.base64Decode
+import com.lagradost.cloudstream3.base64Encode
+import com.lagradost.cloudstream3.network.CloudflareKiller
 import com.lagradost.cloudstream3.utils.AppUtils.parseJson
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
@@ -16,7 +18,25 @@ import com.lagradost.cloudstream3.utils.getAndUnpack
 import com.lagradost.cloudstream3.utils.getExtractorApiFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.newExtractorLink
+import java.net.URLEncoder
+import kotlinx.coroutines.CancellationException
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 
+
+private fun encodedSearchCode(code: String): String =
+    URLEncoder.encode(code, "UTF-8")
+
+private fun Element.matchesMovieCode(code: String): Boolean {
+    if (code.isBlank()) return false
+    val pattern = Regex(
+        "(?<![a-z0-9])${Regex.escape(code)}(?![a-z0-9])",
+        RegexOption.IGNORE_CASE
+    )
+    return pattern.containsMatchIn(text()) || select("a[href], img[alt]").any {
+        pattern.containsMatchIn(it.attr("href")) || pattern.containsMatchIn(it.attr("alt"))
+    }
+}
 
 class JavtifulExtractor : ExtractorApi() {
     override val name = "Javtiful"
@@ -31,15 +51,15 @@ class JavtifulExtractor : ExtractorApi() {
     ) {
         val code = url.substringAfter("code=")
 
-        val searchDoc = app.get("$mainUrl/search?q=$code").document
-        val matchedUrl =
-            searchDoc.selectFirst("article.front-video-card:not(.front-partner-card) a")
-                ?.attr("href")?.let { fixUrl(it) }
-                ?: return
+        val searchDoc = app.get("$mainUrl/search?q=${encodedSearchCode(code)}").document
+        val matchedUrl = searchDoc.select("article.video-card:not(.video-card--partner)")
+            .firstOrNull { it.matchesMovieCode(code) }
+            ?.selectFirst("a.video-card__title")?.attr("href")?.let { fixUrl(it) }
+            ?: return
 
-        val res = app.get(matchedUrl).text
-        val configRaw = res.substringAfter("id=\"frontWatchConfig\" type=\"application/json\">")
-            .substringBefore("</script>")
+        val res = app.get(matchedUrl).document
+        val configRaw = res.selectFirst("script#watch-config")?.data()
+            ?.takeIf { it.isNotBlank() } ?: return
 
         val configData = parseJson<WatchConfig>(configRaw)
 
@@ -55,17 +75,19 @@ class JavtifulExtractor : ExtractorApi() {
             }
         }
 
-        configData.playerSources?.forEach { source ->
+        configData.playerSources.orEmpty().filter { it.src.isNotBlank() }.forEach { source ->
             callback.invoke(
                 newExtractorLink(
                     this.name,
                     this.name,
-                    source.src
+                    fixUrl(source.src)
                 ) {
                     this.quality = source.size ?: Qualities.Unknown.value
                     this.referer = "$mainUrl/"
                     this.type =
-                        if (source.src.contains(".mp4")) ExtractorLinkType.VIDEO else ExtractorLinkType.M3U8
+                        if (source.type?.contains("mpegurl", ignoreCase = true) == true ||
+                            source.src.substringBefore('?').endsWith(".m3u8", ignoreCase = true)
+                        ) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
                 }
             )
         }
@@ -88,8 +110,7 @@ class SexTBExtractor : ExtractorApi() {
     override var mainUrl = "https://sextb.net"
     override val requiresReferer = false
 
-    private val apiKey =
-        "Y1ZGUWNVSnROVlJOTUVWMlZsUldVMjlsWjBGelFUMDk6T0ZaNksxQmhjVTFhTHpCdFlWZDFNbE5CUm01Qlp6MDk="
+    private val cloudflareInterceptor = CloudflareKiller()
 
     private val commonHeaders = mapOf(
         "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -105,88 +126,69 @@ class SexTBExtractor : ExtractorApi() {
     ) {
         val code = url.substringAfter("code=")
 
-        val searchDoc = app.get("$mainUrl/search/$code").document
-        val matchedUrl = searchDoc.selectFirst("div.tray-item a")
-            ?.attr("href")?.let { fixUrl(it) }
+        val searchDoc = app.get(
+            "$mainUrl/search/${encodedSearchCode(code).replace("+", "%20")}",
+            headers = commonHeaders,
+            interceptor = cloudflareInterceptor
+        ).document
+        val matchedUrl = searchDoc.select("div.tray-item")
+            .firstOrNull { it.matchesMovieCode(code) }
+            ?.selectFirst("a")?.attr("href")?.let { fixUrl(it) }
             ?: return
 
-        val res = app.get(matchedUrl, headers = commonHeaders)
-
+        val res = app.get(matchedUrl, headers = commonHeaders, interceptor = cloudflareInterceptor)
         val tasks = mutableListOf<suspend () -> Unit>()
+        tasks.add(suspend {
+            getExtractorApiFromName("SubtitleCat").takeIf { it.name == "SubtitleCat" }
+                ?.getUrl(url = code, subtitleCallback = subtitleCallback, callback = callback)
+        })
 
-        tasks.add(
-            suspend {
-                res.document.select(".full-text-desc").text().substringBefore(" ").let { code ->
-                    getExtractorApiFromName("SubtitleCat").run {
-                        if (name == "SubtitleCat") {
-                            getUrl(
-                                url = code,
-                                subtitleCallback = subtitleCallback,
-                                callback = callback
-                            )
-                        }
-                    }
-                }
+        val filmId = Regex("""var filmId\s*=\s*(\d+)""").find(res.text)?.groupValues?.get(1)
+        var currentPt = Regex("""__pt\s*=\s*['"](.*?)['"]""").find(res.text)?.groupValues?.get(1)
+        var currentPk = Regex("""__pk\s*=\s*['"](.*?)['"]""").find(res.text)?.groupValues?.get(1)
+        val token = res.document.selectFirst("meta[name=_token]")?.attr("value")
+        val socket = res.document.selectFirst("meta[name=_socket]")?.attr("value")
+        val playerUrls = mutableSetOf<String>()
+        res.document.selectFirst("#sextb-player iframe[src]")?.attr("src")
+            ?.takeIf { it.isNotBlank() }?.let { fixUrl(it) }
+            ?.takeIf { !it.contains("upgrade") }?.let { iframeUrl ->
+                playerUrls.add(iframeUrl)
+                tasks.add(suspend { loadExtractor(iframeUrl, matchedUrl, subtitleCallback, callback) })
             }
-        )
 
-        res.document.select(".episode-list button.btn-player").forEach { ep ->
-            tasks.add(suspend suspend@{
-                val res = app.get(matchedUrl, headers = commonHeaders)
-
-                val filmId = Regex("""var filmId\s*=\s*(\d+)""").find(res.text)?.groupValues?.get(1)
-                val currentPt =
-                    Regex("""__pt\s*=\s*['"](.*?)['"]""").find(res.text)?.groupValues?.get(1)
-                val currentPk =
-                    Regex("""__pk\s*=\s*['"](.*?)['"]""").find(res.text)?.groupValues?.get(1)
-
-                if (filmId == null || currentPt == null) {
-                    return@suspend
-                }
-
-                val episodeId = ep.attr("data-id")
-                val sourceId = ep.attr("data-source").ifEmpty { filmId }
-                Log.d("SexTB", episodeId)
-
+        if (filmId != null && currentPt != null && currentPk != null && token != null && socket != null) {
+            // AJAX requests share rotating session tokens and must stay sequential.
+            for (ep in res.document.select(".episode-list button.btn-player:not(.vip)")) {
                 try {
-                    val postData = mapOf(
-                        "episode" to episodeId, "filmId" to sourceId, "pt" to currentPt
-                    )
-
-                    val ajaxResponse = app.post(
-                        "${mainUrl}/ajax/player", headers = mapOf(
+                    val response = app.post(
+                        "$mainUrl/ajax/player",
+                        headers = commonHeaders + mapOf(
                             "Referer" to matchedUrl,
                             "X-Requested-With" to "XMLHttpRequest",
-                            "Authorization" to "Basic $apiKey",
-                            "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
-                            "Accept" to "*/*",
+                            "Authorization" to "Basic ${base64Encode("$token:$socket".toByteArray(Charsets.UTF_8))}",
                             "Origin" to mainUrl
-                        ), data = postData
-                    )
-
-                    Log.d("SexTB", "${ep.text().trim()} ${ajaxResponse.text}")
-
-                    val responseData = ajaxResponse.parsedSafe<PlayerResponse>()
-                    val encryptedPlayer = responseData?.playerEnc
-                    val key = currentPk ?: ""
-
-                    if (encryptedPlayer != null && key.isNotEmpty()) {
-                        val decryptedRaw = decryptPlayer(encryptedPlayer, key)
-                        Log.d("SexTB", decryptedRaw)
-
-                        val iframeUrl =
-                            Regex("""src=\\?["'](https:.*?)(?:\?|\\?["']|["'])""").find(decryptedRaw)?.groupValues?.get(
-                                1
-                            )?.replace("\\/", "/")
-
-                        if (iframeUrl != null && !iframeUrl.contains("upgrade")) {
-                            loadExtractor(iframeUrl, matchedUrl, subtitleCallback, callback)
-                        }
-                    }
+                        ),
+                        data = mapOf(
+                            "episode" to ep.attr("data-id"),
+                            "filmId" to ep.attr("data-source").ifEmpty { filmId },
+                            "pt" to currentPt.orEmpty()
+                        )
+                    ).parsedSafe<PlayerResponse>() ?: continue
+                    val decryptionKey = currentPk.orEmpty()
+                    currentPt = response.nextPt ?: currentPt
+                    currentPk = response.nextPk ?: currentPk
+                    val encrypted = response.playerEnc ?: continue
+                    val player = Jsoup.parse(decryptPlayer(encrypted, decryptionKey))
+                    val iframeUrl = player.selectFirst("iframe[src]")?.attr("src")
+                        ?.takeIf { it.isNotBlank() }?.let { fixUrl(it) } ?: continue
+                    if (iframeUrl.contains("upgrade") || !playerUrls.add(iframeUrl)) continue
+                    tasks.add(suspend { loadExtractor(iframeUrl, matchedUrl, subtitleCallback, callback) })
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
-                    Log.d("SexTB", "${e.message}")
+                    Log.d(name, "${e.message}")
                 }
-            })
+            }
         }
 
         JavStreamUtils.runLimitedAsync(10, tasks = tasks.toTypedArray())
@@ -214,6 +216,7 @@ class SexTBExtractor : ExtractorApi() {
 }
 
 class MissAvExtractor : ExtractorApi() {
+    private val cloudflareInterceptor = CloudflareKiller()
     override val name = "MissAV"
     override var mainUrl = "https://missav.live"
     override val requiresReferer = false
@@ -226,12 +229,17 @@ class MissAvExtractor : ExtractorApi() {
     ) {
         val code = url.substringAfter("code=")
 
-        val searchDoc = app.get("$mainUrl/en/search/$code").document
-        val matchedUrl = searchDoc.selectFirst("div.grid.grid-cols-2 > div a")
+        val searchDoc = app.get(
+            "$mainUrl/en/search/${encodedSearchCode(code).replace("+", "%20")}",
+            interceptor = cloudflareInterceptor
+        ).document
+        val matchedUrl = searchDoc.select("div.grid.grid-cols-2 > div")
+            .firstOrNull { it.matchesMovieCode(code) }
+            ?.selectFirst("a[href*='/en/'], a[href*='/dm']")
             ?.attr("href")?.let { fixUrl(it) }
             ?: return
 
-        val unpacked = app.get(matchedUrl).text.let { getAndUnpack(it) }
+        val unpacked = app.get(matchedUrl, interceptor = cloudflareInterceptor).text.let { getAndUnpack(it) }
 
         val playlistId = """/([a-f0-9\-]{36})/""".toRegex().find(unpacked)?.groupValues?.get(1)
 

@@ -11,6 +11,7 @@ No video segments were downloaded. These checks do not replace device playback t
 | MissAV | 4 | Home, weekly, search, and detail selectors still match. Each sampled list returned 12 unique cards. Direct page requests received Cloudflare 403; FlareSolverr succeeded. Existing packed-source UUID extraction still matches. | Add a reusable CloudflareKiller interceptor to provider page requests. |
 | SexTB | 7 | Browser session returned lists and search results. All six free-server AJAX calls returned HTTP 200 with decryptable embeds. Current authentication comes from page metadata; player tokens rotate after each request. | Replace the hardcoded Basic key with page metadata; request servers sequentially and rotate tokens; preserve full iframe queries/fragments; retain the default player; fix pagination with query parameters; add CloudflareKiller to page requests. |
 | Extractors | 17 | SexTB's default F4 embed exposes `data-api`. Its native playback API returns a relative signed URL. Current AsnWish/Dhtpre packed scripts contain `master.txt` and relative `/stream/…/master.m3u8` URLs. AsnWish's relative playlist and Dhtpre's `master.txt` returned HTTP 200 and `#EXTM3U`. SubtitleCat search and English download selectors still match. | Register F4Stream/F4Scdn and resolve their API/playback URLs, respecting HLS/progressive response types. Recognize packed `master.txt` links and resolve relative playlists. Await subtitle requests, resolve download URLs, and filter matches before limiting results. |
+| JavStream | 5 | Uncensored pages 1 and 2 each returned 30 cards, with no overlapping URLs. Search returned three cards; detail code and metadata selectors match. Javtiful's current search returned two cards. JavGG/SupJav search and player selectors match sampled pages. | Fix pagination before query parameters; encode search paths; add CloudflareKiller to catalogue requests; normalize movie codes and preserve cancellation. Update local Javtiful selectors/watch-config, local SexTB metadata authentication/sequential token rotation/full iframe URLs/default player, and local MissAV challenge handling. Match movie codes before selecting results. Set module JVM target to 11 for current Cloudstream JSON APIs. |
 
 ## Remaining limits
 
@@ -22,6 +23,7 @@ No video segments were downloaded. These checks do not replace device playback t
 - Packed playlist requests isolate failures so an unavailable host does not prevent trying the other extracted links.
 - Extractors contains additional host aliases beyond the embeds reached from these providers. Those aliases were not exhaustively verified. Google translation and full device playback were not exercised.
 - FlareSolverr was used for this audit; the plugins do not connect to localhost:8191 during normal use.
+- JavStream's browser checks validate catalogue and source-page selectors. End-to-end Android playback, its CloudflareKiller runtime behavior, and all alternate source hosts remain unverified; the upstream playback limits above also apply to its local adapters.
 
 ## Validation and artifacts
 
@@ -39,3 +41,11 @@ Package manifests contain versions 7, 11, 4, 17, and 7 respectively.
 Installable files are in each module's `build/<Module>.cs3`. JavFc2 also produced
 a cross-platform JAR and passed the no-Android-import compatibility check.
 Unrelated concurrent edits to Javtiful were left untouched.
+
+JavStream subsequently passed `:JavStream:assembleDebug :JavStream:make
+--no-configuration-cache`. Its `JavStream/build/JavStream.cs3` manifest reports
+version 5. Its local adapters use the current source contracts without depending
+on the standalone provider modules.
+Standalone JVM checks exercised the compiled card parser, movie-code matching,
+JSON models, URL encoding round trips, and both coroutine cancellation helpers.
+All passed. `git diff --check` passed after the JavStream changes.

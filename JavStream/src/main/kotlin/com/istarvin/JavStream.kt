@@ -13,6 +13,7 @@ import com.lagradost.cloudstream3.SearchResponseList
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.network.CloudflareKiller
 import com.lagradost.cloudstream3.fixUrl
 import com.lagradost.cloudstream3.fixUrlNull
 import com.lagradost.cloudstream3.mainPageOf
@@ -22,6 +23,7 @@ import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newSearchResponseList
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.getExtractorApiFromName
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -29,7 +31,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import org.jsoup.nodes.Element
-import kotlin.text.substringAfterLast
+import java.net.URLEncoder
 
 class JavStream : MainAPI() {
     override var mainUrl = "https://sextb.net"
@@ -39,7 +41,9 @@ class JavStream : MainAPI() {
     override val hasQuickSearch = false
     override val supportedTypes = setOf(TvType.NSFW)
 
-    private val commonHeaders = mapOf(
+    private val cloudflareInterceptor = CloudflareKiller()
+
+    private val commonHeaders get() = mapOf(
         "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Referer" to "$mainUrl/",
         "Accept-Language" to "en-US,en;q=0.9"
@@ -57,10 +61,12 @@ class JavStream : MainAPI() {
         val url = if (page <= 1) {
             request.data
         } else {
-            "${request.data.removeSuffix("/")}/pg-$page"
+            request.data.substringBefore("?").removeSuffix("/") + "/pg-$page" +
+                request.data.substringAfter("?", "").takeIf { it.isNotEmpty() }
+                    ?.let { "?$it" }.orEmpty()
         }
 
-        val document = app.get(url, headers = commonHeaders).document
+        val document = app.get(url, headers = commonHeaders, interceptor = cloudflareInterceptor).document
         val items = document.select("div.tray-item").mapNotNull {
             it.toSearchResult()
         }
@@ -71,19 +77,20 @@ class JavStream : MainAPI() {
     }
 
     override suspend fun search(query: String, page: Int): SearchResponseList {
+        val encodedQuery = URLEncoder.encode(query.trim(), "UTF-8").replace("+", "%20")
         val url = if (page <= 1) {
-            "$mainUrl/search/$query"
+            "$mainUrl/search/$encodedQuery"
         } else {
-            "$mainUrl/search/$query/pg-$page"
+            "$mainUrl/search/$encodedQuery/pg-$page"
         }
 
-        val document = app.get(url, headers = commonHeaders).document
+        val document = app.get(url, headers = commonHeaders, interceptor = cloudflareInterceptor).document
         val items = document.select("div.tray-item").mapNotNull {
             it.toSearchResult()
         }
 
         if (items.isEmpty()) {
-            Log.d("STB_Search", "Search list returned empty! URL: $url")
+            Log.d("JavStream", "Search list returned empty! URL: $url")
         }
 
         return newSearchResponseList(items, hasNext = items.isNotEmpty())
@@ -91,9 +98,10 @@ class JavStream : MainAPI() {
 
     private fun Element.toSearchResult(): SearchResponse? {
         val linkElement = this.selectFirst("a") ?: return null
-        val href = linkElement.attr("href")
+        val href = linkElement.attr("href").trim()
 
-        if (href.startsWith("/search") || href.contains("javascript") || href.startsWith("/genre")) return null
+        if (href.isBlank() || href.startsWith("#") || href.startsWith("/search") ||
+            href.contains("javascript", ignoreCase = true) || href.startsWith("/genre")) return null
 
         val fullHref = fixUrl(href)
         val title =
@@ -110,7 +118,7 @@ class JavStream : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse? {
-        val res = app.get(url, headers = commonHeaders)
+        val res = app.get(url, headers = commonHeaders, interceptor = cloudflareInterceptor)
         val document = res.document
 
         val title = document.selectFirst("h1.film-info-title")?.text()?.trim() ?: return null
@@ -119,7 +127,8 @@ class JavStream : MainAPI() {
 
         val description = document.selectFirst("span.full-text-desc")?.text()?.trim()
         val code = document.select(".film-info-title a").attr("href")
-            .substringAfterLast("/").ifEmpty { return null }
+            .substringBefore("?").substringBefore("#").trimEnd('/')
+            .substringAfterLast("/").trim().ifEmpty { return null }
         val yearText = document.selectFirst("div.description:has(i.fa-calendar) strong")?.text()
         val year =
             yearText?.let { Regex("""(\d{4})""").find(it)?.groupValues?.get(1)?.toIntOrNull() }
@@ -133,23 +142,17 @@ class JavStream : MainAPI() {
 
         if (filmId != null) {
             try {
-                val apiRes =
-                    app.get("${mainUrl}/ajax/related/$filmId", headers = commonHeaders).text
+                val apiRes = app.get(
+                    "${mainUrl}/ajax/related/$filmId",
+                    headers = commonHeaders,
+                    interceptor = cloudflareInterceptor
+                ).text
                 val apiDoc = org.jsoup.Jsoup.parse(apiRes)
-                apiDoc.select(".tray-item").forEach { el ->
-                    val recName =
-                        el.selectFirst(".tray-item-title")?.text()?.trim() ?: return@forEach
-                    val recHref = fixUrl(el.selectFirst("a")?.attr("href") ?: return@forEach)
-                    val recPoster = fixUrlNull(
-                        el.selectFirst("img")?.attr("data-src") ?: el.selectFirst("img")
-                            ?.attr("src")
-                    )
-                    recommendations.add(
-                        newMovieSearchResponse(
-                            recName, recHref, TvType.NSFW
-                        ) { this.posterUrl = recPoster })
-                }
-            } catch (_: Exception) {
+                recommendations.addAll(apiDoc.select(".tray-item").mapNotNull { it.toSearchResult() })
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.d("JavStream", "Recommendations failed: ${e.message}")
             }
         }
 
@@ -170,7 +173,7 @@ class JavStream : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        Log.d("SexTB", data)
+        Log.d("JavStream", data)
         val tasks = mutableListOf<suspend () -> Unit>()
 
         // Subtitle
@@ -213,8 +216,10 @@ class JavStream : MainAPI() {
                 semaphore.withPermit {
                     try {
                         task()
+                    } catch (e: CancellationException) {
+                        throw e
                     } catch (e: Exception) {
-                        com.lagradost.api.Log.e("SulasokConcurrency", "Task failed: ${e.message}")
+                        com.lagradost.api.Log.e("JavStream", "Task failed: ${e.message}")
                     }
                 }
             }

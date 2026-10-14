@@ -1,5 +1,6 @@
 package com.istarvin
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -20,8 +21,10 @@ object JavStreamUtils {
                 semaphore.withPermit {
                     try {
                         task()
+                    } catch (e: CancellationException) {
+                        throw e
                     } catch (e: Exception) {
-                        com.lagradost.api.Log.e("SulasokConcurrency", "Task failed: ${e.message}")
+                        com.lagradost.api.Log.e("JavStreamConcurrency", "Task failed: ${e.message}")
                     }
                 }
             }
