@@ -26,6 +26,7 @@ import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.M3u8Helper.Companion.generateM3u8
 import com.lagradost.cloudstream3.utils.getExtractorApiFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -40,7 +41,7 @@ import java.net.URLEncoder
 import kotlin.io.encoding.Base64
 
 private const val TRANSLATION_CACHE_KEY = "javhd_translated_titles"
-private const val DEFAULT_MAIN_URL = "https://javhdz.im"
+private const val DEFAULT_MAIN_URL = "https://javhdz.la"
 const val GOOGLE_TRANSLATE_API_KEY_PREF_KEY = "google_translate_api_key"
 const val BASE_URL_PREF_KEY = "base_url"
 
@@ -83,7 +84,8 @@ class JavHD(
     }
 
     override suspend fun search(query: String, page: Int): SearchResponseList {
-        val url = "$mainUrl/search/$query/page/$page"
+        val encodedQuery = URLEncoder.encode(query, "UTF-8").replace("+", "%20")
+        val url = "$mainUrl/search/$encodedQuery/page/$page"
         val document = app.get(url).document
 
         val results = document.select("#movie-last-movie > li").mainPageResults()
@@ -164,8 +166,9 @@ class JavHD(
 
         val rawTitle = document.selectFirst("h1.header-title > a")?.text()?.trim() ?: return null
         val title = translateVietnameseTitle(rawTitle)
-        val code =
-            document.selectFirst("#film-content-wrapper")?.text()?.trim()?.substringBefore(" ")
+        val code = document.selectFirst("#film-content-wrapper")?.text()?.let {
+            Regex("""\b[A-Za-z]+-\d+\b""").find(it)?.value
+        }
         val poster = fixUrlNull(document.selectFirst("img.thumb")?.attr("src"))
 
         val data = document.select(".user-action > .server").mapNotNull {
@@ -179,7 +182,7 @@ class JavHD(
             name = title,
             url = url,
             type = TvType.NSFW,
-            data = DataObject(code, data).toJson()
+            data = DataObject(code, data, url).toJson()
         ) {
             this.posterUrl = poster
         }
@@ -209,16 +212,30 @@ class JavHD(
 
         dataObject.data.forEach { (id, serverId) ->
             tasks.add(suspend suspend@{
-                val res = app.post(
-                    url = "$mainUrl/ajax",
-                    data = mapOf(
-                        "id" to id,
-                        "server" to serverId
-                    )
-                ).parsedSafe<AjaxRes>() ?: return@suspend
+                val res = try {
+                    app.post(
+                        url = "$mainUrl/ajax",
+                        referer = dataObject.pageUrl ?: mainUrl,
+                        headers = mapOf("Origin" to mainUrl),
+                        json = mapOf(
+                            "id" to id.toInt(),
+                            "server" to serverId.toInt()
+                        )
+                    ).parsedSafe<AjaxRes>()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.e("JavHD", "Player request failed: ${e.message}")
+                    null
+                }
+                // The first player is also rendered in the detail page.
+                val player = res?.player ?: if (serverId == "1") {
+                    dataObject.pageUrl?.let { app.get(it).document.selectFirst("#video")?.html() }
+                } else null
+                if (player.isNullOrBlank()) return@suspend
 
-                if ("jwplayer.js" in res.player) {
-                    getBase64LinkRegex.find(res.player)?.groups?.get(1)?.value?.let {
+                if ("jwplayer.js" in player) {
+                    getBase64LinkRegex.find(player)?.groups?.get(1)?.value?.let {
                         val url = Base64.decode(it).decodeToString()
 
                         generateM3u8(
@@ -231,7 +248,7 @@ class JavHD(
                     return@suspend
                 }
 
-                urlRegex.find(res.player)?.value?.let {
+                urlRegex.find(player)?.value?.let {
                     loadExtractor(
                         url = it,
                         referer = mainUrl,
@@ -260,8 +277,10 @@ class JavHD(
                 semaphore.withPermit {
                     try {
                         task()
+                    } catch (e: CancellationException) {
+                        throw e
                     } catch (e: Exception) {
-                        Log.e("SulasokConcurrency", "Task failed: ${e.message}")
+                        Log.e("JavHD", "Task failed: ${e.message}")
                     }
                 }
             }
@@ -288,7 +307,8 @@ class JavHD(
 
     data class DataObject(
         val code: String?,
-        val data: List<Pair<String, String>>
+        val data: List<Pair<String, String>>,
+        val pageUrl: String? = null
     )
 
     data class AjaxRes(val player: String)

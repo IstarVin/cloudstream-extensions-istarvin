@@ -1,4 +1,4 @@
-version = 10
+version = 11
 
 cloudstream {
     authors = listOf("IstarVin")
@@ -23,4 +23,16 @@ cloudstream {
 
 dependencies {
     implementation("com.google.android.material:material:1.13.0")
+}
+
+// Cloudstream's inline persistence and JSON APIs now use Java 11 bytecode.
+android {
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
+    compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
 }

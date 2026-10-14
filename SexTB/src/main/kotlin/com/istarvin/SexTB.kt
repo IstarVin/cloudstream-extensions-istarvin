@@ -15,6 +15,9 @@ import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.base64Decode
+import com.lagradost.cloudstream3.base64Encode
+import com.lagradost.cloudstream3.network.CloudflareKiller
+import org.jsoup.Jsoup
 import com.lagradost.cloudstream3.fixUrl
 import com.lagradost.cloudstream3.fixUrlNull
 import com.lagradost.cloudstream3.mainPageOf
@@ -25,6 +28,7 @@ import com.lagradost.cloudstream3.newSearchResponseList
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.getExtractorApiFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -41,8 +45,7 @@ class SexTB : MainAPI() {
     override val hasQuickSearch = false
     override val supportedTypes = setOf(TvType.NSFW)
 
-    private val apiKey =
-        "Y1ZGUWNVSnROVlJOTUVWMlZsUldVMjlsWjBGelFUMDk6T0ZaNksxQmhjVTFhTHpCdFlWZDFNbE5CUm01Qlp6MDk="
+    private val cloudflareInterceptor = CloudflareKiller()
 
     private val commonHeaders = mapOf(
         "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -62,10 +65,11 @@ class SexTB : MainAPI() {
         val url = if (page <= 1) {
             request.data
         } else {
-            "${request.data.removeSuffix("/")}/pg-$page"
+            request.data.substringBefore("?").removeSuffix("/") + "/pg-$page" +
+                request.data.substringAfter("?", "").takeIf { it.isNotEmpty() }?.let { "?$it" }.orEmpty()
         }
 
-        val document = app.get(url, headers = commonHeaders).document
+        val document = app.get(url, headers = commonHeaders, interceptor = cloudflareInterceptor).document
         val items = document.select("div.tray-item").mapNotNull {
             it.toSearchResult()
         }
@@ -82,7 +86,7 @@ class SexTB : MainAPI() {
             "$mainUrl/search/$query/pg-$page"
         }
 
-        val document = app.get(url, headers = commonHeaders).document
+        val document = app.get(url, headers = commonHeaders, interceptor = cloudflareInterceptor).document
         val items = document.select("div.tray-item").mapNotNull {
             it.toSearchResult()
         }
@@ -115,7 +119,7 @@ class SexTB : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse? {
-        val res = app.get(url, headers = commonHeaders)
+        val res = app.get(url, headers = commonHeaders, interceptor = cloudflareInterceptor)
         val document = res.document
 
         val title = document.selectFirst("h1.film-info-title")?.text()?.trim() ?: return null
@@ -174,7 +178,7 @@ class SexTB : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         Log.d(name, data)
-        val res = app.get(data, headers = commonHeaders)
+        val res = app.get(data, headers = commonHeaders, interceptor = cloudflareInterceptor)
 
         val tasks = mutableListOf<suspend () -> Unit>()
 
@@ -193,68 +197,59 @@ class SexTB : MainAPI() {
             }
         )
 
-        res.document.select(".episode-list button.btn-player").forEach { ep ->
-            tasks.add(suspend suspend@{
-                val res = app.get(data, headers = commonHeaders)
+        val filmId = Regex("""var filmId\s*=\s*(\d+)""").find(res.text)?.groupValues?.get(1)
+        var currentPt = Regex("""__pt\s*=\s*['"](.*?)['"]""").find(res.text)?.groupValues?.get(1)
+        var currentPk = Regex("""__pk\s*=\s*['"](.*?)['"]""").find(res.text)?.groupValues?.get(1)
+        val token = res.document.selectFirst("meta[name=_token]")?.attr("value")
+        val socket = res.document.selectFirst("meta[name=_socket]")?.attr("value")
+        var foundPlayer = false
+        val playerUrls = mutableSetOf<String>()
+        fixUrlNull(res.document.selectFirst("#sextb-player iframe[src]")?.attr("src"))
+            ?.takeIf { !it.contains("upgrade") }?.let { iframeUrl ->
+                foundPlayer = true
+                playerUrls.add(iframeUrl)
+                tasks.add(suspend { loadExtractor(iframeUrl, data, subtitleCallback, callback) })
+            }
 
-                val filmId = Regex("""var filmId\s*=\s*(\d+)""").find(res.text)?.groupValues?.get(1)
-                val currentPt =
-                    Regex("""__pt\s*=\s*['"](.*?)['"]""").find(res.text)?.groupValues?.get(1)
-                val currentPk =
-                    Regex("""__pk\s*=\s*['"](.*?)['"]""").find(res.text)?.groupValues?.get(1)
-
-                if (filmId == null || currentPt == null) {
-                    return@suspend
-                }
-
-                val episodeId = ep.attr("data-id")
-                val sourceId = ep.attr("data-source").ifEmpty { filmId }
-                Log.d(name, episodeId)
-
+        if (filmId != null && currentPt != null && currentPk != null && token != null && socket != null) {
+            // The site rotates the session player token and XOR key after every request.
+            for (ep in res.document.select(".episode-list button.btn-player:not(.vip)")) {
                 try {
-                    val postData = mapOf(
-                        "episode" to episodeId, "filmId" to sourceId, "pt" to currentPt
-                    )
-
-                    val ajaxResponse = app.post(
-                        "${mainUrl}/ajax/player", headers = mapOf(
+                    val response = app.post(
+                        "$mainUrl/ajax/player",
+                        headers = commonHeaders + mapOf(
                             "Referer" to data,
                             "X-Requested-With" to "XMLHttpRequest",
-                            "Authorization" to "Basic $apiKey",
-                            "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
-                            "Accept" to "*/*",
+                            "Authorization" to "Basic ${base64Encode("$token:$socket".toByteArray(Charsets.UTF_8))}",
                             "Origin" to mainUrl
-                        ), data = postData
-                    )
-
-                    Log.d(name, "${ep.text().trim()} ${ajaxResponse.text}")
-
-                    val responseData = ajaxResponse.parsedSafe<PlayerResponse>()
-                    val encryptedPlayer = responseData?.playerEnc
-                    val key = currentPk ?: ""
-
-                    if (encryptedPlayer != null && key.isNotEmpty()) {
-                        val decryptedRaw = decryptPlayer(encryptedPlayer, key)
-                        Log.d(name, decryptedRaw)
-
-                        val iframeUrl =
-                            Regex("""src=\\?["'](https:.*?)(?:\?|\\?["']|["'])""").find(decryptedRaw)?.groupValues?.get(
-                                1
-                            )?.replace("\\/", "/")
-
-                        if (iframeUrl != null && !iframeUrl.contains("upgrade")) {
-                            loadExtractor(iframeUrl, data, subtitleCallback, callback)
-                        }
-                    }
+                        ),
+                        data = mapOf(
+                            "episode" to ep.attr("data-id"),
+                            "filmId" to ep.attr("data-source").ifEmpty { filmId },
+                            "pt" to currentPt.orEmpty()
+                        )
+                    ).parsedSafe<PlayerResponse>() ?: continue
+                    val decryptionKey = currentPk.orEmpty()
+                    currentPt = response.nextPt ?: currentPt
+                    currentPk = response.nextPk ?: currentPk
+                    val encrypted = response.playerEnc ?: continue
+                    val player = Jsoup.parse(decryptPlayer(encrypted, decryptionKey))
+                    val iframeUrl = fixUrlNull(player.selectFirst("iframe[src]")?.attr("src"))
+                        ?: continue
+                    if (iframeUrl.contains("upgrade") || !playerUrls.add(iframeUrl)) continue
+                    foundPlayer = true
+                    tasks.add(suspend { loadExtractor(iframeUrl, data, subtitleCallback, callback) })
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     Log.d(name, "${e.message}")
                 }
-            })
+            }
         }
 
         runLimitedAsync(tasks = tasks.toTypedArray())
 
-        return true
+        return foundPlayer
     }
 
     private fun decryptPlayer(encoded: String, key: String): String {

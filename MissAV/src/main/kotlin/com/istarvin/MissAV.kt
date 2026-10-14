@@ -17,6 +17,7 @@ import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newSearchResponseList
+import com.lagradost.cloudstream3.network.CloudflareKiller
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.M3u8Helper.Companion.generateM3u8
 import com.lagradost.cloudstream3.utils.getAndUnpack
@@ -42,6 +43,7 @@ class MissAV : MainAPI() {
     override var lang = "en"
     override val hasQuickSearch = false
     override val supportedTypes = setOf(TvType.NSFW)
+    private val cloudflareInterceptor = CloudflareKiller()
 
     override val mainPage = mainPageOf(
         "$mainUrl/dm169/en/weekly-hot?sort=weekly_views" to "Weekly Hot",
@@ -71,7 +73,7 @@ class MissAV : MainAPI() {
         val separator = if (request.data.contains("?")) "&" else "?"
         val url = "${request.data}${separator}page=$page"
 
-        val document = app.get(url).document
+        val document = app.get(url, interceptor = cloudflareInterceptor).document
 
         val results = document.select(MAIN_PAGE_CARD_SELECTOR)
             .mapNotNull { it.toSearchResult() }
@@ -117,7 +119,7 @@ class MissAV : MainAPI() {
             "${mainUrl}/en/search/${query}?page=$page"
         }
 
-        val document = app.get(url).document
+        val document = app.get(url, interceptor = cloudflareInterceptor).document
         val results = document.select(VIDEO_CARD_SELECTOR).mapNotNull { it.toSearchResult() }
 
         return newSearchResponseList(results, hasNext = results.isNotEmpty())
@@ -126,7 +128,7 @@ class MissAV : MainAPI() {
     override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query)
 
     override suspend fun load(url: String): LoadResponse? {
-        val document = app.get(url).document
+        val document = app.get(url, interceptor = cloudflareInterceptor).document
 
         val title = document.selectFirst("h1.text-base")?.text()?.trim() ?: return null
         val videoCode = title.substringBefore(" ")
@@ -153,7 +155,7 @@ class MissAV : MainAPI() {
     ): Boolean {
         val videoCode = data.substringBefore(":")
         val videoUrl = data.substringAfter(":")
-        val packedScript = app.get(videoUrl).text
+        val packedScript = app.get(videoUrl, interceptor = cloudflareInterceptor).text
         val playlistId = playlistIdPattern.find(getAndUnpack(packedScript))?.groupValues?.get(1)
             ?: return false
 

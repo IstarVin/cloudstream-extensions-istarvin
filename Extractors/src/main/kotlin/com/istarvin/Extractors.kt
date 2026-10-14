@@ -17,18 +17,18 @@ import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.INFER_TYPE
 import com.lagradost.cloudstream3.utils.M3u8Helper.Companion.generateM3u8
 import com.lagradost.cloudstream3.utils.Qualities
-import com.lagradost.cloudstream3.utils.fixUrl
 import com.lagradost.cloudstream3.utils.getAndUnpack
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.newExtractorLink
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
 import java.net.URLEncoder
+import java.net.URI
 
 private const val FIREFOX_USER_AGENT =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0"
 private val firefoxHeaders = mapOf("User-Agent" to FIREFOX_USER_AGENT)
-private val m3u8Regex = Regex("""[:=]\s*"([^"\s]+(\.m3u8)[^"\s]*)""")
 private val m3u8OrMasterRegex = Regex("""[:=]\s*"([^"\s]+(\.m3u8|master\.txt)[^"\s]*)""")
 
 private fun String.fileCode(): String = substringBefore('?').trimEnd('/').substringAfterLast('/')
@@ -42,10 +42,17 @@ private suspend fun ExtractorApi.emitPackedM3u8(
     keep: (String) -> Boolean,
     callback: (ExtractorLink) -> Unit,
 ) {
-    m3u8Regex.findAll(text.unpack()).forEach { match ->
-        val streamUrl = fixUrl(match.groupValues[1])
+    m3u8OrMasterRegex.findAll(text.unpack()).map { match ->
+        URI(referer).resolve(match.groupValues[1]).toString()
+    }.distinct().forEach { streamUrl ->
         if (!keep(streamUrl)) return@forEach
-        generateM3u8(source, streamUrl, referer).forEach(callback)
+        try {
+            generateM3u8(source, streamUrl, referer).forEach(callback)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(source, "Playlist request failed: ${e.message}")
+        }
     }
 }
 
@@ -449,6 +456,47 @@ class StbP2P : VidStack() {
 class Playerupnone : VidStack() {
     override var mainUrl = "https://player.upn.one"
     override var name = "UPNP2P"
+}
+
+open class F4Stream : ExtractorApi() {
+    override val mainUrl = "https://f4stream.com"
+    override val name = "F4Stream"
+    override val requiresReferer = true
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        val page = app.get(url, referer = referer)
+        val apiPath = page.document.selectFirst("[data-player][data-api]")
+            ?.attr("data-api")?.takeIf { it.isNotBlank() } ?: return
+        val apiUrl = URI(page.url).resolve(apiPath).toString()
+        val separator = if (apiUrl.contains('?')) "&" else "?"
+        // The site's native HLS mode supplies a signed link suitable for external players.
+        val response = app.get(
+            "$apiUrl${separator}ab=0&n=1",
+            referer = page.url,
+            headers = mapOf("Accept" to "application/json")
+        ).parsedSafe<PlayResponse>() ?: return
+        val streamPath = response.url?.takeIf { it.isNotBlank() } ?: return
+        val streamUrl = URI(page.url).resolve(streamPath).toString()
+        val streamType = if (response.type == "hls") ExtractorLinkType.M3U8 else INFER_TYPE
+        callback(newExtractorLink(name, name, streamUrl, streamType) {
+            this.referer = page.url
+            this.quality = Qualities.Unknown.value
+        })
+    }
+
+    data class PlayResponse(
+        @JsonProperty("url") val url: String? = null,
+        @JsonProperty("type") val type: String? = null
+    )
+}
+
+class F4Scdn : F4Stream() {
+    override val mainUrl = "https://f4scdn.com"
 }
 
 open class Turtleviplay : ExtractorApi() {

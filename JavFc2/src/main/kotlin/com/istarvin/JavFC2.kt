@@ -133,7 +133,7 @@ class JavFC2 : MainAPI() {
     ): Boolean {
         val document = app.get(data).document
 
-        val code = data.substringAfterLast("/").substringBefore(".html")
+        val code = data.substringBefore("?").substringAfterLast("/").substringBefore(".html")
 
         val videoUrl = document.select("#player-div script").html().let {
             srcRegex.find(it)?.groups[1]?.value
@@ -142,7 +142,7 @@ class JavFC2 : MainAPI() {
         document.select("track[kind=\"subtitles\"]").forEach { sub ->
             val subUrl = sub.attr("src")
             val label = sub.attr("label")
-            subtitleCallback(newSubtitleFile(label, subUrl))
+            subtitleCallback(newSubtitleFile(label, fixUrl(subUrl)))
         }
 
         val tasks = mutableListOf<suspend () -> Unit>()

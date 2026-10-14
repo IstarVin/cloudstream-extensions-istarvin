@@ -15,17 +15,18 @@ import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.fixUrl
 import com.lagradost.cloudstream3.fixUrlNull
 import com.lagradost.cloudstream3.mainPageOf
+import com.lagradost.cloudstream3.mapper
 import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newSearchResponseList
-import com.lagradost.cloudstream3.utils.AppUtils.parseJson
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.nodes.Element
+import java.net.URLEncoder
 
 class Javtiful : MainAPI() {
     override var mainUrl = "https://javtiful.com"
@@ -39,9 +40,9 @@ class Javtiful : MainAPI() {
     override val mainPage = mainPageOf(
         "${mainUrl}/videos" to "Newest",
         "${mainUrl}/videos?sort=most_viewed" to "Most Viewed",
-        "${mainUrl}/videos?sort=top_rated" to "Top Rated",
-        "${mainUrl}/videos?sort=top_favorites" to "Top Favorites",
-        "${mainUrl}/videos?sort=being_watched" to "Being Watched",
+        "${mainUrl}/videos?sort=most_liked" to "Most Liked",
+        "${mainUrl}/videos?sort=popular_week" to "Popular This Week",
+        "${mainUrl}/videos?sort=popular_month" to "Popular This Month",
         "${mainUrl}/censored" to "Censored",
         "${mainUrl}/uncensored" to "Uncensored",
         "${mainUrl}/category/female-investigator" to "Female Investigator",
@@ -68,31 +69,37 @@ class Javtiful : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val url = if (page <= 1) request.data else "${request.data}?page=$page"
-        val res = app.get(url).document
-        val home = res.select("article.front-video-card").mapNotNull {
-            if (it.classNames().contains("front-partner-card")) return@mapNotNull null
+        val params = if (page <= 1) emptyMap() else mapOf("page" to page.toString())
+        val res = app.get(request.data, params = params).document
+        val home = res.select("article.video-card:not(.video-card--partner)").mapNotNull {
             it.mainPageResults()
         }
-        return newHomePageResponse(request.name, home, true)
+        return newHomePageResponse(request.name, home, res.hasNextPage(page))
     }
 
     override suspend fun search(query: String, page: Int): SearchResponseList {
-        val url =
-            if (page <= 1) "$mainUrl/search?q=$query" else "$mainUrl/search?page=$page&q=$query"
-        val res = app.get(url).document
-        val results = res.select("article.front-video-card:not(.front-partner-card)").mapNotNull {
+        val encodedQuery = URLEncoder.encode(query, "UTF-8")
+        val res = app.get("$mainUrl/search?q=$encodedQuery&page=$page").document
+        val results = res.select("article.video-card:not(.video-card--partner)").mapNotNull {
             it.mainPageResults()
         }
-        return newSearchResponseList(results, results.isNotEmpty())
+        return newSearchResponseList(results, res.hasNextPage(page))
     }
 
+    private fun Element.hasNextPage(page: Int): Boolean =
+        select("nav.pagination a.pagination__link:not(.is-disabled)").any {
+            Regex("[?&]page=(\\d+)").find(it.attr("href"))
+                ?.groupValues?.get(1)?.toIntOrNull()?.let { next -> next > page } == true
+        }
+
     private fun Element.mainPageResults(): SearchResponse? {
-        val link = this.selectFirst("a.front-video-title") ?: return null
+        val link = this.selectFirst("a.video-card__title") ?: return null
         val title = link.text().trim()
         val href = fixUrl(link.attr("href"))
         val img = this.selectFirst("img") ?: return null
-        val poster = fixUrl(img.attr("data-front-lazy-src"))
+        val poster = fixUrlNull(
+            img.attr("data-front-lazy-src").ifBlank { img.attr("src") }
+        )
 
         return newMovieSearchResponse(title, href, TvType.NSFW) {
             this.posterUrl = poster
@@ -103,23 +110,14 @@ class Javtiful : MainAPI() {
 
     override suspend fun load(url: String): LoadResponse? {
         val res = app.get(url).document
-        val title = res.selectFirst("div.front-watch-title h1")?.text()?.trim() ?: return null
+        val title = res.selectFirst("div.watch-title h1")?.text()?.trim() ?: return null
         val poster = res.selectFirst("meta[property=\"og:image\"]")?.attr("content")
 
         val recommendations =
-            res.select("div.front-video-grid-related article.front-video-card:not(.front-ad-card)")
-                .mapNotNull {
-                    val link = it.selectFirst("a.front-video-title") ?: return@mapNotNull null
-                    val recTitle = link.text().trim()
-                    val recHref = fixUrl(link.attr("href"))
-                    val recPoster = it.selectFirst("img")?.attr("src")
+            res.select("div.related-grid article.video-card:not(.video-card--partner)")
+                .mapNotNull { it.mainPageResults() }
 
-                    newMovieSearchResponse(recTitle, recHref, TvType.NSFW) {
-                        this.posterUrl = fixUrlNull(recPoster)
-                    }
-                }
-
-        val actorsList = res.select("a.front-watch-actor-card").map {
+        val actorsList = res.select("a.watch-actor-card").map {
             val name = it.selectFirst("span")?.text()?.trim() ?: ""
             val image = it.selectFirst("img")?.attr("src")?.takeIf { img ->
                 img.isNotEmpty() && !img.contains("profile-placeholder.png")
@@ -128,7 +126,7 @@ class Javtiful : MainAPI() {
         }
 
         val dateText =
-            res.selectFirst("div.front-watch-detail:contains(Added on) time")?.attr("datetime")
+            res.selectFirst("div.watch-detail:contains(Added on) time")?.attr("datetime")
         val year = dateText?.split("-")?.firstOrNull()?.toIntOrNull()
         return newMovieLoadResponse(title, url, TvType.NSFW, url) {
             this.posterUrl = fixUrlNull(poster)
@@ -136,7 +134,7 @@ class Javtiful : MainAPI() {
                 res.selectFirst("meta[property=\"og:description\"]")?.attr("content")?.trim()
             this.year = year
             this.tags =
-                res.select("div.front-watch-detail:contains(Categories) a, div.front-watch-detail:contains(Tags) a")
+                res.select("div.watch-detail:contains(Categories) a, div.watch-detail:contains(Tags) a")
                     .map { it.text().trim() }
             this.recommendations = recommendations
             addActors(actorsList)
@@ -149,19 +147,20 @@ class Javtiful : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val res = app.get(data).text
-        val configRaw = res.substringAfter("id=\"frontWatchConfig\" type=\"application/json\">")
-            .substringBefore("</script>")
-
-        val configData = parseJson<WatchConfig>(configRaw)
+        val res = app.get(data).document
+        val configRaw = res.selectFirst("script#watch-config")?.data()
+            ?.takeIf { it.isNotBlank() } ?: return false
+        val configData = runCatching {
+            mapper.readValue(configRaw, WatchConfig::class.java)
+        }.getOrNull() ?: return false
+        val sources = configData.playerSources.orEmpty().filter { it.src.isNotBlank() }
 
         configData.videoTitle?.substringBefore(" ")?.let { code ->
             loadExtractor("https://subtitlecat.com/?query=$code", subtitleCallback, callback)
         }
 
-        configData.playerSources?.forEach { source ->
-            var url = source.src
-            if (url.startsWith('/')) url = mainUrl + url
+        sources.forEach { source ->
+            val url = fixUrl(source.src)
             callback(
                 newExtractorLink(
                     source = this.name,
@@ -170,12 +169,15 @@ class Javtiful : MainAPI() {
                 ) {
                     this.quality = source.size ?: Qualities.Unknown.value
                     this.referer = "$mainUrl/"
-                    this.type = ExtractorLinkType.VIDEO
+                    this.type = if (
+                        source.type?.contains("mpegurl", ignoreCase = true) == true ||
+                        url.substringBefore('?').endsWith(".m3u8", ignoreCase = true)
+                    ) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
                 }
             )
         }
 
-        return !configData.playerSources.isNullOrEmpty()
+        return sources.isNotEmpty()
     }
 
     data class WatchConfig(

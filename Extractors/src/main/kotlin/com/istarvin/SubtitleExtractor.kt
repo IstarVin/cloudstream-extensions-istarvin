@@ -5,11 +5,12 @@ import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.newSubtitleFile
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
-import kotlinx.coroutines.CoroutineScope
+import com.lagradost.api.Log
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlin.collections.forEach
-import kotlin.collections.ifEmpty
+import java.net.URI
 
 class SubtitleCat : ExtractorApi() {
     override val name = "SubtitleCat"
@@ -32,21 +33,27 @@ class SubtitleCat : ExtractorApi() {
         val queryUrl = "${mainUrl}/index.php?search=$query"
         val doc = app.get(queryUrl).document
         val subs = doc.select(".sub-table a")
-            .map { mainUrl + '/' + it.attr("href") }
-            .take(3)
+            .map { URI("$mainUrl/").resolve(it.attr("href")).toString() }
             .filter {
                 it.normalize().contains(query.normalize())
             }
-            .ifEmpty { return }
+            .distinct()
+            .take(3)
 
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope {
             subs.forEach { subUrl ->
-                launch {
-                    val subPageDoc = app.get(subUrl).document
-                    val href =
-                        subPageDoc.getElementById("download_en")?.attr("href") ?: return@launch
-
-                    subtitleCallback(newSubtitleFile("English", mainUrl + href))
+                launch(Dispatchers.IO) {
+                    try {
+                        val subPageDoc = app.get(subUrl).document
+                        val href = subPageDoc.getElementById("download_en")?.attr("href")
+                            ?.takeIf { it.isNotBlank() } ?: return@launch
+                        val subtitleUrl = URI(subUrl).resolve(href).toString()
+                        subtitleCallback(newSubtitleFile("English", subtitleUrl))
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        Log.e("SubtitleCat", "Subtitle request failed: ${e.message}")
+                    }
                 }
             }
         }

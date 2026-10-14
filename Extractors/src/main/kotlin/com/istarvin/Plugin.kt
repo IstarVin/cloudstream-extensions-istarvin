@@ -50,6 +50,8 @@ class ExtractorPlugin : Plugin() {
         registerExtractorAPI(MyCloudZ())
         registerExtractorAPI(StbP2P())
         registerExtractorAPI(Playerupnone())
+        registerExtractorAPI(F4Stream())
+        registerExtractorAPI(F4Scdn())
         registerExtractorAPI(Turtleviplay())
         registerExtractorAPI(Turboviplay())
         registerExtractorAPI(Hanerix())
