@@ -3,8 +3,7 @@ package com.istarvin
 import android.content.SharedPreferences
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.api.Log
-import com.lagradost.cloudstream3.AcraApplication.Companion.getKey
-import com.lagradost.cloudstream3.AcraApplication.Companion.setKey
+import com.lagradost.cloudstream3.CloudStreamApp
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.LoadResponse
 import com.lagradost.cloudstream3.MainAPI
@@ -144,7 +143,7 @@ class JavHD(
         translatedTitleCacheMutex.withLock {
             val cache = getTranslatedTitleCache()
             cache[title] = translatedTitle
-            setKey(TRANSLATION_CACHE_KEY, cache)
+            CloudStreamApp.setKey(TRANSLATION_CACHE_KEY, cache)
         }
         return translatedTitle
     }
@@ -152,7 +151,8 @@ class JavHD(
     private fun getTranslatedTitleCache(): MutableMap<String, String> {
         translatedTitleCache?.let { return it }
 
-        val cache = (getKey<Map<String, String>>(TRANSLATION_CACHE_KEY, emptyMap()) ?: emptyMap())
+        val cache = (CloudStreamApp.getKey<Map<String, String>>(TRANSLATION_CACHE_KEY, emptyMap())
+            ?: emptyMap())
             .toMutableMap()
         translatedTitleCache = cache
         return cache
