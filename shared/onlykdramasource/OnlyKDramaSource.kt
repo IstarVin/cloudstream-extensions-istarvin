@@ -14,6 +14,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
+import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.net.URLEncoder
 import java.util.Collections
@@ -32,6 +33,22 @@ object OnlyKDramaSource {
     private val xcloud by lazy { OnlyKDramaChallenged(cloudflare) }
 
     suspend fun get(url: String): NiceResponse = site.get(url)
+
+    /**
+     * A post's page. Cloudflare sometimes refuses the saved clearance on the post pages while it still lets the search
+     * and REST requests through, so the page falls back to the same post's body from the REST API; that body has the
+     * download links but not the TMDB id.
+     */
+    suspend fun post(url: String): Document =
+        try {
+            site.get(url).document
+        } catch (e: ErrorLoadingException) {
+            val type = if (OnlyKDramaParser.isMovie(url)) "movies" else "tvshows"
+            val slug = url.trimEnd('/').substringAfterLast('/')
+            val rest = site.get("$SITE/index.php?rest_route=/wp/v2/$type&slug=$slug&_fields=content")
+            val body = rest.parsedSafe<Array<OkRestPost>>()?.firstOrNull()?.content?.rendered ?: throw e
+            Jsoup.parse("<div class=\"wp-content\">$body</div>", url)
+        }
 
     /** Search result page [page]; past the last page WordPress answers 404, which reads as no cards. */
     suspend fun search(query: String, page: Int = 1): Document? {

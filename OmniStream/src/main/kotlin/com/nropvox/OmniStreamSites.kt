@@ -302,7 +302,7 @@ internal object OmniStreamSites {
             val urls = OmniStreamParser.matches(hits, link.names, link.years, null, link.series, null)
             urls.take(MAX_PAGES).amap { url ->
                 safely(TAG, "OnlyKDrama post") {
-                    val post = OnlyKDramaSource.get(url).document
+                    val post = OnlyKDramaSource.post(url)
                     val tmdbId = OnlyKDramaParser.tmdbId(post)
                     if (tmdbId != null && tmdbId != link.id) return@safely null
                     // Season packs carry neither number and are left out; a movie's files carry no episode.

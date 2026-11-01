@@ -19,3 +19,10 @@ data class OkEntry(val season: Int?, val episode: Int?, val file: OkFile)
 /** Episode or movie `data`: every resolvable link of it, resolved in parallel by `loadLinks`. */
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class OkLinks(@JsonProperty("files") val files: List<OkFile> = emptyList())
+
+/** A post of the WordPress REST API (`_fields=content`): the same body as the page, without its chrome. */
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class OkRestPost(@JsonProperty("content") val content: OkRendered? = null)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class OkRendered(@JsonProperty("rendered") val rendered: String? = null)
