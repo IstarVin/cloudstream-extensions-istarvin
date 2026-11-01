@@ -41,6 +41,16 @@ class OnlyKDramaParserTest {
         assertTrue(OnlyKDramaParser.hasNext(doc))
     }
 
+    @Test fun lazyLoadedPostersUseTheRealUrl() {
+        val svg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 300'%3E%3C/svg%3E"
+        val doc = Jsoup.parse("""<article class="item tvshows"><div class="poster"><img src="$svg" data-lazy-src="https://image.tmdb.org/t/p/w185/abc.jpg" class="kd-lazy-loading"></div>
+            <div class="data"><h3><a href="https://onlykdrama.shop/drama/x/">The Art of Sarah (2026) Korean Drama</a></h3></div></article>
+            <article class="item tvshows"><div class="poster"><img src="$svg"></div><div class="data"><h3><a href="https://onlykdrama.shop/drama/y/">No Art (2026)</a></h3></div></article>""", base)
+        val cards = OnlyKDramaParser.cards(doc, base)
+        assertEquals("https://image.tmdb.org/t/p/w342/abc.jpg", cards[0].poster)
+        assertEquals(null, cards[1].poster)
+    }
+
     @Test fun cleanTitlesForMatching() {
         assertEquals("100 Days My Prince", OnlyKDramaParser.cleanTitle("100 Days My Prince (2018) Hindi Korean Drama"))
         assertEquals("Dali & Cocky Prince", OnlyKDramaParser.cleanTitle("Dali & Cocky Prince (2021) Hindi Dubbed Drama"))

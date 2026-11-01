@@ -62,6 +62,11 @@ object OnlyKDramaParser {
     /** TMDB poster at another width: cards ship `w92`/`w185`, too small for the app. */
     fun resize(poster: String?, width: String): String? = poster?.replace(tmdbSize, "/t/p/$width/")
 
+    /** The lazy-load plugin swaps most `<img src>` for an inline SVG placeholder and moves the real URL to `data-lazy-src`. */
+    private fun Element?.imageUrl(): String? = this?.let { img ->
+        listOf("data-lazy-src", "data-src", "src").map { img.attr(it).trim() }.firstOrNull { it.isNotBlank() && !it.startsWith("data:") }
+    }
+
     /** `article.item` of archive pages and home modules; the sidebar's `article.w_item_b` is skipped. */
     fun cards(doc: Document, base: String): List<OkCard> {
         val archive = doc.select("article.item").mapNotNull { article ->
@@ -71,7 +76,7 @@ object OnlyKDramaParser {
             OkCard(
                 url = url,
                 title = title,
-                poster = resize(article.selectFirst(".poster img")?.attr("src")?.takeIf { it.isNotBlank() }, "w342"),
+                poster = resize(article.selectFirst(".poster img").imageUrl(), "w342"),
                 year = titleYear.find(title)?.groupValues?.get(1)?.toIntOrNull()
                     ?: article.selectFirst(".data span")?.cleanText()?.let { year.find(it)?.value?.toIntOrNull() },
                 movie = article.hasClass("movies") || isMovie(url),
@@ -84,7 +89,7 @@ object OnlyKDramaParser {
             OkCard(
                 url = url,
                 title = title,
-                poster = resize(item.selectFirst(".thumbnail img")?.attr("src")?.takeIf { it.isNotBlank() }, "w342"),
+                poster = resize(item.selectFirst(".thumbnail img").imageUrl(), "w342"),
                 year = item.selectFirst(".meta .year")?.cleanText()?.toIntOrNull() ?: titleYear.find(title)?.groupValues?.get(1)?.toIntOrNull(),
                 movie = item.selectFirst(".thumbnail span.movies") != null || isMovie(url),
             )
@@ -101,7 +106,7 @@ object OnlyKDramaParser {
     fun title(doc: Document): String? = doc.selectFirst(".sheader .data h1")?.cleanText()?.takeIf { it.isNotBlank() }
 
     fun poster(doc: Document): String? =
-        resize(doc.selectFirst(".sheader .poster img")?.attr("src")?.takeIf { it.isNotBlank() }, "w500")
+        resize(doc.selectFirst(".sheader .poster img").imageUrl(), "w500")
 
     fun year(doc: Document): Int? = title(doc)?.let { titleYear.find(it)?.groupValues?.get(1)?.toIntOrNull() }
         ?: doc.selectFirst(".sheader .extra span.date")?.cleanText()?.let { year.find(it)?.value?.toIntOrNull() }
