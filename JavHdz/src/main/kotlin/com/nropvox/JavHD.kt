@@ -24,8 +24,9 @@ import com.lagradost.cloudstream3.runAllAsync
 import com.lagradost.cloudstream3.utils.AppUtils.parseJson
 import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.M3u8Helper.Companion.generateM3u8
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -36,7 +37,7 @@ import java.net.URLEncoder
 import kotlin.io.encoding.Base64
 
 private const val TRANSLATION_CACHE_KEY = "javhd_translated_titles"
-const val DEFAULT_MAIN_URL = "https://javhdz.la"
+const val DEFAULT_MAIN_URL = "https://javhdz.life"
 const val GOOGLE_TRANSLATE_API_KEY_PREF_KEY = "google_translate_api_key"
 const val BASE_URL_PREF_KEY = "base_url"
 
@@ -219,7 +220,7 @@ class JavHD(
                     null
                 }
                 // The first player is also rendered in the detail page.
-                val player = res?.player ?: if (serverId == "1") {
+                val player = res?.player?.takeIf { it.isNotBlank() } ?: if (serverId == "1") {
                     dataObject.pageUrl?.let { app.get(it).document.selectFirst("#video")?.html() }
                 } else null
                 if (player.isNullOrBlank()) return@suspend
@@ -228,12 +229,10 @@ class JavHD(
                     getBase64LinkRegex.find(player)?.groups?.get(1)?.value?.let {
                         val url = Base64.decode(it).decodeToString()
 
-                        generateM3u8(
-                            source = name,
-                            streamUrl = url,
-                            referer = mainUrl,
-                            headers = mapOf("referer" to mainUrl)
-                        ).forEach(callback)
+                        // The CDN disguises segments as PNG files, so pass the playlist to the player.
+                        callback(newExtractorLink(name, name, url, ExtractorLinkType.M3U8) {
+                            referer = "$mainUrl/"
+                        })
                     }
                     return@suspend
                 }
