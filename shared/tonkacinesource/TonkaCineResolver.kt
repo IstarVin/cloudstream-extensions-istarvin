@@ -159,7 +159,8 @@ internal object TonkaCineResolver {
 
         suspend fun emit(url: String?, label: String, type: String?, headers: Map<String, String>, height: Int? = null) {
             if (!isHttp(url) || !emitted.add(url!!)) return
-            callback(newExtractorLink(name, "$name - $label", url,
+            // Source priority uses source, so each player/server needs its own identifier too.
+            callback(newExtractorLink("$name - $label", "$name - $label", url,
                 if (type == "mp4" || URI(url).path.endsWith(".mp4", true)) ExtractorLinkType.VIDEO else ExtractorLinkType.M3U8) {
                 referer = headers.entries.firstOrNull { it.key.equals("Referer", true) }?.value.orEmpty()
                 this.headers = headers
