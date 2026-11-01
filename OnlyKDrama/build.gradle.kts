@@ -1,4 +1,4 @@
-version = 1
+version = 2
 
 cloudstream {
     authors = listOf("NropVox")
@@ -9,5 +9,6 @@ cloudstream {
     iconUrl = "https://www.google.com/s2/favicons?domain=onlykdrama.shop&sz=%size%"
 }
 
-// The HubCloud and Pixeldrain resolvers are shared with Vegamovies, XPrimeHub and 4KHDHub.
-android.sourceSets.getByName("main").kotlin.srcDir("../shared/nexdrive")
+// The HubCloud and Pixeldrain resolvers are shared with Vegamovies, XPrimeHub and 4KHDHub; the site's requests and
+// link resolving with OmniStream.
+listOf("nexdrive", "onlykdramasource").forEach { android.sourceSets.getByName("main").kotlin.srcDir("../shared/$it") }

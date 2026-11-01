@@ -103,6 +103,8 @@ internal object OmniStreamSites {
                 single?.let { { moviesModSources(it) } },
                 single?.takeIf { it.kind == OmniStreamParser.KIND_ASIAN }?.let { { kissKHEpisodes(it) } },
                 single?.takeIf { it.kind == OmniStreamParser.KIND_ASIAN }?.let { { goPlayTitle(it) } },
+                // Kept for the whole show, and its Cloudflare check is best passed before the race starts.
+                link.takeIf { it.kind == OmniStreamParser.KIND_ASIAN }?.let { { onlyKDramaEntries(it) } },
             ).forEach { launch { it() } }
         }
     }
@@ -278,5 +280,34 @@ internal object OmniStreamSites {
                         OmniStreamParser.sameTitle(original, listOf(link.originalTitle))
                     page.takeIf { it.isMovie != link.series && sameOriginal }
                 }
+        }
+
+    suspend fun onlyKDrama(link: OmniLink, name: String, callback: (ExtractorLink) -> Unit) {
+        val entries = onlyKDramaEntries(link) ?: return
+        val wanted = if (link.series) entries.filter { it.season == link.season && it.episode == link.episode } else entries
+        if (wanted.isNotEmpty()) OnlyKDramaSource.loadLinks(OkLinks(wanted.map { it.file }.distinctBy { it.url }), name, callback)
+    }
+
+    /**
+     * Every episode file of the posts that are this title, for the whole show: the site posts the original and each
+     * dubbed version separately, and every request crosses its Cloudflare check, so it is searched once per title.
+     * Posts name their TMDB id.
+     */
+    private suspend fun onlyKDramaEntries(link: OmniLink) =
+        cached("onlykdrama:${link.type}:${link.id}") {
+            val doc = OnlyKDramaSource.search(link.title) ?: return@cached null
+            val hits = OnlyKDramaParser.cards(doc, OnlyKDramaSource.SITE).map { card ->
+                SiteHit(card.url, OnlyKDramaParser.cleanTitle(card.title), card.year, series = !card.movie, label = card.title)
+            }
+            val urls = OmniStreamParser.matches(hits, link.names, link.years, null, link.series, null)
+            urls.take(MAX_PAGES).amap { url ->
+                safely(TAG, "OnlyKDrama post") {
+                    val post = OnlyKDramaSource.get(url).document
+                    val tmdbId = OnlyKDramaParser.tmdbId(post)
+                    if (tmdbId != null && tmdbId != link.id) return@safely null
+                    // Season packs carry neither number and are left out; a movie's files carry no episode.
+                    OnlyKDramaParser.entries(post).filter { (it.episode != null) == link.series }
+                }
+            }.filterNotNull().flatten().ifEmpty { null }
         }
 }

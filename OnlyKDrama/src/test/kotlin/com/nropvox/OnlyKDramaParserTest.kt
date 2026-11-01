@@ -41,6 +41,18 @@ class OnlyKDramaParserTest {
         assertTrue(OnlyKDramaParser.hasNext(doc))
     }
 
+    @Test fun cleanTitlesForMatching() {
+        assertEquals("100 Days My Prince", OnlyKDramaParser.cleanTitle("100 Days My Prince (2018) Hindi Korean Drama"))
+        assertEquals("Dali & Cocky Prince", OnlyKDramaParser.cleanTitle("Dali & Cocky Prince (2021) Hindi Dubbed Drama"))
+        assertEquals("My Mighty Princess", OnlyKDramaParser.cleanTitle("My Mighty Princess (2008) Korean Movie"))
+        assertEquals("The Prince of Tennis ~ Match! Tennis Juniors ~",
+            OnlyKDramaParser.cleanTitle("The Prince of Tennis ~ Match! Tennis Juniors ~ (2019) Chinese Drama"))
+        assertEquals("Queen of Tears", OnlyKDramaParser.cleanTitle("Queen of Tears Korean Drama"))
+        val names = OnlyKDramaParser.cards(page("search-prince.html"), base).map { OnlyKDramaParser.cleanTitle(it.title) }
+        assertTrue("Surplus Princess" in names)
+        assertTrue("Hwa Jung, the Princess of Light" in names)
+    }
+
     @Test fun hostsAreMatchedByLabel() {
         assertEquals(Host.HUBCLOUD, OnlyKDramaParser.host("https://hubcloud.ist/video/pdafr1qpwxqdx2t"))
         assertEquals(Host.HUBCLOUD, OnlyKDramaParser.host("https://hubcloud.one/drive/abc"))
