@@ -24,6 +24,18 @@ class OmniStreamParserTest {
 
     private fun target(id: Int, episode: Int) = OmniStreamParser.AniTarget(id, episode)
 
+    @Test fun reanimeSubtitlesKeepTextTracksAndDropBitmaps() {
+        // Tracks as the flixcloud embed lists them (Attack on Titan): ASS, OCR'd SRT and the SUP (PGS) it was OCR'd from.
+        val embed = """subtitles:[{url:"https://vault-95.rundowncdn.top/subtitles/dc83/dc83_eng_3.ass",language:"English (English [MTBB])",format:"ass",default:true},""" +
+            """{url:"https://vault-95.rundowncdn.top/subtitles/dc83/dc83_eng_6.sup",language:"English (English [USBD])",format:"sup",default:false},""" +
+            """{url:"https://vault-95.rundowncdn.top/subtitles/dc83/dc83.srt",language:"English (Dubtitle(AI))",format:"srt",default:false}],aid:"x""""
+        val tracks = ReanimeParser.parseSubtitles(embed)
+        assertEquals(listOf("English (English [MTBB])", "English (Dubtitle(AI))"), tracks.map { it.language })
+        assertEquals(listOf("ass", "srt"), tracks.map { it.format })
+        assertTrue(tracks.first().isDefault)
+        assertTrue(tracks.none { it.url.endsWith(".sup") })
+    }
+
     @Test fun oneTmdbSeasonSplitsIntoAniListCours() {
         assertEquals(target(113415, 1), OmniStreamParser.pickSeries(jjk, 1, 1, jjkAni, jjkNames))
         assertEquals(target(113415, 24), OmniStreamParser.pickSeries(jjk, 1, 24, jjkAni, jjkNames))
@@ -394,6 +406,13 @@ class OmniStreamParserTest {
         assertFalse(OmniStreamParser.isPixeldrain("https://notpixeldrain.com/api/file/abc123"))
         assertFalse(OmniStreamParser.isPixeldrain("https://hubcloud.ist/drive/pixeldrain.com"))
         assertFalse(OmniStreamParser.isPixeldrain("not a url"))
+    }
+
+    @Test fun subtitleLabelNamesTheSource() {
+        assertEquals("English (Reanime)", OmniStreamParser.subtitleLabel("English", "Reanime"))
+        assertEquals("English (Upcloud) (Dulo)", OmniStreamParser.subtitleLabel("English (Upcloud)", "Dulo"))
+        assertEquals("English (Dulo)", OmniStreamParser.subtitleLabel("English (Dulo)", "Dulo"))
+        assertEquals("Unknown (AnimeX)", OmniStreamParser.subtitleLabel(" ", "AnimeX"))
     }
 
     @Test fun pixeldrainKeyCheckReadsTheAccount() {

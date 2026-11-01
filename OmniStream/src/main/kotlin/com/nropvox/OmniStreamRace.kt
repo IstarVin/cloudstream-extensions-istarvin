@@ -120,7 +120,12 @@ internal class OmniLinkRace(
         try {
             stat.status = withTimeoutOrNull(SOURCE_MS) {
                 try {
-                    source({ subtitle -> if (!closed.get() && subtitles.add(subtitle.url)) subtitleCallback(subtitle) }) { link ->
+                    source({ subtitle ->
+                        if (!closed.get() && subtitles.add(subtitle.url)) {
+                            subtitle.lang = OmniStreamParser.subtitleLabel(subtitle.lang, label)
+                            subtitleCallback(subtitle)
+                        }
+                    }) { link ->
                         if (!closed.get() && links.add(link.url)) {
                             if (stat.emitted.incrementAndGet() == 1) stat.first = System.currentTimeMillis() - started
                             authorize(link)

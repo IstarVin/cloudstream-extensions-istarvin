@@ -45,6 +45,11 @@ object ReanimeSource {
                     val embedUrl = server.dataLink!!
                     val html = app.get(embedUrl, referer = "$SITE/").text
                     val embed = ReanimeParser.parseEmbed(html)
+                    // Sent before the token and playlist steps: a slow server or an early close of OmniStream's race
+                    // must not lose them. Every server's embed lists the same tracks.
+                    if (embed.subtitles.isNotEmpty() && subtitlesSent.compareAndSet(false, true)) {
+                        for (subtitle in embed.subtitles) subtitleCallback(newSubtitleFile(subtitle.language, subtitle.url))
+                    }
                     val tokenJson = app.get("https://flixcloud.cc/api/m3u8/${embed.token}", referer = embedUrl).text
                     val decoded = ReanimeParser.decodeEmbed(embed, tokenJson)
                     val masterBody = app.get(decoded.masterUrl, referer = ReanimeParser.FLIX_REFERER).text
@@ -60,10 +65,6 @@ object ReanimeSource {
                         quality = ReanimeParser.topHeight(master) ?: 0
                     })
                     found.set(true)
-
-                    if (subtitlesSent.compareAndSet(false, true)) {
-                        for (subtitle in embed.subtitles) subtitleCallback(newSubtitleFile(subtitle.language, subtitle.url))
-                    }
                 }.onFailure { Log.w(name, "${server.serverName} for AniList $anilistId ep $episode ($lang): $it") }
             }
         }

@@ -50,7 +50,18 @@ object ReanimeParser {
 
     // ---- flixcloud embed ----
 
-    class Subtitle(val url: String, val language: String, val isDefault: Boolean)
+    class Subtitle(val url: String, val language: String, val format: String, val isDefault: Boolean)
+
+    /** Formats the player can draw. The embed also lists `sup` (PGS bitmaps), which show nothing when picked. */
+    private val textSubtitleFormats = setOf("srt", "ass", "ssa", "vtt")
+
+    private val subtitleEntry = Regex("""\{url:"([^"]+)",language:"((?:[^"\\]|\\.)*)",format:"([A-Za-z0-9]+)",default:(true|false)\}""")
+
+    /** The embed's `subtitles:[{url,language,format,default}]` tracks that the player can show. */
+    fun parseSubtitles(html: String): List<Subtitle> = subtitleEntry.findAll(html)
+        .map { Subtitle(it.groupValues[1], it.groupValues[2].replace("\\\"", "\""), it.groupValues[3].lowercase(), it.groupValues[4] == "true") }
+        .filter { it.format in textSubtitleFormats }
+        .toList()
 
     /** What the embed page needs from its data literal, before the token request. */
     class EmbedData(
@@ -92,9 +103,7 @@ object ReanimeParser {
         val frag2 = field(frag2Field) ?: throw IllegalStateException("Embed second key fragment missing")
         val token = field(tokenField) ?: throw IllegalStateException("Embed token reference missing")
 
-        val subtitles = Regex("""\{url:"([^"]+)",language:"((?:[^"\\]|\\.)*)",format:"[a-z]+",default:(true|false)\}""")
-            .findAll(html).map { Subtitle(it.groupValues[1], it.groupValues[2].replace("\\\"", "\""), it.groupValues[3] == "true") }.toList()
-        return EmbedData(seed, b64(wasm), b64(frag1), b64(iv), b64(frag2), token, field("video_title"), subtitles)
+        return EmbedData(seed, b64(wasm), b64(frag1), b64(iv), b64(frag2), token, field("video_title"), parseSubtitles(html))
     }
 
     /** `{ "<10 hex>": "<base64>", … }`; every value is a plain string. */

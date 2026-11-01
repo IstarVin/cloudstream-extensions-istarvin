@@ -408,6 +408,16 @@ object OmniStreamParser {
 
     // --- Pixeldrain ---
 
+    /**
+     * A subtitle's name with the source it came from, matching the names of that source's links, so the user can pick
+     * the one timed to the link they play: the app keeps one subtitle list per episode and keeps the chosen one across a
+     * source switch. The language still leads, so auto-select by language keeps working.
+     */
+    fun subtitleLabel(lang: String, source: String): String {
+        val name = lang.trim().ifEmpty { "Unknown" }
+        return if (name.endsWith("($source)", ignoreCase = true)) name else "$name ($source)"
+    }
+
     private val pixeldrainHost = Regex("""^(?:[a-z0-9-]+\.)*pixeldrain\.(?:com|dev)$""")
 
     /** Whether [url] is on Pixeldrain (pixeldrain.com or its pixeldrain.dev mirror), where the user's API key applies. */
