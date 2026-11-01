@@ -32,7 +32,7 @@ class TonkaCineDecoderTest {
     @Test fun vidnestKeyIsDerivedFromNonce() {
         val nonce = "AAECAwQFBgcICQoLDA0ODw"
         val key = MessageDigest.getInstance("SHA-256")
-            .digest("$nonce|F9k2mR8vL4qP7wY1zN0fG3bS6tH5jC8d_x4R7vN2mP9qL1".toByteArray())
+            .digest("$nonce|K3p8vQ2mX9rL5wZ0fN7bG1sH4tJ6dC9_y8S3wM1nQ5pL2".toByteArray())
         assertEquals(json, TonkaCineDecoder.vidnest(seal(json, key, padded = false), nonce))
     }
 }

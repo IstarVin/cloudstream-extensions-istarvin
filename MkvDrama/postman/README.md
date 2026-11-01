@@ -11,4 +11,10 @@ MKVDRAMA_SIMULATION_URL=http://127.0.0.1:4947 ./gradlew :MkvDrama:testDebugUnitT
 The Kotlin test runs the production HTTP session and decoder against this mock,
 checking session continuity, both authenticated decryptions, same-origin paths,
 verification rejection, ciphertext tampering, and stopping at a file-host redirect.
+It also checks HTML catalog/detail parsing through the production HTTP session
+and reusing a fetched metadata page for the download handshake. The HTML routes
+reject JSON requests with a key error, modeling the observed JSON search
+restriction; this restriction is not claimed for every catalog/detail endpoint.
+Captured HTML parser fixtures cover movies, ongoing dramas, filtered catalogs,
+and paginated search separately from the simulation's small representative pages.
 The HTTP test skips when `MKVDRAMA_SIMULATION_URL` is unset; parser tests always run.

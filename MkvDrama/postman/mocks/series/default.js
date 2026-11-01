@@ -22,6 +22,19 @@ http.createServer(async (req, res) => {
   calls.push({method: req.method, path, body,
     userAgent: req.headers['user-agent'], accept: req.headers.accept,
     referer: req.headers.referer, origin: req.headers.origin});
+  // Public HTML contract sampled 2026-11-01. JSON search requires an API key.
+  if (req.method === 'GET' && ['/html-catalog', '/html-movie'].includes(path)) {
+    if (!req.headers.accept?.includes('text/html')) return send(res, 401, {detail: 'Invalid API key.'});
+    res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
+    return res.end(path === '/html-catalog'
+      ? `<div class="listupd"><article class="bs"><a class="tip" href="/bad-genius" title="Bad Genius">
+         <div class="typez Movie">Movie</div><img src="/poster.jpg"></a></article></div>
+         <div class="hpage"><a class="page-next" href="?page=2">Next</a></div>`
+      : `<div class="bigcontent"><div class="thumb"><img src="/poster.jpg"></div><div class="infox">
+         <h1 class="entry-title">Bad Genius</h1><div class="spe"><span><b>Type:</b> Movie</span>
+         <span><b>Aired:</b> May 03, 2017</span><span><b>Duration:</b> 2 hr. 10 min.</span></div></div></div>
+         <div class="bixbox synp"><div class="entry-content">Lynn, a genius high school student.</div></div>`);
+  }
   const match = path.match(/^\/(title|blocked|tampered|bad-seed|bad-cookie|plain)(\/.*)?$/);
   if (!match) return send(res, 501, {detail: 'Unmodeled endpoint'});
   const [, name, suffix = ''] = match;

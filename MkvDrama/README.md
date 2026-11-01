@@ -5,8 +5,11 @@ adjacent `mkvdrama-bypass` project. No bypass server or FlareSolverr is required
 by the extension. The provider is marked **beta** because shorteners and file
 hosts can require browser verification that has not been tested on a device.
 
-- Catalogs use JSON; search uses the site's HTML cards.
-- Details use JSON metadata and the encrypted download panel. Only published
+- Catalogs, search, and title metadata use the public HTML pages. No MKVDrama
+  API key is needed. Pagination follows the HTML next-page link; metadata comes
+  from the visible title, Aired, Type, Duration, Status, cast, genre, and rating
+  fields. Fields absent from the HTML are left unset.
+- Series details reuse the metadata page for the encrypted download panel. Only published
   episode ranges become episodes; the advertised total is not used to invent links.
 - The extension reproduces the cookie-bound seed/gate/pass exchange and
   authenticates AES-GCM payloads.
@@ -51,6 +54,14 @@ Build an installable package:
 See [postman/README.md](postman/README.md) for reproducible fixture tests.
 An optional live Kotlin smoke check (catalog, movie metadata, encrypted panel,
 and site redirects; no media) is enabled with `MKVDRAMA_LIVE_TEST=1`.
+
+The HTML migration was checked against public pages captured on 2026-11-01:
+`/titles/`, `/titles/?type=movie&order=latest&page=2`, `/search?q=genius&page=1`,
+`/bad-genius`, and `/khemjira-forever-kezqbv65`. Trimmed public fixtures are in
+`src/test/resources/mkvdrama/`. JSON search returned `401 Invalid API key`,
+while the same search with an HTML Accept header returned cards. Cloudflare
+can still require browser verification. The seed/gate/pass download exchange
+continues to use JSON envelopes; it is separate from the catalog API.
 
 Recon evidence and the full numbered API reference from this implementation are
 in `/tmp/mkvdrama.net-recon/mkvdrama.net-api.md`. That folder is temporary and

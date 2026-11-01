@@ -99,18 +99,42 @@ class MkvDramaTest {
         val base = System.getenv("MKVDRAMA_SIMULATION_URL")
         assumeTrue("Start the local Postman simulation to exercise HTTP", !base.isNullOrBlank())
         val client = MkvDramaSession(browserVerification = false)
+        client.get("$base/series/__reset", acceptJson = true)
         val url = "$base/series/title"
-        val links = MkvDramaDecoder.releases(client.panel(url), url)
+        val page = client.get(url)
+        val links = MkvDramaDecoder.releases(client.panel(page), url)
         assertEquals(1, links.size)
         assertEquals("1080pHD", links.single().quality)
         val redirect = client.request(links.single().url, url)
         assertEquals(307, redirect.code)
         assertEquals("https://mega.nz/file/invented#fixture-key", redirect.location)
         assertEquals("", redirect.text)
+        val calls = client.get("$base/series/__state", acceptJson = true).json().path("calls")
+        assertEquals("Unlock the fetched metadata page without another GET", 1,
+            calls.count { it.path("method").asText() == "GET" && it.path("path").asText() == "/title" })
         for (fixture in listOf("tampered", "bad-seed", "bad-cookie", "blocked")) {
             var rejected = false
             try { MkvDramaSession(false).panel("$base/series/$fixture") } catch (_: Exception) { rejected = true }
             assertTrue("$fixture must be rejected", rejected)
         }
+    }
+
+    @Test fun htmlCatalogAndDetailsDoNotRequireAnApiKey() = runBlocking {
+        val base = System.getenv("MKVDRAMA_SIMULATION_URL")
+        assumeTrue("Start the local Postman simulation to exercise HTTP", !base.isNullOrBlank())
+        val client = MkvDramaSession(browserVerification = false)
+        val catalogPage = client.get("$base/series/html-catalog?type=movie&page=1")
+        val catalog = MkvDramaParser.catalog(catalogPage.text, catalogPage.url)
+        assertEquals("Bad Genius", catalog.items.single().title)
+        assertTrue(catalog.items.single().movie)
+        assertTrue(catalog.hasNext)
+        val moviePage = client.get("$base/series/html-movie")
+        val movie = MkvDramaParser.details(moviePage.text, moviePage.url)
+        assertTrue(movie.movie)
+        assertEquals(2017, movie.year)
+        assertEquals(130, movie.duration)
+        var rejected = false
+        try { client.get("$base/series/html-catalog", acceptJson = true) } catch (_: Exception) { rejected = true }
+        assertTrue("The modeled API key restriction must reject JSON", rejected)
     }
 }

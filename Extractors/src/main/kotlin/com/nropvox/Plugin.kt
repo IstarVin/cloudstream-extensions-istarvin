@@ -9,6 +9,16 @@ import com.lagradost.cloudstream3.plugins.Plugin
 class ExtractorPlugin : Plugin() {
     companion object {
         private const val PREF_FILE = "Extractors"
+
+        /**
+         * This plugin's settings for Cloudstream Desktop's web UI, which can't show the Android sheet: one entry per
+         * preference key (string, secret, boolean, int or choice). Android ignores it.
+         */
+        const val SETTINGS_SCHEMA = """[
+            {"file": "$PREF_FILE", "key": "$HLS_PROXY_URL_PREF_KEY", "type": "string", "label": "HLS proxy URL",
+             "help": "Streams whose host needs special headers are played through this proxy. Leave it empty to use the default.",
+             "default": "$HLS_PROXY_DEFAULT_URL"}
+        ]"""
     }
 
     override fun load(context: Context) {

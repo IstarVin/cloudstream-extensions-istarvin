@@ -9,7 +9,7 @@ import javax.crypto.spec.SecretKeySpec
 /** Payload encryption used by the public players; unrelated to HLS segment encryption. */
 internal object TonkaCineDecoder {
     private const val VIDROCK_KEY = "7f3e9c2a8b5d1f4e6a9c3b7d2e5f8a1c4b6d9e2f5a8c1b4d7e9f2a5c8b1d4e7f"
-    private const val VIDNEST_SECRET = "F9k2mR8vL4qP7wY1zN0fG3bS6tH5jC8d_x4R7vN2mP9qL1"
+    private const val VIDNEST_SECRET = "K3p8vQ2mX9rL5wZ0fN7bG1sH4tJ6dC9_y8S3wM1nQ5pL2"
 
     fun vidrock(payload: String): String = decrypt(payload,
         VIDROCK_KEY.chunked(2).map { it.toInt(16).toByte() }.toByteArray())

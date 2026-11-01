@@ -101,8 +101,10 @@ internal class MkvDramaSession(browserVerification: Boolean = true) {
         error("Too many page redirects")
     }
 
-    suspend fun panel(pageUrl: String): String {
-        val response = get(pageUrl)
+    suspend fun panel(pageUrl: String): String = panel(get(pageUrl))
+
+    /** Reuse the metadata page so the cookie-bound download flow stays in the same session. */
+    suspend fun panel(response: MkvResponse): String {
         val started = System.nanoTime()
         val document = Jsoup.parse(response.text, response.url)
         val root = document.selectFirst("#mlx-root") ?: return response.text

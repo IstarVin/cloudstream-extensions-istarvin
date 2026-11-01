@@ -9,6 +9,17 @@ import com.lagradost.cloudstream3.plugins.Plugin
 
 @CloudstreamPlugin
 class OmniStreamPlugin : Plugin() {
+    companion object {
+        /**
+         * This plugin's settings for Cloudstream Desktop's web UI, which can't show the Android sheet: one entry per
+         * preference key (string, secret, boolean, int or choice). Android ignores it.
+         */
+        const val SETTINGS_SCHEMA = """[
+            {"file": "${OmniSettings.PREF_FILE}", "key": "${OmniSettings.PIXELDRAIN_API_KEY}", "type": "secret", "label": "Pixeldrain API key",
+             "help": "Sent with every Pixeldrain link. Without one, links play as an anonymous visitor."}
+        ]"""
+    }
+
     override fun load(context: Context) {
         OmniSettings.init(context.getSharedPreferences(OmniSettings.PREF_FILE, Context.MODE_PRIVATE))
         registerMainAPI(OmniStream())
@@ -26,7 +37,7 @@ class OmniStreamPlugin : Plugin() {
 /** User settings in the plugin's SharedPreferences, read on every use so a saved change applies to the next loadLinks. */
 internal object OmniSettings {
     const val PREF_FILE = "OmniStream"
-    private const val PIXELDRAIN_API_KEY = "pixeldrain_api_key"
+    const val PIXELDRAIN_API_KEY = "pixeldrain_api_key"
 
     @Volatile private var prefs: SharedPreferences? = null
 
