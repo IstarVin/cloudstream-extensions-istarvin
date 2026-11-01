@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import okhttp3.Credentials
 import okhttp3.Request
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -122,6 +123,7 @@ internal class OmniLinkRace(
                     source({ subtitle -> if (!closed.get() && subtitles.add(subtitle.url)) subtitleCallback(subtitle) }) { link ->
                         if (!closed.get() && links.add(link.url)) {
                             if (stat.emitted.incrementAndGet() == 1) stat.first = System.currentTimeMillis() - started
+                            authorize(link)
                             if (probe) {
                                 synchronized(pending) { pending[link.url] = link }
                                 probes.add(scope.launch { probeAndEmit(label, link) })
@@ -142,8 +144,27 @@ internal class OmniLinkRace(
         }
     }
 
+    /**
+     * Pixeldrain links from any source (the nexdrive hosts, the app's PixelDrain extractors, Stremio addons) carry the
+     * user's API key, so the probe and the player both download on their account. Pixeldrain takes HTTP Basic with
+     * an empty user name and the key as the password.
+     */
+    private fun authorize(link: ExtractorLink) {
+        val key = OmniSettings.pixeldrainKey
+        if (key.isEmpty() || !OmniStreamParser.isPixeldrain(link.url)) return
+        if (link.headers.keys.any { it.equals(AUTHORIZATION, true) }) return
+        link.headers = link.headers + (AUTHORIZATION to Credentials.basic("", key))
+    }
+
     private suspend fun probeAndEmit(label: String, link: ExtractorLink) {
-        val alive = OmniProbe.alive(link)
+        var alive = OmniProbe.alive(link)
+        // Pixeldrain answers 401 to every download with a wrong, revoked or expired key, even for files that play
+        // anonymously, so a bad key falls back to no key rather than losing the link.
+        if (!alive && AUTHORIZATION in link.headers && OmniStreamParser.isPixeldrain(link.url)) {
+            link.headers = link.headers - AUTHORIZATION
+            alive = OmniProbe.alive(link)
+            if (alive) Log.w(tag, "Pixeldrain refused the API key, playing ${link.name} without it")
+        }
         synchronized(pending) {
             // Gone when the race closed meanwhile and passed it on unchecked.
             if (pending.remove(link.url) == null) return
@@ -165,6 +186,8 @@ internal class OmniLinkRace(
     }
 
     companion object {
+        private const val AUTHORIZATION = "Authorization"
+
         /** Hard cap on the whole of loadLinks. */
         const val TOTAL_MS = 12_000L
         const val SOURCE_MS = 12_000L

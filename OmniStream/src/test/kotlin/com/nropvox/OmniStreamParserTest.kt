@@ -385,4 +385,27 @@ class OmniStreamParserTest {
         assertFalse(OmniStreamParser.sameRelease("2016-08-26", "2022-11-11"))
         assertFalse(OmniStreamParser.sameRelease(null, "2022-11-11"))
     }
+
+    @Test fun pixeldrainHostsTakeTheApiKey() {
+        assertTrue(OmniStreamParser.isPixeldrain("https://pixeldrain.com/api/file/abc123?download"))
+        assertTrue(OmniStreamParser.isPixeldrain("https://pixeldrain.dev/api/file/abc123"))
+        assertTrue(OmniStreamParser.isPixeldrain("https://PIXELDRAIN.COM/u/abc123"))
+        assertFalse(OmniStreamParser.isPixeldrain("https://pixeldrain.com.evil.example/api/file/abc123"))
+        assertFalse(OmniStreamParser.isPixeldrain("https://notpixeldrain.com/api/file/abc123"))
+        assertFalse(OmniStreamParser.isPixeldrain("https://hubcloud.ist/drive/pixeldrain.com"))
+        assertFalse(OmniStreamParser.isPixeldrain("not a url"))
+    }
+
+    @Test fun pixeldrainKeyCheckReadsTheAccount() {
+        val ok = OmniStreamParser.pixeldrainKeyCheck(200,
+            """{"username":"istar","email":"x@example.com","subscription":{"id":"prepaid","name":"Prepaid","type":"prepaid"}}""")
+        assertTrue(ok.valid)
+        assertEquals("Signed in as istar · Prepaid", ok.message)
+        assertTrue(OmniStreamParser.pixeldrainKeyCheck(200, "{}").valid)
+        // Saved from `curl -u :<revoked key> https://pixeldrain.com/api/user`.
+        val bad = OmniStreamParser.pixeldrainKeyCheck(401,
+            """{"success":false,"value":"authentication_failed","message":"The provided API key is invalid, has been revoked or has expired"}""")
+        assertFalse(bad.valid)
+        assertFalse(OmniStreamParser.pixeldrainKeyCheck(500, "<html>").valid)
+    }
 }

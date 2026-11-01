@@ -406,6 +406,33 @@ object OmniStreamParser {
         return value.trim().trimEnd('/').lowercase().takeIf { origin.matches(it) }
     }
 
+    // --- Pixeldrain ---
+
+    private val pixeldrainHost = Regex("""^(?:[a-z0-9-]+\.)*pixeldrain\.(?:com|dev)$""")
+
+    /** Whether [url] is on Pixeldrain (pixeldrain.com or its pixeldrain.dev mirror), where the user's API key applies. */
+    fun isPixeldrain(url: String): Boolean {
+        val host = runCatching { java.net.URI(url).host }.getOrNull()?.lowercase() ?: return false
+        return pixeldrainHost.matches(host)
+    }
+
+    /** What Pixeldrain's `GET /api/user` said about an API key, worded for the settings sheet. */
+    data class KeyCheck(val valid: Boolean, val message: String)
+
+    /** Reads the `/api/user` answer: the account on 200, `authentication_failed` (401) for a bad, revoked or expired key. */
+    fun pixeldrainKeyCheck(code: Int, body: String): KeyCheck {
+        val user = runCatching { mapper.readValue<OmniPdUser>(body) }.getOrNull()
+        return when {
+            code in 200..299 -> {
+                val account = listOfNotNull(user?.username?.takeIf { it.isNotBlank() }, user?.subscription?.name?.takeIf { it.isNotBlank() })
+                KeyCheck(true, if (account.isEmpty()) "Key accepted" else "Signed in as ${account.joinToString(" · ")}")
+            }
+            code == 401 || code == 403 -> KeyCheck(false, "Pixeldrain rejected this key: it is wrong, revoked or expired")
+            code == 429 -> KeyCheck(false, "Pixeldrain is rate limiting this device, try again in a minute")
+            else -> KeyCheck(false, "Pixeldrain answered HTTP $code")
+        }
+    }
+
     // --- Finish policy ---
 
     /** Until then the race holds out for an HD link; after it, any working link will do. */

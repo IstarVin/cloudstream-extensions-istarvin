@@ -263,3 +263,13 @@ data class OmniAniRelation(
     @JsonProperty("relationType") val relationType: String? = null,
     @JsonProperty("node") val node: OmniAniMedia? = null,
 )
+
+/** Pixeldrain `GET /api/user`, the account an API key belongs to. */
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class OmniPdUser(
+    @JsonProperty("username") val username: String? = null,
+    @JsonProperty("subscription") val subscription: OmniPdSubscription? = null,
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class OmniPdSubscription(@JsonProperty("name") val name: String? = null)
