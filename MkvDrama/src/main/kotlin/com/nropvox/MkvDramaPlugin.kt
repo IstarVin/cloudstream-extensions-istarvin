@@ -19,8 +19,10 @@ class MkvDramaPlugin : Plugin() {
         openSettings = { ctx ->
             val activity = ctx as AppCompatActivity
             if (!activity.isFinishing && !activity.isDestroyed) {
-                MkvDramaSettingsFragment(this, sharedPref)
-                    .show(activity.supportFragmentManager, "mkvdrama_settings")
+                PluginSettingsSheet(
+                    this, "MkvDrama", mkvDramaSettings(sharedPref),
+                    "Keys are stored on this device only. Changes apply to links loaded after saving; an episode you already opened keeps its cached links.",
+                ).show(activity.supportFragmentManager, "mkvdrama_settings")
             }
         }
     }

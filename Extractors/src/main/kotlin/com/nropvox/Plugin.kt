@@ -70,8 +70,10 @@ class ExtractorPlugin : Plugin() {
         openSettings = { ctx ->
             val activity = ctx as AppCompatActivity
             if (!activity.isFinishing && !activity.isDestroyed) {
-                ExtractorsSettingsFragment(this, sharedPref)
-                    .show(activity.supportFragmentManager, "extractors_settings")
+                PluginSettingsSheet(
+                    this, "Extractors", extractorsSettings(sharedPref),
+                    "Changes apply to streams loaded after saving; an episode you already opened keeps its cached links.",
+                ).show(activity.supportFragmentManager, "extractors_settings")
             }
         }
     }

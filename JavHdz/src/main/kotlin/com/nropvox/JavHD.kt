@@ -36,7 +36,7 @@ import java.net.URLEncoder
 import kotlin.io.encoding.Base64
 
 private const val TRANSLATION_CACHE_KEY = "javhd_translated_titles"
-private const val DEFAULT_MAIN_URL = "https://javhdz.la"
+const val DEFAULT_MAIN_URL = "https://javhdz.la"
 const val GOOGLE_TRANSLATE_API_KEY_PREF_KEY = "google_translate_api_key"
 const val BASE_URL_PREF_KEY = "base_url"
 

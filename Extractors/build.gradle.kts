@@ -1,4 +1,4 @@
-version = 20
+version = 21
 
 cloudstream {
     authors = listOf("NropVox")
@@ -22,3 +22,6 @@ cloudstream {
 dependencies {
     implementation("com.google.android.material:material:1.13.0")
 }
+
+// The settings sheet (OmniStream's design) is shared: src/main/res is a symlink to shared/settingsui/res.
+android.sourceSets.getByName("main").kotlin.srcDir("../shared/settingsui")

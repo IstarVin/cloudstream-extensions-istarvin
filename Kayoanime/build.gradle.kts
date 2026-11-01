@@ -1,4 +1,4 @@
-version = 2
+version = 3
 
 cloudstream {
     authors = listOf("NropVox")
@@ -10,4 +10,14 @@ cloudstream {
     status = 1
     tvTypes = listOf("Anime", "AnimeMovie")
     iconUrl = "https://www.google.com/s2/favicons?domain=kayoanime.com&sz=%size%"
+
+    requiresResources = true
+    isCrossPlatform = false
 }
+
+dependencies {
+    implementation("com.google.android.material:material:1.13.0")
+}
+
+// The settings sheet (OmniStream's design) is shared: src/main/res is a symlink to shared/settingsui/res.
+android.sourceSets.getByName("main").kotlin.srcDir("../shared/settingsui")

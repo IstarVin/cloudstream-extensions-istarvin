@@ -19,8 +19,10 @@ class JavHDPlugin : Plugin() {
         openSettings = { ctx ->
             val activity = ctx as AppCompatActivity
             if (!activity.isFinishing && !activity.isDestroyed) {
-                JavHDSettingsFragment(this, sharedPref)
-                    .show(activity.supportFragmentManager, "javhd_settings")
+                PluginSettingsSheet(
+                    this, "JavHD", javHDSettings(sharedPref),
+                    "Keys are stored on this device only. A new base URL applies the next time a page loads.",
+                ).show(activity.supportFragmentManager, "javhd_settings")
             }
         }
     }
