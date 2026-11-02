@@ -146,7 +146,7 @@ class StreamCorner internal constructor(private val bridgeFactory: (String) -> S
                             } catch (e: CancellationException) {
                                 throw e
                             } catch (e: Exception) {
-                                Log.w(name, "$label decoder failed: ${e.javaClass.simpleName}")
+                                Log.w(name, "$label decoder failed: ${e.javaClass.simpleName} ${e.message}")
                                 null
                             } else null
                             val manifest = if (decoded != null || StreamCornerParser.isManifest(embed)) null else bridge.manifest(embed, EMBED_TIMEOUT_MS)

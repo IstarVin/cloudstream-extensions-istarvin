@@ -5,8 +5,6 @@ import android.content.Context
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
-import android.webkit.ConsoleMessage
-import android.webkit.WebChromeClient
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -54,11 +52,14 @@ internal class StreamCornerBridge(private val context: Context, private val orig
     /** Posts one message (JSON object text without `requestId`) to the site's worker and returns its raw reply. */
     suspend fun call(path: String, message: String, tokenField: String? = null): String {
         val view = worker(path, tokenField)
-        Log.i(TAG, "TRACE call ${message.take(150)} field=$tokenField")
-        val id = ids.incrementAndGet()
-        val reply = CompletableDeferred<String>().also { pending[id] = it }
+        val reply = CompletableDeferred<String>()
+        var id = 0
         try {
+            // The site's worker drops a request whose id is lower than one it has already seen, so number and post
+            // on the main thread, where posts keep their order.
             withContext(Dispatchers.Main) {
+                id = ids.incrementAndGet()
+                pending[id] = reply
                 view.evaluateJavascript("csCall($id,$message)", null)
                 keepAlive()
             }
@@ -97,7 +98,6 @@ internal class StreamCornerBridge(private val context: Context, private val orig
         }
 
         @JavascriptInterface fun reply(id: Int, json: String) {
-            Log.i(TAG, "TRACE reply $id ${json.take(120)}")
             pending.remove(id)?.complete(json)
         }
 
@@ -196,12 +196,6 @@ internal class StreamCornerBridge(private val context: Context, private val orig
         // Unattached views have no size; give the framed players a viewport to lay out in.
         layout(0, 0, 1280, 720)
         val userAgent = settings.userAgentString
-        webChromeClient = object : WebChromeClient() {
-            override fun onConsoleMessage(m: ConsoleMessage): Boolean {
-                Log.i(TAG, "TRACE console ${m.messageLevel()} ${m.message().take(300)} @${m.sourceId().takeLast(40)}:${m.lineNumber()}")
-                return true
-            }
-        }
         webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
                 val url = request.url.toString()
