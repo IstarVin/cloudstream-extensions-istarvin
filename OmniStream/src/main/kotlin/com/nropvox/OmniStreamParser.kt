@@ -446,7 +446,7 @@ object OmniStreamParser {
     // --- Finish policy ---
 
     /** Until then the race holds out for an HD link; after it, any working link will do. */
-    const val SOFT_MS = 6_000L
+    const val SOFT_MS = 45_000L
 
     /**
      * How much longer the link race should wait for stragglers, or null to keep waiting: [links] working links from

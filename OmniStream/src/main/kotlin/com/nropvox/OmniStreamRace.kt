@@ -194,8 +194,8 @@ internal class OmniLinkRace(
         private const val AUTHORIZATION = "Authorization"
 
         /** Hard cap on the whole of loadLinks. */
-        const val TOTAL_MS = 12_000L
-        const val SOURCE_MS = 12_000L
+        const val TOTAL_MS = 60_000L
+        const val SOURCE_MS = 60_000L
     }
 }
 
