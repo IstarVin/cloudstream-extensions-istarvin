@@ -45,7 +45,7 @@ class Reanime : MainAPI() {
     override var lang = "en"
     override val hasMainPage = true
     override val hasQuickSearch = true
-    override val supportedTypes = setOf(TvType.Anime, TvType.AnimeMovie, TvType.OVA, TvType.NSFW)
+    override val supportedTypes = setOf(TvType.Anime, TvType.AnimeMovie, TvType.OVA)
 
     // Home rows: `home:*` come from one /api/v1/home call (the later pages of three of them continue by cursor),
     // `search:*` are browse queries on /api/v1/search paged by offset.
