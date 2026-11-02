@@ -21,7 +21,8 @@ import java.util.Collections
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * TonkaCine's public players (Vidrock, Vidnest, Vidlove and extractor-backed embeds), keyed by TMDB id.
+ * TonkaCine's public players (Vidrock, Vidnest and extractor-backed embeds), keyed by TMDB id. Vidlove (vidlove.cc,
+ * also the subtitle API) was dropped when its domain stopped resolving (November 2026).
  * Shared by the TonkaCine and OmniStream plugins; [resolve]'s name labels the links and log lines.
  */
 internal object TonkaCineResolver {
@@ -54,8 +55,6 @@ internal object TonkaCineResolver {
                 "Vidnest Ophim" to { vidnest("ophim") },
                 "Vidnest FlixHQ" to { vidnest("flixhq") },
                 "Vidnest YFlix" to { vidnest("yflix") },
-                "Vidlove" to { vidlove() },
-                "Subtitles" to { subtitles() },
                 "Other players" to { extractorFallbacks() },
             )
             jobs.chunked(3).forEach { batch ->
@@ -112,29 +111,6 @@ internal object TonkaCineResolver {
             tracks(result.get("subtitles"), mediaHeaders)
         }
 
-        suspend fun vidlove() {
-            val query = if (link.type == "tv") "id=${link.id}&season=${link.season}&episode=${link.episode}" else "id=${link.id}"
-            val origin = "https://player.vidlove.cc"
-            val headers = browserHeaders + mapOf("Referer" to "$origin/", "Origin" to origin)
-            // The busy-tier API can return source:null. It must never count as a working link.
-            listOf("moviebox2", "moviebox").forEach { server ->
-                safely("Vidlove $server") {
-                    val result = json("https://api.vidlove.cc/${link.type}?$query&mode=json&sources=$server&vh=1", headers)
-                    val source = result.get("source")
-                    emit(source?.text("url"), "Vidlove $server", null, headers)
-                    source?.get("qualities")?.takeIf { it.isArray }?.forEach { item ->
-                        emit(item.text("url"), "Vidlove $server", null, headers, quality(item.text("quality")))
-                    }
-                    tracks(result.get("subtitles"), headers)
-                }
-            }
-        }
-
-        suspend fun subtitles() {
-            val headers = browserHeaders + mapOf("Referer" to "https://player.vidlove.cc/")
-            tracks(json("https://api.vidlove.cc/subtitles/$path", headers), headers)
-        }
-
         suspend fun extractorFallbacks() {
             // These hosts need a matching extractor installed in Cloudstream. Never emit an HTML embed as video.
             val tv = link.type == "tv"
@@ -179,19 +155,30 @@ internal object TonkaCineResolver {
             }
         }
 
-        suspend fun json(url: String, headers: Map<String, String>): JsonNode =
-            mapper.readTree(app.get(url, headers = headers, timeout = 20L).text)
+        suspend fun json(url: String, headers: Map<String, String>): JsonNode {
+            val response = app.get(url, headers = headers, timeout = 20L)
+            val text = response.text
+            // An error page or a plain-text refusal would otherwise only log as JsonParseException.
+            if (!text.trimStart().let { it.startsWith("{") || it.startsWith("[") })
+                throw NotJsonException("HTTP ${response.code} ${response.headers["content-type"]?.substringBefore(';') ?: "no type"}")
+            return mapper.readTree(text)
+        }
 
         suspend fun safely(label: String, block: suspend () -> Unit) {
             try {
                 block()
             } catch (e: CancellationException) {
                 throw e
+            } catch (e: NotJsonException) {
+                Log.w(name, "$label: not JSON (${e.message})")
             } catch (e: Exception) {
                 Log.w(name, "$label: ${e.javaClass.simpleName}")
             }
         }
     }
+
+    /** Its message holds only the status and content type, never the URL. */
+    private class NotJsonException(message: String) : Exception(message)
 
     private fun JsonNode.text(key: String): String? = get(key)?.takeIf { it.isTextual }?.asText()?.takeIf { it.isNotBlank() }
     private fun JsonNode?.asHeaders(): Map<String, String> =

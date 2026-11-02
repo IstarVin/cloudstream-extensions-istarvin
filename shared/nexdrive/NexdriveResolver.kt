@@ -123,8 +123,7 @@ class NexdriveResolver(private val tag: String) {
                 when (provider) {
                     "skydrop" -> vegadrop(base, id, sink)
                     "pixeldrain" -> {
-                        val target = app.get("$base/__vega_bridge/link/$id?provider=pixeldrain", allowRedirects = false, timeout = 30L)
-                            .headers["location"] ?: return@safely
+                        val target = noFollow("$base/__vega_bridge/link/$id?provider=pixeldrain").headers["location"] ?: return@safely
                         pixeldrain(target)?.let { sink.add("V-Drive Pixeldrain", it, streamable = true, quality = null) }
                     }
                 }
@@ -149,7 +148,7 @@ class NexdriveResolver(private val tag: String) {
         val stem = file.substringBeforeLast('=')
         // A missing transcode answers 404; an available one 302s to googlevideo.
         val best = VEGADROP_TRANSCODES.amap { (suffix, height) ->
-            (height to "$stem=$suffix").takeIf { app.get(it.second, allowRedirects = false, timeout = 15L).code in 300..399 }
+            (height to "$stem=$suffix").takeIf { noFollow(it.second, timeout = 15L).code in 300..399 }
         }.filterNotNull().maxByOrNull { it.first }
         best?.let { (height, url) -> sink.add("Vegadrop transcode, 1 audio", url, streamable = true, quality = height) }
         sink.add("Vegadrop original", file, streamable = false, quality = null)
@@ -166,7 +165,7 @@ class NexdriveResolver(private val tag: String) {
         var current = start
         repeat(5) {
             if ("dl.php?link=" in current) return current.substringAfter("dl.php?link=")
-            val location = app.get(current, allowRedirects = false, timeout = 30L).headers["location"] ?: return null
+            val location = noFollow(current).headers["location"] ?: return null
             current = URI(current).resolve(location).toString()
         }
         return current.takeIf { "dl.php?link=" in it }?.substringAfter("dl.php?link=")
@@ -178,6 +177,13 @@ class NexdriveResolver(private val tag: String) {
         const val VCLOUD_WARM_MS = 10 * 60 * 1000L
     }
 }
+
+/**
+ * A GET that doesn't follow redirects, for reading its status or Location. The body is never read, so it is closed
+ * here: left open, the connection can't be reused and OkHttp logs it as leaked.
+ */
+suspend fun noFollow(url: String, headers: Map<String, String> = emptyMap(), referer: String? = null, timeout: Long = 30L): NiceResponse =
+    app.get(url, headers = headers, referer = referer, allowRedirects = false, timeout = timeout).also { it.okhttpResponse.close() }
 
 /** Runs [block], logging and swallowing any failure but cancellation. */
 suspend fun <T> safely(tag: String, operation: String, block: suspend () -> T): T? = try {

@@ -14,6 +14,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withTimeoutOrNull
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.net.URLEncoder
@@ -25,6 +26,7 @@ import java.util.Collections
  */
 object OnlyKDramaSource {
     const val SITE = "https://onlykdrama.shop"
+    private const val XCLOUD_BUDGET_MS = 25_000L
 
     // Built on first use: each CloudflareKiller clears every WebView cookie when it is created.
     private val cloudflare by lazy { CloudflareKiller() }
@@ -68,7 +70,9 @@ object OnlyKDramaSource {
                     val pixeldrain = OnlyKDramaParser.gdflixPixeldrain(app.get(file.url, timeout = 30L).document) ?: return@safely
                     hosts.resolve(pixeldrain) { _, url, streamable, _ -> sink.add(file, "GDFlix Pixeldrain", url, streamable) }
                 }
-                Host.XCLOUD -> safely(name, "XCloud") { xcloud(file, name, sink) }
+                // The other hosts answer in seconds. An unsolved XCloud challenge would hold loadLinks open until the
+                // app's timeout, so XCloud gets a budget; Cloudflare clearance it earns meanwhile still serves the next play.
+                Host.XCLOUD -> safely(name, "XCloud") { withTimeoutOrNull(XCLOUD_BUDGET_MS) { xcloud(file, name, sink) } }
                 Host.DIRECT -> sink.add(file, "Worker", file.url, streamable = true)
                 Host.OTHER -> Unit
             }
@@ -85,7 +89,7 @@ object OnlyKDramaSource {
                 // With a saved clearance CloudflareKiller replays requests on a client that follows redirects, which
                 // would start downloading the file; send its cookies by hand and read the Location instead.
                 val headers = cloudflare.getCookieHeaders(redirect).toMap()
-                val target = app.get(redirect, headers = headers, referer = servers, allowRedirects = false, timeout = 30L)
+                val target = noFollow(redirect, headers, referer = servers)
                     .headers["location"]?.takeIf { it.startsWith("http") } ?: return@safely
                 sink.add(file, "XCloud $server", target, streamable = true)
             }
@@ -127,26 +131,20 @@ private class OnlyKDramaChallenged(private val cloudflare: CloudflareKiller) {
         if (System.currentTimeMillis() >= warmUntil) lock.withLock {
             if (System.currentTimeMillis() >= warmUntil) {
                 if (System.currentTimeMillis() < coldUntil) throw ErrorLoadingException("$FAILED [cold]")
-                val start = System.currentTimeMillis()
                 val response = app.get(url, referer = referer, interceptor = cloudflare, timeout = 60L)
-                com.lagradost.api.Log.i("OnlyKDrama", "TRACE solve $url -> ${response.code} in ${System.currentTimeMillis() - start} ms")
                 if (response.code in 200..299) warmUntil = System.currentTimeMillis() + WARM_MS
                 else if (challenged(response)) coldUntil = System.currentTimeMillis() + COLD_MS
-                return checked(response, "solve ${System.currentTimeMillis() - start}ms")
+                return checked(response)
             }
         }
-        return checked(slots.withPermit { app.get(url, referer = referer, interceptor = cloudflare, timeout = 60L) }, "replay")
+        return checked(slots.withPermit { app.get(url, referer = referer, interceptor = cloudflare, timeout = 60L) })
     }
 
     private fun challenged(response: NiceResponse) =
         response.code in listOf(403, 503) && response.headers["server"].orEmpty().startsWith("cloudflare")
 
-    private fun checked(response: NiceResponse, how: String): NiceResponse =
-        if (challenged(response)) {
-            val sent = response.okhttpResponse.request
-            throw ErrorLoadingException("$FAILED [$how ${response.code} mit=${response.headers["cf-mitigated"]} ua=${sent.header("user-agent")?.takeLast(60)} " +
-                "wvua=${com.lagradost.cloudstream3.network.WebViewResolver.webViewUserAgent?.takeLast(60)} ck=${sent.header("cookie")?.split(";")?.map { it.substringBefore("=").trim() }}]")
-        } else response
+    private fun checked(response: NiceResponse): NiceResponse =
+        if (challenged(response)) throw ErrorLoadingException(FAILED) else response
 
     private companion object {
         const val WARM_MS = 10 * 60 * 1000L

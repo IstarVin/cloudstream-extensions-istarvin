@@ -54,10 +54,8 @@ class OnlyKDrama(private val sharedPref: SharedPreferences? = null) : MainAPI() 
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val url = if (page <= 1) "$mainUrl/${request.data}" else "$mainUrl/${request.data}page/$page/"
-        val response = OnlyKDramaSource.get(url)
-        val doc = response.document
+        val doc = OnlyKDramaSource.get(url).document
         val cards = OnlyKDramaParser.cards(doc, mainUrl)
-        com.lagradost.api.Log.i(name, "TRACE home $url -> ${response.code} ${response.text.length} chars, ${cards.size} cards, title=${doc.title()}")
         return newHomePageResponse(request.name, cards.map { it.toSearchResponse() }, hasNext = OnlyKDramaParser.hasNext(doc))
     }
 
