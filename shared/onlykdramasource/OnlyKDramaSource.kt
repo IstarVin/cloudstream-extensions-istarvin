@@ -96,7 +96,7 @@ object OnlyKDramaSource {
         }
     }
 
-    /** Download-only links (Google `video-downloads`) cannot seek; they rank as Unknown so streams are picked first. */
+    /** Download-only links (Google `video-downloads`) cannot seek; they list under a separate "Download" source so they can be ranked apart from streams. */
     private class Sink(private val name: String, private val callback: (ExtractorLink) -> Unit) {
         private val emitted = Collections.synchronizedSet(HashSet<String>())
 
@@ -109,7 +109,7 @@ object OnlyKDramaSource {
             val label = listOfNotNull(host, OnlyKDramaParser.release(file.name), file.size).joinToString(" · ")
             val height = OnlyKDramaParser.quality(file.name).takeIf { it > 0 } ?: Qualities.Unknown.value
             callback(newExtractorLink(source, "$name [$kind] $label", url, ExtractorLinkType.VIDEO) {
-                quality = if (streamable) height else Qualities.Unknown.value
+                quality = height
             })
         }
     }
