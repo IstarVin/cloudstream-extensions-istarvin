@@ -43,6 +43,8 @@ object StreamCornerParser {
     private val preloadModule = Regex("""<link[^>]+rel="modulepreload"[^>]+href="(/assets/[A-Za-z0-9_-]+\.js)"""")
     private val entryModule = Regex("""<script[^>]+type="module"[^>]+src="(/assets/[A-Za-z0-9_-]+\.js)"""")
     private val workerFile = Regex("""new URL\("([A-Za-z0-9_-]+\.js)",import\.meta\.url\)""")
+    /** `{...e,<field>:token,<field>r:nonce}` in the data module: the worker's per-session handshake, added in late 2026. */
+    private val tokenField = Regex("""\{\.\.\.\w+,(_[0-9a-f]{16,}):\w+,\1r:\w+\}""")
     private val dataHost = Regex(""""(data\.[a-z0-9-]+\.workers\.dev)"""")
 
     /** Modules named in the homepage. Preloads come first: the small data module that names the worker is one. */
@@ -53,7 +55,7 @@ object StreamCornerParser {
     fun bootstrap(js: String): SCBootstrap? {
         val worker = workerFile.find(js)?.groupValues?.get(1) ?: return null
         val hosts = dataHost.findAll(js).map { it.groupValues[1] }.distinct().toList()
-        return SCBootstrap("/assets/$worker", hosts.ifEmpty { fallbackHosts })
+        return SCBootstrap("/assets/$worker", hosts.ifEmpty { fallbackHosts }, tokenField.find(js)?.groupValues?.get(1))
     }
 
     fun dataUrl(host: String, provider: String, id: String? = null): String =
@@ -306,15 +308,26 @@ object StreamCornerParser {
     }
 
     /** The page that starts the site's worker; served by the WebView at a streamcorner.st URL. */
-    fun bridgeHtml(workerPath: String): String = """<!doctype html><html><head><meta charset="utf-8"></head><body><script>
+    /**
+     * The page the worker runs behind. When the site's module signs its messages ([tokenField]), the worker URL
+     * carries a random `#token` and every message repeats it plus a fresh nonce, as the site's own code does.
+     */
+    fun bridgeHtml(workerPath: String, tokenField: String? = null): String = """<!doctype html><html><head><meta charset="utf-8"></head><body><script>
+function hex() { return Array.from(crypto.getRandomValues(new Uint8Array(16)), function (b) { return b.toString(16).padStart(2, '0'); }).join(''); }
+const field = ${mapper.writeValueAsString(tokenField)};
+const token = hex();
 let w;
 try {
-  w = new Worker(${mapper.writeValueAsString(workerPath)}, {type: 'module', name: 'provider-data'});
+  w = new Worker(${mapper.writeValueAsString(workerPath)} + (field ? '#' + token : ''), {type: 'module', name: 'provider-data'});
   w.onmessage = function (e) { var d = e.data || {}; CsBridge.reply(d.requestId | 0, JSON.stringify(d)); };
   w.onerror = function (e) { CsBridge.failed(String((e && e.message) || 'worker failed to load')); };
   CsBridge.ready();
 } catch (e) { CsBridge.failed(String(e)); }
-function csCall(id, msg) { msg.requestId = id; w.postMessage(msg); }
+function csCall(id, msg) {
+  msg.requestId = id;
+  if (field) { msg[field] = token; msg[field + 'r'] = hex(); }
+  w.postMessage(msg);
+}
 </script></body></html>"""
 
     /** A streamcorner.st page framing one embed, as the site does; some embeds blank themselves when not framed. */

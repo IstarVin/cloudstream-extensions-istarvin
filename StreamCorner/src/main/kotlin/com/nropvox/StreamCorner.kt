@@ -293,7 +293,7 @@ class StreamCorner internal constructor(private val bridgeFactory: (String) -> S
     private suspend fun list(provider: StreamCornerParser.Provider): List<SCItem> {
         lists[provider.key]?.takeIf { fresh(it.second, LIST_TTL_MS) }?.let { return it.first }
         val boot = bootstrap()
-        val reply = bridge.call(boot.workerPath, StreamCornerParser.message("provider-list", provider, hosts(boot)))
+        val reply = bridge.call(boot.workerPath, StreamCornerParser.message("provider-list", provider, hosts(boot)), boot.tokenField)
         return StreamCornerParser.list(reply).also { lists[provider.key] = it to System.currentTimeMillis() }
     }
 
@@ -302,7 +302,7 @@ class StreamCorner internal constructor(private val bridgeFactory: (String) -> S
         if (!refresh) details[cacheKey]?.takeIf { fresh(it.second, DETAIL_TTL_MS) }?.let { return it.first }
         val boot = bootstrap()
         val reply = try {
-            bridge.call(boot.workerPath, StreamCornerParser.message("provider-detail", provider, hosts(boot), id))
+            bridge.call(boot.workerPath, StreamCornerParser.message("provider-detail", provider, hosts(boot), id), boot.tokenField)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

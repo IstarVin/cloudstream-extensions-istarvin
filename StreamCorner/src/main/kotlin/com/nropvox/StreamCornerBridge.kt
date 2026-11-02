@@ -5,6 +5,8 @@ import android.content.Context
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
+import android.webkit.ConsoleMessage
+import android.webkit.WebChromeClient
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -50,8 +52,9 @@ internal class StreamCornerBridge(private val context: Context, private val orig
     private val playerUrl get() = "$origin/__cs/player.html"
 
     /** Posts one message (JSON object text without `requestId`) to the site's worker and returns its raw reply. */
-    suspend fun call(path: String, message: String): String {
-        val view = worker(path)
+    suspend fun call(path: String, message: String, tokenField: String? = null): String {
+        val view = worker(path, tokenField)
+        Log.i(TAG, "TRACE call ${message.take(150)} field=$tokenField")
         val id = ids.incrementAndGet()
         val reply = CompletableDeferred<String>().also { pending[id] = it }
         try {
@@ -65,11 +68,11 @@ internal class StreamCornerBridge(private val context: Context, private val orig
         }
     }
 
-    private suspend fun worker(path: String): WebView = setup.withLock {
+    private suspend fun worker(path: String, tokenField: String?): WebView = setup.withLock {
         worker?.takeIf { workerPath == path }?.let { return it }
         withContext(Dispatchers.Main) { dropWorker() }
         val ready = CompletableDeferred<Unit>()
-        val html = StreamCornerParser.bridgeHtml(path)
+        val html = StreamCornerParser.bridgeHtml(path, tokenField)
         val view = withContext(Dispatchers.Main) {
             newView(bridgeUrl, html, onRequest = null).apply {
                 addJavascriptInterface(Js(ready), "CsBridge")
@@ -94,6 +97,7 @@ internal class StreamCornerBridge(private val context: Context, private val orig
         }
 
         @JavascriptInterface fun reply(id: Int, json: String) {
+            Log.i(TAG, "TRACE reply $id ${json.take(120)}")
             pending.remove(id)?.complete(json)
         }
 
@@ -192,6 +196,12 @@ internal class StreamCornerBridge(private val context: Context, private val orig
         // Unattached views have no size; give the framed players a viewport to lay out in.
         layout(0, 0, 1280, 720)
         val userAgent = settings.userAgentString
+        webChromeClient = object : WebChromeClient() {
+            override fun onConsoleMessage(m: ConsoleMessage): Boolean {
+                Log.i(TAG, "TRACE console ${m.messageLevel()} ${m.message().take(300)} @${m.sourceId().takeLast(40)}:${m.lineNumber()}")
+                return true
+            }
+        }
         webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
                 val url = request.url.toString()

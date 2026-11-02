@@ -48,7 +48,7 @@ data class SCStream(
 )
 
 /** What the site's data module knows at runtime: the worker script and the data hosts it rotates through. */
-data class SCBootstrap(val workerPath: String, val hosts: List<String>)
+data class SCBootstrap(val workerPath: String, val hosts: List<String>, val tokenField: String? = null)
 
 /** Decoded per-stream configuration; keys come from the embed, never from manifest KIDs/PSSH. */
 internal data class SCClearKey(val kid: String, val key: String)

@@ -31,6 +31,16 @@ class StreamCornerParserTest {
         assertNull(StreamCornerParser.bootstrap("""import{a}from"./x.js";new URL(e,"https://streamcorner.local")"""))
     }
 
+    // Verbatim from the minified Ci2LOVdV.js (2026-11-02 build), where the worker started to need a session token.
+    @Test fun dataModuleNamesTheWorkerHandshake() {
+        val js = """const Mt=new URL("Boq5hifj.js",import.meta.url).href;function kt(e){const a=Array.from(crypto.getRandomValues(new Uint8Array(16)),r=>r.toString(16).padStart(2,"0")).join("");""" +
+            """return{...e,_7ac9e30576c825e5209e1fb1:ur,_7ac9e30576c825e5209e1fb1r:a}}const Ac="x";"data.gigav.workers.dev\""""
+        val boot = StreamCornerParser.bootstrap(js)!!
+        assertEquals("/assets/Boq5hifj.js", boot.workerPath)
+        assertEquals("_7ac9e30576c825e5209e1fb1", boot.tokenField)
+        assertNull(StreamCornerParser.bootstrap("""new URL("A.js",import.meta.url)""")!!.tokenField)
+    }
+
     @Test fun messagesMatchTheSite() {
         val beta = StreamCornerParser.provider("beta")!!
         assertEquals(
@@ -169,7 +179,8 @@ class StreamCornerParserTest {
     }
 
     @Test fun harnessPages() {
-        assertTrue(StreamCornerParser.bridgeHtml("/assets/BCJZAtsV.js").contains("""new Worker("/assets/BCJZAtsV.js", {type: 'module'"""))
+        assertTrue(StreamCornerParser.bridgeHtml("/assets/BCJZAtsV.js").contains("""new Worker("/assets/BCJZAtsV.js" + (field ? '#' + token : ''), {type: 'module'"""))
+        assertTrue(StreamCornerParser.bridgeHtml("/assets/x.js", "_7ac9").contains("""const field = "_7ac9";"""))
         assertTrue(StreamCornerParser.playerHtml("https://e/x?p=a&b=\"c").contains("""src="https://e/x?p=a&amp;b=&quot;c""""))
     }
 
