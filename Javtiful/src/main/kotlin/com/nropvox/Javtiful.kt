@@ -1,6 +1,7 @@
 package com.nropvox
 
 import com.lagradost.cloudstream3.Actor
+import com.lagradost.cloudstream3.HomePageList
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.LoadResponse
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
@@ -70,7 +71,10 @@ class Javtiful : MainAPI() {
         val home = res.select("article.video-card:not(.video-card--partner)").mapNotNull {
             it.mainPageResults()
         }
-        return newHomePageResponse(request.name, home, res.hasNextPage(page))
+        return newHomePageResponse(
+            HomePageList(request.name, home, isHorizontalImages = true),
+            hasNext = res.hasNextPage(page)
+        )
     }
 
     override suspend fun search(query: String, page: Int): SearchResponseList {
