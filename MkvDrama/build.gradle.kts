@@ -1,4 +1,4 @@
-version = 9
+version = 10
 
 cloudstream {
     authors = listOf("NropVox")
@@ -17,3 +17,6 @@ dependencies {
 
 // The settings sheet (OmniStream's design) is shared: src/main/res is a symlink to shared/settingsui/res.
 android.sourceSets.getByName("main").kotlin.srcDir("../shared/settingsui")
+
+// The page, panel and container resolution is shared with OmniStream, which asks it for a title's episode.
+android.sourceSets.getByName("main").kotlin.srcDir("../shared/mkvdramasource")

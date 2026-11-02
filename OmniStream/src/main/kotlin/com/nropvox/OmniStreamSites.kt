@@ -16,6 +16,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
+import java.net.URI
+import java.net.URLEncoder
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -31,6 +33,7 @@ internal object OmniStreamSites {
     /** Posts or pages read per site and title; a show may have one post per season. */
     private const val MAX_PAGES = 3
     private const val CACHE_SIZE = 200
+    private const val MKVDRAMA = "https://mkvdrama.net"
 
     private val cache = ConcurrentHashMap<String, Any>()
 
@@ -103,6 +106,7 @@ internal object OmniStreamSites {
                 single?.let { { moviesModSources(it) } },
                 single?.takeIf { it.kind == OmniStreamParser.KIND_ASIAN }?.let { { kissKHEpisodes(it) } },
                 single?.takeIf { it.kind == OmniStreamParser.KIND_ASIAN }?.let { { goPlayTitle(it) } },
+                single?.takeIf { it.kind == OmniStreamParser.KIND_ASIAN }?.let { { mkvDramaTitle(it) } },
                 // Kept for the whole show, and its Cloudflare check is best passed before the race starts.
                 link.takeIf { it.kind == OmniStreamParser.KIND_ASIAN }?.let { { onlyKDramaEntries(it) } },
             ).forEach { launch { it() } }
@@ -309,5 +313,31 @@ internal object OmniStreamSites {
                     OnlyKDramaParser.entries(post).filter { (it.episode != null) == link.series }
                 }
             }.filterNotNull().flatten().ifEmpty { null }
+        }
+
+    /** MkvDrama's page for the title; the season's own page when the site lists seasons as separate titles. */
+    suspend fun mkvDrama(link: OmniLink, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
+        val page = mkvDramaTitle(link) ?: return
+        val target = MkvEpisodeData(page, link.episode.takeIf { link.series })
+        safely(TAG, "MkvDrama links") { MkvDramaLinks(MkvDramaCache(), target, OmniSettings.pixeldrainKey, subtitleCallback, callback).play() }
+    }
+
+    private suspend fun mkvDramaTitle(link: OmniLink) =
+        cached(link.key("mkvdrama")) {
+            val session = MkvDramaSession()
+            val query = URLEncoder.encode(link.title.trim(), "UTF-8")
+            val response = session.get("$MKVDRAMA/search?q=$query&page=1")
+            val hits = MkvDramaParser.catalog(response.text, response.url).items.map { card ->
+                SiteHit(card.url, card.title, null, series = !card.movie)
+            }
+            val names = OmniStreamParser.seasonNames(link.names, link.season.takeIf { link.series })
+            OmniStreamParser.matches(hits, names, link.years, null, link.series, null).take(MAX_PAGES).firstNotNullOfOrNull { url ->
+                safely(TAG, "MkvDrama title") {
+                    val canonical = URI(MKVDRAMA).resolve(URI(url).path).toString()
+                    val page = session.get(canonical)
+                    val details = MkvDramaParser.details(page.text, page.url)
+                    canonical.takeIf { details.movie != link.series && OmniStreamParser.yearMatches(details.year, link.years) }
+                }
+            }
         }
 }

@@ -20,6 +20,8 @@ object OnlyKDramaParser {
     private val titleYear = Regex("""\((\d{4})\)""")
     private val yearTail = Regex("""\s*\((?:19|20)\d{2}\).*$""")
     private val kindTail = Regex("""\s+(?:(?:Hindi|English|Tamil|Telugu)\s+)?(?:Dubbed\s+)?(?:(?:Korean|Chinese|Japanese|Thai|Taiwanese)\s+)?(?:Drama|Movie)$""", RegexOption.IGNORE_CASE)
+    // An ongoing show's post is renamed with each new episode: `Where the Mask Ends EP 25`, `… Episode 3-6`.
+    private val episodeTail = Regex("""\s+(?:Episodes?|EP)\s*\d{1,4}(?:\s*[-–]\s*\d{1,4})?$""", RegexOption.IGNORE_CASE)
     private val year = Regex("""\b(19|20)\d{2}\b""")
     private val pageOf = Regex("""Page\s+(\d+)\s+of\s+(\d+)""", RegexOption.IGNORE_CASE)
     private val tmdbSize = Regex("""/t/p/(?:w\d+|original)/""")
@@ -55,7 +57,8 @@ object OnlyKDramaParser {
     }
 
     /** The show's name in a card or post title: `100 Days My Prince (2018) Hindi Korean Drama` → `100 Days My Prince`. */
-    fun cleanTitle(title: String): String = title.replace(yearTail, "").replace(kindTail, "").trim()
+    fun cleanTitle(title: String): String =
+        title.replace(yearTail, "").replace(kindTail, "").replace(episodeTail, "").trim()
 
     fun isMovie(url: String): Boolean = "/movies/" in url.substringAfter("://")
 

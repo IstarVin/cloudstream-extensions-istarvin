@@ -58,6 +58,9 @@ class OnlyKDramaParserTest {
         assertEquals("The Prince of Tennis ~ Match! Tennis Juniors ~",
             OnlyKDramaParser.cleanTitle("The Prince of Tennis ~ Match! Tennis Juniors ~ (2019) Chinese Drama"))
         assertEquals("Queen of Tears", OnlyKDramaParser.cleanTitle("Queen of Tears Korean Drama"))
+        assertEquals("Where the Mask Ends", OnlyKDramaParser.cleanTitle("Where the Mask Ends EP 25"))
+        assertEquals("Where the Mask Ends", OnlyKDramaParser.cleanTitle("Where the Mask Ends Episode 3-6"))
+        assertEquals("Episode", OnlyKDramaParser.cleanTitle("Episode"))
         val names = OnlyKDramaParser.cards(page("search-prince.html"), base).map { OnlyKDramaParser.cleanTitle(it.title) }
         assertTrue("Surplus Princess" in names)
         assertTrue("Hwa Jung, the Princess of Light" in names)

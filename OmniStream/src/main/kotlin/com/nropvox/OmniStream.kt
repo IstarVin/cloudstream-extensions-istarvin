@@ -215,6 +215,7 @@ class OmniStream : MainAPI() {
             sources += "KissKH" to { subs, links -> OmniStreamSites.kissKH(link, "KissKH", subs, links) }
             sources += GOPLAY to { subs, links -> OmniStreamSites.goPlay(link, name, GOPLAY, subs, links) }
             sources += "OnlyKDrama" to { _, links -> OmniStreamSites.onlyKDrama(link, "OnlyKDrama", links) }
+            sources += "MkvDrama" to { subs, links -> OmniStreamSites.mkvDrama(link, subs, links) }
         }
         // The AniList sources all wait for the same lookup, which never holds up the TMDB-keyed ones.
         if (link.kind == OmniStreamParser.KIND_ANIME) sources += OmniStreamAnime.sources(once { OmniStreamAnime.target(link, OmniTmdb::episodesOf) })
