@@ -18,11 +18,11 @@ class ZLiveParserTest {
         val payload = ZLiveParser.resolvePayload("auto-espn", 1793235749)
         assertEquals("""{"s":"auto-espn","u":1793235749}""", payload)
         val sealed = ZLiveParser.seal(payload, "Bk5Evyjt3eqUPPvXb4X27w", "2026-10-29", ByteArray(12) { it.toByte() })
-        assertEquals("OnJujjyQ1+D5BS1boiZm8KafSF9NGj0KXRJuRQo23qQ=", sealed.a)
+        assertEquals("GezDUicffjsXGOhVeYVMfB9gCt/NGYZ8bX3r6/1jNAQ=", sealed.a)
         assertEquals("AAECAwQFBgcICQoL", sealed.b)
-        assertEquals("gU+hzqOFnGuYfCeuXalp3Q==", sealed.c)
+        assertEquals("3m9ilOIQbC7ZLrP5is5Rjw==", sealed.c)
         assertEquals(
-            """{"a":"OnJujjyQ1+D5BS1boiZm8KafSF9NGj0KXRJuRQo23qQ=","b":"AAECAwQFBgcICQoL","c":"gU+hzqOFnGuYfCeuXalp3Q==","d":"2026-10-29","e":"Bk5Evyjt3eqUPPvXb4X27w"}""",
+            """{"a":"GezDUicffjsXGOhVeYVMfB9gCt/NGYZ8bX3r6/1jNAQ=","b":"AAECAwQFBgcICQoL","c":"3m9ilOIQbC7ZLrP5is5Rjw==","d":"2026-10-29","e":"Bk5Evyjt3eqUPPvXb4X27w"}""",
             ZLiveParser.sealedJson(sealed)
         )
         assertEquals("""{"u":1793235748}""", ZLiveParser.streamsPayload(1793235748))

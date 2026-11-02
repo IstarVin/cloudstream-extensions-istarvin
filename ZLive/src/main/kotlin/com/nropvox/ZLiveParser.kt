@@ -23,7 +23,7 @@ object ZLiveParser {
      * salts. A site redeploy may rotate all three; `/resolve` then answers with the decoy. Re-extract them with
      * `scripts/hook.js` in the recon folder.
      */
-    private const val SECRET = "Asq3YkZdzBICwscY4OO1PFAes1Mv1vJ8vxZbzYQeHZE"
+    private const val SECRET = "SfrcOczV4qSNuSMiouJIDtTOVXUYWzbgFnLDdF9DUSf"
     private const val SALT = "k6"
     private const val TICKET_SUFFIX = "|v6"
 
