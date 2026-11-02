@@ -29,6 +29,7 @@ Standard module layout (see `.claude/skills/cloudstream-plugin-dev/references/sc
 
 - `<Name>Plugin.kt`: `@CloudstreamPlugin` entry. Registers the `MainAPI` and any `ExtractorApi`s. Extends `Plugin` (with `Context`) when it needs SharedPreferences or a settings dialog (e.g. Kayoanime), otherwise `BasePlugin`.
 - `<Name>.kt`: the `MainAPI` (network calls and Cloudstream types: `getMainPage`, `search`, `load`, `loadLinks`).
+- `SETTINGS_SCHEMA`: a plugin with a settings sheet (`openSettings`/`PluginSettingsSheet`) also declares `const val SETTINGS_SCHEMA` in its Plugin class's companion object. It is a JSON array with one entry per preference key (`file`, `key`, `type` of string/secret/boolean/int/choice, `label`, `help`, optional `default`), which Cloudstream Desktop's web UI renders because it can't show the Android sheet. Android ignores it. Add or change an entry whenever you add or change a setting; see `ExtractorPlugin` for the template.
 - `<Name>Parser.kt`: pure functions (URL/slug shapes, quality labels, regexes, decoders, playlist/JSON parsing). This is the only layer the JVM tests can reach.
 - `<Name>Models.kt`: Jackson data classes.
 - `src/test/.../<Name>ParserTest.kt`: JUnit 4 tests built from real site samples. Recon folders live next to this repo at `/mnt/AJ/Projects/<host>-recon/` (`<host>-api.md` + `samples/`).

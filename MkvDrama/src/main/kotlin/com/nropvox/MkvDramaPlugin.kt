@@ -9,6 +9,15 @@ import com.lagradost.cloudstream3.plugins.Plugin
 class MkvDramaPlugin : Plugin() {
     companion object {
         private const val PREF_FILE = "MkvDrama"
+
+        /**
+         * This plugin's settings for Cloudstream Desktop's web UI, which can't show the Android sheet: one entry per
+         * preference key (string, secret, boolean, int or choice). Android ignores it.
+         */
+        const val SETTINGS_SCHEMA = """[
+            {"file": "$PREF_FILE", "key": "$PIXELDRAIN_API_KEY_PREF_KEY", "type": "secret", "label": "Pixeldrain API key",
+             "help": "Sent with every Pixeldrain link. Without one, links play as an anonymous visitor."}
+        ]"""
     }
 
     override fun load(context: Context) {

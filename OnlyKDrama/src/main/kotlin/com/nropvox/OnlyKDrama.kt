@@ -1,5 +1,6 @@
 package com.nropvox
 
+import android.content.SharedPreferences
 import com.lagradost.cloudstream3.ErrorLoadingException
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.LoadResponse
@@ -23,13 +24,16 @@ import com.lagradost.cloudstream3.newTvSeriesLoadResponse
 import com.lagradost.cloudstream3.newTvSeriesSearchResponse
 import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import com.lagradost.cloudstream3.utils.AppUtils.tryParseJson
+import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import kotlinx.coroutines.withTimeoutOrNull
+import okhttp3.Credentials
 
 /**
  * WordPress (DooPlay) download site behind a Cloudflare challenge; each post lists file-host links per episode. Its
  * requests and link resolving are in `shared/onlykdramasource`, shared with OmniStream.
  */
-class OnlyKDrama : MainAPI() {
+class OnlyKDrama(private val sharedPref: SharedPreferences? = null) : MainAPI() {
     override var mainUrl = OnlyKDramaSource.SITE
     override var name = "OnlyKDrama"
     override var lang = "en"
@@ -123,6 +127,30 @@ class OnlyKDrama : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val links = tryParseJson<OkLinks>(data) ?: return false
-        return OnlyKDramaSource.loadLinks(links, name, callback)
+        val key = pixeldrainApiKey()
+        if (key.isEmpty()) return OnlyKDramaSource.loadLinks(links, name, callback)
+        return OnlyKDramaSource.loadLinks(links, name) { link ->
+            if (isPixeldrain(link.url) && link.headers.keys.none { it.equals("Authorization", true) })
+                link.headers = link.headers + ("Authorization" to Credentials.basic("", key))
+            callback(link)
+        }
+    }
+
+    /**
+     * The saved Pixeldrain key, or "" when none is saved or Pixeldrain rejects it: a wrong, revoked or expired key
+     * makes every download 401, even files that play anonymously. An unreachable Pixeldrain keeps the key.
+     */
+    private suspend fun pixeldrainApiKey(): String {
+        val key = sharedPref?.getString(PIXELDRAIN_API_KEY_PREF_KEY, "")?.trim().orEmpty()
+        if (key.isEmpty()) return ""
+        val code = withTimeoutOrNull(8_000L) {
+            runCatching { app.get("https://pixeldrain.com/api/user", headers = mapOf("Authorization" to Credentials.basic("", key)), timeout = 8L).code }.getOrNull()
+        }
+        return if (code == 401 || code == 403) "" else key
+    }
+
+    private fun isPixeldrain(url: String): Boolean {
+        val host = runCatching { java.net.URI(url).host }.getOrNull()?.lowercase() ?: return false
+        return host == "pixeldrain.com" || host == "pixeldrain.dev" || host.endsWith(".pixeldrain.com") || host.endsWith(".pixeldrain.dev")
     }
 }

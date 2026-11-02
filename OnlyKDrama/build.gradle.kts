@@ -1,4 +1,4 @@
-version = 4
+version = 5
 
 cloudstream {
     authors = listOf("NropVox")
@@ -7,8 +7,15 @@ cloudstream {
     status = 2
     tvTypes = listOf("AsianDrama", "Movie")
     iconUrl = "https://www.google.com/s2/favicons?domain=onlykdrama.shop&sz=%size%"
+
+    requiresResources = true
+}
+
+dependencies {
+    implementation("com.google.android.material:material:1.13.0")
 }
 
 // The HubCloud and Pixeldrain resolvers are shared with Vegamovies, XPrimeHub and 4KHDHub; the site's requests and
-// link resolving with OmniStream.
-listOf("nexdrive", "onlykdramasource").forEach { android.sourceSets.getByName("main").kotlin.srcDir("../shared/$it") }
+// link resolving with OmniStream. The settings sheet (OmniStream's design) is shared: src/main/res is a symlink to
+// shared/settingsui/res.
+listOf("nexdrive", "onlykdramasource", "settingsui").forEach { android.sourceSets.getByName("main").kotlin.srcDir("../shared/$it") }
