@@ -1,6 +1,7 @@
 package com.nropvox
 
 import com.lagradost.cloudstream3.Actor
+import com.lagradost.cloudstream3.HomePageList
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.LoadResponse
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
@@ -75,7 +76,10 @@ class MissAV : MainAPI() {
             .mapNotNull { it.toSearchResult() }
             .distinctBy { it.url }
 
-        return newHomePageResponse(request.name, results, hasNext = results.isNotEmpty())
+        return newHomePageResponse(
+            HomePageList(request.name, results, isHorizontalImages = true),
+            hasNext = results.isNotEmpty()
+        )
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
