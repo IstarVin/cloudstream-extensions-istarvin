@@ -97,10 +97,12 @@ class JavStream : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
+        if (hasClass("ad-card")) return null
         val linkElement = this.selectFirst("a") ?: return null
         val href = linkElement.attr("href").trim()
 
-        if (href.isBlank() || href.startsWith("#") || href.startsWith("/search") ||
+        if (href.isBlank() || href.startsWith("#") || href.startsWith("/advertise") ||
+            href.startsWith("/search") ||
             href.contains("javascript", ignoreCase = true) || href.startsWith("/genre")) return null
 
         val fullHref = fixUrl(href)

@@ -87,10 +87,11 @@ class SexTB : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
+        if (hasClass("ad-card")) return null
         val linkElement = this.selectFirst("a") ?: return null
         val href = linkElement.attr("href")
 
-        if (href.startsWith("/search") || href.contains("javascript") || href.startsWith("/genre")) return null
+        if (href.startsWith("/advertise") || href.startsWith("/search") || href.contains("javascript") || href.startsWith("/genre")) return null
 
         val fullHref = fixUrl(href)
         val title =
