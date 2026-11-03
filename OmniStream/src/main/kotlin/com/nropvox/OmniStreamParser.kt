@@ -449,6 +449,12 @@ object OmniStreamParser {
     const val SOFT_MS = 45_000L
 
     /**
+     * Before it, nothing ends the race early. The multi-hop download sites (4KHDHub, MoviesMod, Vegamovies) need
+     * 10-25 s, and the fast sources fill the "enough" threshold within 2-5 s, which cut those sites off for good.
+     */
+    const val MIN_MS = 25_000L
+
+    /**
      * How much longer the link race should wait for stragglers, or null to keep waiting: [links] working links from
      * [sources] sources, the best of them [best] (a height; download-only links rank as Unknown, 400), [elapsed] ms
      * into the race. The player starts the best link, so with a 4K or 1080p one and a few backups from more than one
@@ -456,7 +462,7 @@ object OmniStreamParser {
      * until [SOFT_MS]; after that the first working link ends the wait.
      */
     fun grace(links: Int, sources: Int, best: Int, elapsed: Long): Long? = when {
-        links == 0 -> null
+        links == 0 || elapsed < MIN_MS -> null
         elapsed >= SOFT_MS -> 500L
         links < 4 || (sources < 2 && links < 8) -> null
         best >= 2160 -> 1_000L

@@ -235,15 +235,18 @@ class OmniStreamParserTest {
     }
 
     @Test fun finishPolicy() {
+        // Nothing ends the race before the slow download sites had their time.
+        assertNull(OmniStreamParser.grace(15, 6, 2160, 4_600))
+        assertNull(OmniStreamParser.grace(15, 6, 2160, OmniStreamParser.MIN_MS - 1))
         // Too few links, or all from one source: keep waiting.
-        assertNull(OmniStreamParser.grace(3, 3, 2160, 2_000))
-        assertNull(OmniStreamParser.grace(5, 1, 2160, 2_000))
+        assertNull(OmniStreamParser.grace(3, 3, 2160, 26_000))
+        assertNull(OmniStreamParser.grace(5, 1, 2160, 26_000))
         // Enough backups: the best link sets how long stragglers may still come in.
-        assertEquals(1_000L, OmniStreamParser.grace(4, 2, 2160, 2_000))
-        assertEquals(2_000L, OmniStreamParser.grace(4, 2, 1080, 2_000))
-        assertEquals(2_000L, OmniStreamParser.grace(8, 1, 1080, 2_000))
+        assertEquals(1_000L, OmniStreamParser.grace(4, 2, 2160, 26_000))
+        assertEquals(2_000L, OmniStreamParser.grace(4, 2, 1080, 26_000))
+        assertEquals(2_000L, OmniStreamParser.grace(8, 1, 1080, 26_000))
         // Only SD or Unknown links: the slower HD sources get until the soft deadline, then anything will do.
-        assertNull(OmniStreamParser.grace(12, 3, 720, 5_999))
+        assertNull(OmniStreamParser.grace(12, 3, 720, 30_000))
         assertEquals(500L, OmniStreamParser.grace(1, 1, 400, OmniStreamParser.SOFT_MS))
         assertNull(OmniStreamParser.grace(0, 0, 0, 11_000))
     }

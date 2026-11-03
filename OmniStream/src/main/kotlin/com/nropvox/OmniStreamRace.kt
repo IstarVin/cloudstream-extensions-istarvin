@@ -91,7 +91,7 @@ internal class OmniLinkRace(
                         break
                     }
                     // Look again on the next working link, or at the soft deadline when the answer changes by itself.
-                    val soft = OmniStreamParser.SOFT_MS - elapsed
+                    val soft = listOf(OmniStreamParser.MIN_MS, OmniStreamParser.SOFT_MS).map { it - elapsed }.firstOrNull { it > 0 } ?: 0L
                     withTimeoutOrNull(if (soft > 0) soft else Long.MAX_VALUE) {
                         select {
                             done.onAwait { }
