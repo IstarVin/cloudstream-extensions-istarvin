@@ -130,6 +130,15 @@ class StreamCornerParserTest {
         assertTrue(StreamCornerParser.sources(nba).all { it.second.startsWith("https://amazon.com.getsugatensho.sbs/nba?p=") })
     }
 
+    @Test fun completedGamesExcludeExpiredLiveFeeds() {
+        val live = SCStream(sourceName = "Live", embedUrl = "https://embed.example/live")
+        val replay = SCStream(sourceName = "Replay", embedUrl = "https://embed.example/replay")
+        val game = SCItem(gameId = "0022600172", time = "Final", live = listOf(live), vods = listOf(replay))
+        assertEquals(listOf("Replay"), StreamCornerParser.sources(game).map { it.first })
+        assertEquals(listOf("Live", "Replay"), StreamCornerParser.sources(game.copy(time = "Q3 5:12")).map { it.first })
+        assertTrue(StreamCornerParser.sources(game.copy(vods = emptyList())).isEmpty())
+    }
+
     @Test fun qualityFromLabels() {
         assertEquals(1080, StreamCornerParser.quality("FOX FHD HDR"))
         assertEquals(2160, StreamCornerParser.quality("FOX 4K UHD"))

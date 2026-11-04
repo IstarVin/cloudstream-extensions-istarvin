@@ -32,8 +32,10 @@ internal class StreamCornerDrmResolver(
         val host = "${uri.scheme}://${uri.authority}"
         val headers = mapOf("Referer" to "$origin/")
         val payload = module("$host${uri.path}", url, headers)
-        // Observed in the embed's KeyGuard asset table; these are modified players with their own key decoder.
-        val keys = module("$host/assets4/scplayer.js", "$host/assets4/scplayer.js", mapOf("Referer" to "$host/"))
+        // The asset endpoint selects its player by the referring embed path. A root referer for an NBA embed
+        // returns an HTML player page instead of the JavaScript key decoder. Keep those variants apart in cache.
+        val player = "$host/assets4/scplayer.js"
+        val keys = module("$player#${uri.path}", player, mapOf("Referer" to url))
         try {
             bridge.decode(payload, keys, token)
         } catch (e: kotlinx.coroutines.CancellationException) {
@@ -46,8 +48,9 @@ internal class StreamCornerDrmResolver(
 
     private suspend fun module(cacheKey: String, url: String, headers: Map<String, String>): StreamCornerDrm.Module = lock.withLock {
         modules[cacheKey]?.takeIf { System.currentTimeMillis() - it.second < 10 * 60_000 }?.let { return@withLock it.first }
-        val result = StreamCornerDrm.extract(fetch(url, headers)).singleOrNull()
-            ?: error("Embed decoder changed")
+        val source = fetch(url, headers)
+        val result = StreamCornerDrm.extract(source).singleOrNull()
+            ?: error("Embed decoder changed (${URI(url).path}, ${source.length} characters)")
         modules[cacheKey] = result to System.currentTimeMillis()
         result
     }

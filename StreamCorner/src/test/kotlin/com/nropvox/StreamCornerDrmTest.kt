@@ -31,6 +31,10 @@ class StreamCornerDrmTest {
         assertEquals("https://media.example/cenc.mpd", stream.url)
         assertEquals("00112233445566778899aabbccddeeff", stream.keys.single().kid)
         assertEquals("ffeeddccbbaa99887766554433221100", stream.keys.single().key)
+        val payload = StreamCornerDrm.legacyPayload(token)!!
+        val current = StreamCornerParser.legacyDrmStream(payload.replace("stream_keys", "keys"))!!
+        assertEquals(stream.keys, current.keys)
+        assertTrue(StreamCornerParser.legacyDrmStream(payload.replace("stream_keys", "keys").replace("ffeeddccbbaa99887766554433221100", "bad")) == null)
         assertTrue(StreamCornerDrm.legacyPayload("invalid!") == null)
         assertTrue(StreamCornerParser.legacyDrmStream("""{"api_url":"https://example.test/resolve"}""") == null)
     }

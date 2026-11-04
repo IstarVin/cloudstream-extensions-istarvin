@@ -191,13 +191,16 @@ object StreamCornerParser {
         return listOfNotNull(league, when_, score, item.description?.trim()?.ifEmpty { null }).joinToString("\n")
     }
 
-    /** Every playable choice of a detail reply: event streams, then NBA live feeds, then NBA replays. */
-    fun sources(item: SCItem): List<Pair<String, String>> =
-        (item.streams + item.live + item.vods).mapNotNull { stream ->
+    /** Completed NBA games retain expired live feeds in their detail reply; use their replays instead. */
+    fun sources(item: SCItem): List<Pair<String, String>> {
+        val live = if (!item.gameId.isNullOrBlank() && status(item, System.currentTimeMillis()) == Status.ENDED)
+            emptyList() else item.live
+        return (item.streams + live + item.vods).mapNotNull { stream ->
             val url = listOf(stream.embedUrl, stream.streamUrl, stream.manifestUrl, stream.url)
                 .firstOrNull { !it.isNullOrBlank() && it.startsWith("http") }?.trim() ?: return@mapNotNull null
             (stream.sourceName?.trim()?.ifEmpty { null } ?: "Stream") to url
         }.distinctBy { it.second }
+    }
 
     private val uhd = Regex("""\b(?:4K|UHD|2160P?)\b""", RegexOption.IGNORE_CASE)
     private val fhd = Regex("""\b(?:FHD|1080P?)\b""", RegexOption.IGNORE_CASE)
@@ -232,7 +235,7 @@ object StreamCornerParser {
     internal fun legacyDrmStream(payload: String): SCDrmStream? = runCatching {
         val config = mapper.readTree(payload)
         val url = config.get("stream_url")?.takeIf { it.isTextual }?.asText() ?: return null
-        val value = config.get("stream_keys")
+        val value = config.get("stream_keys") ?: config.get("keys")
         require(value == null || value.isNull || value.isTextual)
         val key = value?.takeIf { !it.isNull }?.asText().orEmpty().trim()
         val keys = if (key.isEmpty()) emptyList() else {
