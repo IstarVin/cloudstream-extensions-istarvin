@@ -41,6 +41,13 @@ class StreamCornerParserTest {
         assertNull(StreamCornerParser.bootstrap("""new URL("A.js",import.meta.url)""")!!.tokenField)
     }
 
+    @Test fun dataModuleNamesRecursiveHandshake() {
+        val js = """const St=new URL("B8c7l7Ub.js",import.meta.url).href;const Ac="_a267f53310e72a20a1b501d3:recursive";"""
+        val boot = StreamCornerParser.bootstrap(js)!!
+        assertEquals("_a267f53310e72a20a1b501d3:recursive", boot.tokenField)
+        assertTrue(StreamCornerParser.bridgeHtml(boot.workerPath, boot.tokenField).contains("tree: tree(Object.entries(msg))"))
+    }
+
     @Test fun messagesMatchTheSite() {
         val beta = StreamCornerParser.provider("beta")!!
         assertEquals(

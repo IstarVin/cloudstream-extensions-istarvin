@@ -45,6 +45,7 @@ object StreamCornerParser {
     private val workerFile = Regex("""new URL\("([A-Za-z0-9_-]+\.js)",import\.meta\.url\)""")
     /** `{...e,<field>:token,<field>r:nonce}` in the data module: the worker's per-session handshake, added in late 2026. */
     private val tokenField = Regex("""\{\.\.\.\w+,(_[0-9a-f]{16,}):\w+,\1r:\w+\}""")
+    private val recursiveField = Regex("""[\"'](_[0-9a-f]{16,}:recursive)[\"']""")
     private val dataHost = Regex(""""(data\.[a-z0-9-]+\.workers\.dev)"""")
 
     /** Modules named in the homepage. Preloads come first: the small data module that names the worker is one. */
@@ -55,7 +56,7 @@ object StreamCornerParser {
     fun bootstrap(js: String): SCBootstrap? {
         val worker = workerFile.find(js)?.groupValues?.get(1) ?: return null
         val hosts = dataHost.findAll(js).map { it.groupValues[1] }.distinct().toList()
-        return SCBootstrap("/assets/$worker", hosts.ifEmpty { fallbackHosts }, tokenField.find(js)?.groupValues?.get(1))
+        return SCBootstrap("/assets/$worker", hosts.ifEmpty { fallbackHosts }, recursiveField.find(js)?.groupValues?.get(1) ?: tokenField.find(js)?.groupValues?.get(1))
     }
 
     fun dataUrl(host: String, provider: String, id: String? = null): String =
@@ -318,6 +319,7 @@ object StreamCornerParser {
     fun bridgeHtml(workerPath: String, tokenField: String? = null): String = """<!doctype html><html><head><meta charset="utf-8"></head><body><script>
 function hex() { return Array.from(crypto.getRandomValues(new Uint8Array(16)), function (b) { return b.toString(16).padStart(2, '0'); }).join(''); }
 const field = ${mapper.writeValueAsString(tokenField)};
+const recursive = field && field.endsWith(':recursive');
 const token = hex();
 let w;
 try {
@@ -328,8 +330,18 @@ try {
 } catch (e) { CsBridge.failed(String(e)); }
 function csCall(id, msg) {
   msg.requestId = id;
-  if (field) { msg[field] = token; msg[field + 'r'] = hex(); }
-  w.postMessage(msg);
+  if (recursive) {
+    msg[field.slice(0, -10)] = token;
+    function tree(entries) {
+      if (!entries.length) return null;
+      const mid = entries.length >>> 1;
+      return {pair: entries[mid], left: tree(entries.slice(0, mid)), right: tree(entries.slice(mid + 1))};
+    }
+    w.postMessage({layout: field, tree: tree(Object.entries(msg))});
+  } else {
+    if (field) { msg[field] = token; msg[field + 'r'] = hex(); }
+    w.postMessage(msg);
+  }
 }
 </script></body></html>"""
 
