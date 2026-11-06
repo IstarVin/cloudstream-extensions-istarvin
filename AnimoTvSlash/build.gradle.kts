@@ -20,4 +20,4 @@ cloudstream {
 }
 
 // The AniList-keyed stream API is shared with OmniStream.
-android.sourceSets.getByName("main").kotlin.srcDir("../shared/animotvsource")
+android.sourceSets.getByName("main").kotlin.directories.add("../shared/animotvsource")

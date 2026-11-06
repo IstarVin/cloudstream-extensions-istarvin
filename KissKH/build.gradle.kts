@@ -1,4 +1,4 @@
-version = 2
+version = 3
 
 cloudstream {
     authors = listOf("NropVox")
@@ -19,4 +19,4 @@ cloudstream {
 }
 
 // The kisskh API calls and subtitle decryption are shared with OmniStream.
-android.sourceSets.getByName("main").kotlin.srcDir("../shared/kisskhsource")
+android.sourceSets.getByName("main").kotlin.directories.add("../shared/kisskhsource")

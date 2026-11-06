@@ -21,4 +21,4 @@ cloudstream {
 // Cloudstream's inline JSON and key APIs use Java 11 bytecode.
 
 // The GoPlay session, player decryption and link refresh are shared with OmniStream.
-android.sourceSets.getByName("main").kotlin.srcDir("../shared/goplaysource")
+android.sourceSets.getByName("main").kotlin.directories.add("../shared/goplaysource")

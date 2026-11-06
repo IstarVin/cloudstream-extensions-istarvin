@@ -23,4 +23,4 @@ cloudstream {
 // Cloudstream's inline JSON and key APIs use Java 11 bytecode.
 
 // movy's stream resolvers are shared with OmniStream.
-android.sourceSets.getByName("main").kotlin.srcDir("../shared/movysource")
+android.sourceSets.getByName("main").kotlin.directories.add("../shared/movysource")

@@ -62,26 +62,28 @@ object ReanimeLocalServer {
         return socket
     }
 
-    private fun handle(client: Socket) = client.use {
-        it.soTimeout = 15_000
-        val input = it.getInputStream().bufferedReader(Charsets.ISO_8859_1)
-        val request = input.readLine() ?: return
-        while (true) if (input.readLine().isNullOrEmpty()) break
-        val parts = request.split(' ')
-        val method = parts.getOrNull(0)
-        val target = parts.getOrNull(1).orEmpty()
-        val reply = if (method == "GET" || method == "HEAD") runCatching { respond(target) }.getOrNull() else null
-        val out = it.getOutputStream()
-        if (reply == null) {
-            out.write("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n".toByteArray())
-        } else {
-            out.write(
-                ("HTTP/1.1 200 OK\r\nContent-Type: ${reply.second}\r\nContent-Length: ${reply.first.size}\r\n" +
-                    "Cache-Control: no-store\r\nConnection: close\r\n\r\n").toByteArray()
-            )
-            if (method == "GET") out.write(reply.first)
-        }
-        out.flush()
+    private fun handle(client: Socket) {
+        client.use {
+            it.soTimeout = 15_000
+            val input = it.getInputStream().bufferedReader(Charsets.ISO_8859_1)
+            val request = input.readLine() ?: return
+            while (true) if (input.readLine().isNullOrEmpty()) break
+            val parts = request.split(' ')
+            val method = parts.getOrNull(0)
+            val target = parts.getOrNull(1).orEmpty()
+            val reply = if (method == "GET" || method == "HEAD") runCatching { respond(target) }.getOrNull() else null
+            val out = it.getOutputStream()
+            if (reply == null) {
+                out.write("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n".toByteArray())
+            } else {
+                out.write(
+                    ("HTTP/1.1 200 OK\r\nContent-Type: ${reply.second}\r\nContent-Length: ${reply.first.size}\r\n" +
+                        "Cache-Control: no-store\r\nConnection: close\r\n\r\n").toByteArray()
+                )
+                if (method == "GET") out.write(reply.first)
+            }
+            out.flush()
+    }
     }
 
     private const val PLAYLIST = "application/vnd.apple.mpegurl"

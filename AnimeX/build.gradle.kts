@@ -21,4 +21,4 @@ cloudstream {
 }
 
 // The AnimeX stream API calls are shared with OmniStream.
-android.sourceSets.getByName("main").kotlin.srcDir("../shared/animexsource")
+android.sourceSets.getByName("main").kotlin.directories.add("../shared/animexsource")

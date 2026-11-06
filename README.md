@@ -1,13 +1,12 @@
-# Cloudstream Extensions (SFW)
+# Cloudstream Extensions
 
-Cloudstream 3 extensions maintained by **IstarVin**. This repository only contains general-audience providers.
-Adult providers live in [NropVox/cloudstream-extensions-nropvox](https://github.com/NropVox/cloudstream-extensions-nropvox).
+Cloudstream extensions maintained by **IstarVin**.
 
 ## Installation
 
 1. Open the **Cloudstream** app.
 2. Go to **Settings** -> **Extensions** -> **Add Repository**.
-3. Paste `https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/plugins.json` and download.
+3. Paste `https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/plugins.json` or use shortcode `istarvin` and download.
 
 Many providers need the **Extractors** plugin from this repository installed as well.
 

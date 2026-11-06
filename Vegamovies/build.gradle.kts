@@ -10,7 +10,7 @@ cloudstream {
 }
 
 // The nexdrive host resolvers are shared with XPrimeHub.
-android.sourceSets.getByName("main").kotlin.srcDir("../shared/nexdrive")
+android.sourceSets.getByName("main").kotlin.directories.add("../shared/nexdrive")
 
 // The Vegamovies search and link chain is shared with OmniStream.
-android.sourceSets.getByName("main").kotlin.srcDir("../shared/vegamoviessource")
+android.sourceSets.getByName("main").kotlin.directories.add("../shared/vegamoviessource")

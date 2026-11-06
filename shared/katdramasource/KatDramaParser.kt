@@ -3,6 +3,7 @@ package com.nropvox
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.jsoup.nodes.Element
 import org.jsoup.nodes.Document
 import java.net.URLDecoder
 
@@ -120,9 +121,11 @@ object KatDramaParser {
                 date = card.select("span").map { it.text().trim() }.firstOrNull { it.matches(Regex("""\d{4}-\d{2}-\d{2}""")) },
             )
         }.distinctBy { it.number }
+        val next: Element? = h1?.nextElementSibling()
+        val nextP = if (next != null && next.tagName() == "p") next else null
         return Details(
             title = title,
-            plot = ld?.text("description") ?: h1?.nextElementSibling()?.takeIf { it.tagName() == "p" }?.text(),
+            plot = ld?.text("description") ?: nextP?.text(),
             poster = ld?.text("image") ?: doc.selectFirst("meta[property=og:image]")?.attr("content"),
             backdrop = backdrop.find(doc.html())?.value,
             year = ld?.text("datePublished")?.take(4)?.toIntOrNull() ?: pills.firstNotNullOfOrNull { year.matchEntire(it)?.value?.toIntOrNull() },

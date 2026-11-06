@@ -196,7 +196,7 @@ class OmniAnime : MainAPI() {
         val character = node?.name?.full ?: return null
         val voice = voiceActors?.firstOrNull()
         return ActorData(
-            Actor(character, node?.image?.large),
+            Actor(character, node.image?.large),
             role = when (role) {
                 "MAIN" -> ActorRole.Main
                 "SUPPORTING" -> ActorRole.Supporting

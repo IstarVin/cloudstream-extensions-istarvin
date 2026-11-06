@@ -21,4 +21,4 @@ cloudstream {
 }
 
 // dulo.mov's stream resolvers are shared with OmniStream.
-android.sourceSets.getByName("main").kotlin.srcDir("../shared/dulosource")
+android.sourceSets.getByName("main").kotlin.directories.add("../shared/dulosource")

@@ -1,4 +1,4 @@
-version = 17
+version = 18
 
 cloudstream {
     authors = listOf("NropVox")
@@ -33,4 +33,4 @@ listOf(
     "nexdrive", "vegamoviessource", "moviesmodsource", "fourkhdhubsource", "kisskhsource", "goplaysource", "reanimesource", "animexsource",
     "onlykdramasource", "mkvdramasource",
 )
-    .forEach { android.sourceSets.getByName("main").kotlin.srcDir("../shared/$it") }
+    .forEach { android.sourceSets.getByName("main").kotlin.directories.add("../shared/$it") }

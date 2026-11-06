@@ -1,4 +1,4 @@
-version = 7
+version = 8
 
 cloudstream {
     authors = listOf("NropVox")
@@ -18,4 +18,4 @@ dependencies {
 // The HubCloud and Pixeldrain resolvers are shared with Vegamovies, XPrimeHub and 4KHDHub; the site's requests and
 // link resolving with OmniStream. The settings sheet (OmniStream's design) is shared: src/main/res is a symlink to
 // shared/settingsui/res.
-listOf("nexdrive", "onlykdramasource", "settingsui").forEach { android.sourceSets.getByName("main").kotlin.srcDir("../shared/$it") }
+listOf("nexdrive", "onlykdramasource", "settingsui").forEach { android.sourceSets.getByName("main").kotlin.directories.add("../shared/$it") }

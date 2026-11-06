@@ -12,4 +12,4 @@ cloudstream {
 }
 
 // 7movies' playback chain is shared with OmniStream.
-android.sourceSets.getByName("main").kotlin.srcDir("../shared/sevenmoviessource")
+android.sourceSets.getByName("main").kotlin.directories.add("../shared/sevenmoviessource")

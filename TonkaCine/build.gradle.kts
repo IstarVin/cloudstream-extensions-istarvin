@@ -12,4 +12,4 @@ cloudstream {
 }
 
 // The player resolvers are shared with OmniStream.
-android.sourceSets.getByName("main").kotlin.srcDir("../shared/tonkacinesource")
+android.sourceSets.getByName("main").kotlin.directories.add("../shared/tonkacinesource")

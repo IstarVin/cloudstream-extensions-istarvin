@@ -239,7 +239,7 @@ class AnimeFlix : MainAPI() {
         repeat(HOP_ATTEMPTS) { attempt ->
             try {
                 return@withContext hopClient.newCall(Request.Builder().url(url).header("User-Agent", USER_AGENT).build()).execute().use {
-                    Hop(url, it.code, it.header("location"), it.body?.string().orEmpty())
+                    Hop(url, it.code, it.header("location"), it.body.string().orEmpty())
                 }
             } catch (e: IOException) {
                 last = e

@@ -21,4 +21,4 @@ cloudstream {
 }
 
 // The playback chain (and the pure parser/models it needs) is shared with OmniStream.
-android.sourceSets.getByName("main").kotlin.srcDir("../shared/anipmsource")
+android.sourceSets.getByName("main").kotlin.directories.add("../shared/anipmsource")

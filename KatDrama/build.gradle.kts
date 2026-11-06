@@ -1,4 +1,4 @@
-version = 4
+version = 5
 
 cloudstream {
     authors = listOf("NropVox")
@@ -16,4 +16,4 @@ dependencies {
 }
 
 // The k-drama.in resolvers are shared with OmniStream.
-android.sourceSets.getByName("main").kotlin.srcDir("../shared/katdramasource")
+android.sourceSets.getByName("main").kotlin.directories.add("../shared/katdramasource")

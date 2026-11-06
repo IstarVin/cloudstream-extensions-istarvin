@@ -48,6 +48,7 @@ internal object OmniStremio {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun language(code: String): String = OmniStreamParser.openSubtitlesLanguage(code)
         ?: runCatching { SubtitleHelper.fromThreeLettersToLanguage(code) }.getOrNull()
         ?: code

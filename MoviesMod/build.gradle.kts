@@ -12,4 +12,4 @@ cloudstream {
 }
 
 // The MoviesMod gate and DriveSeed chain is shared with OmniStream.
-android.sourceSets.getByName("main").kotlin.srcDir("../shared/moviesmodsource")
+android.sourceSets.getByName("main").kotlin.directories.add("../shared/moviesmodsource")

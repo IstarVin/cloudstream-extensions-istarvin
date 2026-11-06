@@ -144,8 +144,8 @@ class OmniStreamParserTest {
     @Test fun vegamoviesHitsMatchByImdbId() {
         val search = jacksonObjectMapper().readValue<VgSearch>(text("vegamovies-search-oppenheimer.json"))
         val hits = search.hits.orEmpty().mapNotNull { it.document }.map { doc ->
-            SiteHit(doc.permalink!!, VegamoviesParser.cleanTitle(doc.title!!), VegamoviesParser.year(doc.title!!),
-                doc.imdbId, VegamoviesParser.isSeries(doc.title!!), doc.title!!)
+            SiteHit(doc.permalink!!, VegamoviesParser.cleanTitle(doc.title!!), VegamoviesParser.year(doc.title),
+                doc.imdbId, VegamoviesParser.isSeries(doc.title), doc.title)
         }
         assertEquals(listOf("Oppenheimer", "Oppenheimer"), hits.map { it.title })
         fun matches(names: List<String>, year: Int, imdbId: String?, series: Boolean) =

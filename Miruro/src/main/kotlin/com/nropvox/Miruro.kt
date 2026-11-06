@@ -182,8 +182,8 @@ class Miruro : MainAPI() {
         val dubbed = episodes(detail.episodeCounts?.dub ?: 0, dub = true)
 
         return newAnimeLoadResponse(title, infoUrl(id, detail.title), tvType(detail.format)) {
-            engName = detail.title?.english
-            japName = detail.title?.native
+            engName = detail.title.english
+            japName = detail.title.native
             synonyms = detail.alternateTitles.orEmpty().mapNotNull { it.value }.distinct()
             posterUrl = detail.coverUrl
             backgroundPosterUrl = detail.backgroundUrl ?: detail.bannerUrl

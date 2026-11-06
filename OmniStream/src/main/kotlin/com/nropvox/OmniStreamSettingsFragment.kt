@@ -84,6 +84,7 @@ class OmniStreamSettingsFragment(plugin: Plugin) : BottomSheetDialogFragment() {
             requestWindowFeature(Window.FEATURE_NO_TITLE)
             setContentView(view)
             window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            @Suppress("DEPRECATION")
             window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
             setOnDismissListener { if (isAdded) refresh() }
         }

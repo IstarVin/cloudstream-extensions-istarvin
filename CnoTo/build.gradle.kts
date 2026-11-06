@@ -21,4 +21,4 @@ cloudstream {
 }
 
 // Cno.to's source resolution is shared with OmniStream.
-android.sourceSets.getByName("main").kotlin.srcDir("../shared/cnotosource")
+android.sourceSets.getByName("main").kotlin.directories.add("../shared/cnotosource")

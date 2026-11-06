@@ -1,4 +1,4 @@
-version = 6
+version = 7
 
 cloudstream {
     authors = listOf("NropVox")
@@ -12,4 +12,4 @@ cloudstream {
 }
 
 // The flixcloud player chain is shared with OmniStream.
-android.sourceSets.getByName("main").kotlin.srcDir("../shared/reanimesource")
+android.sourceSets.getByName("main").kotlin.directories.add("../shared/reanimesource")

@@ -1,5 +1,6 @@
 package com.nropvox
 
+import org.jsoup.nodes.Element
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.net.URLEncoder
@@ -72,7 +73,8 @@ object AnimeFlixParser {
 
     fun details(doc: Document): AfDetails {
         val info = doc.select("dl.info dt").associate { dt ->
-            dt.text().trim() to (dt.nextElementSibling()?.takeIf { it.tagName() == "dd" }?.text()?.trim().orEmpty())
+            val dd: Element? = dt.nextElementSibling()
+            dt.text().trim() to (if (dd != null && dd.tagName() == "dd") dd.text().trim() else "")
         }
         return AfDetails(
             title = doc.selectFirst("section.t-hero h1, h1")?.text()?.trim()?.ifBlank { null },
