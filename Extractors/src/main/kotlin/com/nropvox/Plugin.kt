@@ -73,9 +73,6 @@ class ExtractorPlugin : Plugin() {
         registerExtractorAPI(Vvaassjjav())
         registerExtractorAPI(Evsishere())
         registerExtractorAPI(Luminscdn())
-        registerExtractorAPI(JavtifulPage())
-        registerExtractorAPI(SexTBPage())
-        registerExtractorAPI(MissAVPage())
 
         openSettings = { ctx ->
             val activity = ctx as AppCompatActivity

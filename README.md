@@ -1,66 +1,20 @@
-# 🎯 NropVox Cloudstream Extensions
+# Cloudstream Extensions (SFW)
 
-**Shortcode**: `nropvox`
+Cloudstream 3 extensions maintained by **IstarVin**. This repository only contains general-audience providers.
+Adult providers live in [NropVox/cloudstream-extensions-nropvox](https://github.com/NropVox/cloudstream-extensions-nropvox).
 
----
+## Installation
 
-## 🌐 Plugin Repository
+1. Open the **Cloudstream** app.
+2. Go to **Settings** -> **Extensions** -> **Add Repository**.
+3. Paste `https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/plugins.json` and download.
 
-This repository contains Cloudstream extensions maintained by **NropVox**.
+Many providers need the **Extractors** plugin from this repository installed as well.
 
----
+## License
 
-## 🔌 Available Plugins
+Free software under the [GNU GPL v3 or later](https://www.gnu.org/licenses/gpl.html).
 
-| Plugin | Language | Type | Description |
-| --- | --- | --- | --- |
-| **Javtiful** | English | NSFW | Watch more than 60,000 Full HD JAV Online For Free at Javtiful |
-| **Otits** | Filipino | NSFW | Pinoy NSFW content from Otits |
-| **Sulasok** | Filipino | NSFW | Pinoy NSFW content from Sulasok |
-| **XPinay** | Filipino | NSFW | Pinoy NSFW content from XPinay |
+## DMCA Disclaimer
 
----
-
-## 📲 Installation
-
-1. Copy the **Shortcode**: `nropvox`
-2. Open the **Cloudstream** app.
-3. Go to **Settings** -> **Extensions**.
-4. Click **Add Repository**.
-5. Paste the shortcode and click **Download**.
-
----
-
-## 🧰 Tools & Technologies
-
-<p align="left">
-  <a href="https://skillicons.dev">
-    <img src="https://skillicons.dev/icons?i=kotlin,androidstudio,gradle,github,githubactions&theme=light&perline=5" />
-  </a>
-</p>
-
----
-
-## 📄 License
-
-[![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](http://www.gnu.org/licenses/gpl-3.0.en.html)
-
-These extensions are **free software**: you can use, study, share, and modify them as you wish.
-
-They are distributed under the terms of the [GNU General Public License](https://www.gnu.org/licenses/gpl.html) version 3 or later, published by the Free Software Foundation.
-
----
-
-## ⚖️ DMCA Disclaimer
-
-We hereby issue this notice to clarify that these extensions function similarly to a standard web browser by fetching video files from the internet.
-
-- **No content is hosted by this repository or the Cloudstream 3 application.**
-- Any content accessed is hosted by third-party websites.
-- Users are solely responsible for their usage and must comply with their local laws.
-
-If you believe content is violating copyright laws, please contact the **actual file hosts**, **not** the developers of this repository or the Cloudstream 3 app.
-
----
-
-**Thank You for using NropVox Repo!**
+These extensions work like a web browser: they fetch video files from the internet. No content is hosted by this repository or the Cloudstream 3 application. Content is hosted by third-party websites, and users are responsible for complying with their local laws.

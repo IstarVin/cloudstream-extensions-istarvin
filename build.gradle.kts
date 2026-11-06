@@ -51,7 +51,7 @@ subprojects {
     cloudstream {
         setRepo(
             System.getenv("GITHUB_REPOSITORY")
-                ?: "https://github.com/NropVox/cloudstream-extensions-nropvox"
+                ?: "https://github.com/IstarVin/cloudstream-extensions-istarvin"
         )
         authors = listOf("NropVox")
     }
