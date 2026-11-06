@@ -1,0 +1,660 @@
+[
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/AnimeFlix.cs3",
+        "status": 1,
+        "version": 4,
+        "name": "AnimeFlix",
+        "internalName": "AnimeFlix",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Anime series and movies from AnimeFlix (Japanese with English subs, some dual/multi audio). Plays the DriveSeed mirrors of every quality: Instant (Google) cannot seek; Cloud (R2) is used when reachable.",
+        "fileSize": 47754,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Anime",
+            "AnimeMovie"
+        ],
+        "iconUrl": "https://animeflix.my/wp-content/uploads/2019/10/cropped-PicsArt_10-17-05.45.42-Custom-192x192.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-90d4121a91339538ccd667bd1b9b465233338e5a62c500f1a5ad41261ee724ee",
+        "jarFileSize": 235302,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/AnimeFlix.jar",
+        "jarHash": "sha256-b56aeb133ecf2c3a146aa1643c5770f8799f8fa504ee3df2a89c59a53a18691c"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/AnimeX.cs3",
+        "status": 1,
+        "version": 3,
+        "name": "AnimeX",
+        "internalName": "AnimeX",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Anime from AnimeX (animex.one). Sub and dub HLS streams from several servers, with multi-language soft subtitles.",
+        "fileSize": 55824,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Anime",
+            "AnimeMovie",
+            "OVA"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=animex.one&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-5b48258e87425b84dccd7c22534e3d881b9728d32b84efb24fe15df3e029bc33",
+        "jarFileSize": 286403,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/AnimeX.jar",
+        "jarHash": "sha256-64e0759629da94714532077f9befa8e49c464d19bf247303c44e536c749da573"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/AnimoTvSlash.cs3",
+        "status": 1,
+        "version": 3,
+        "name": "AnimoTvSlash",
+        "internalName": "AnimoTvSlash",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Anime from animotvslash.org. Sub, SoftSub (ASS subtitle tracks) and Dub; first-party HLS (360p-1080p) and MP4 servers plus third-party mirrors.",
+        "fileSize": 52142,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Anime",
+            "AnimeMovie",
+            "OVA"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=animotvslash.org&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-389e5630eaab44f827ee807169f1afb169019bddf0f6fe424e56738a1e2c56a5",
+        "jarFileSize": 264205,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/AnimoTvSlash.jar",
+        "jarHash": "sha256-eb22148cd472f41dfc953a497bd6e1412ed82a76f5862f2d13565145d849da00"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/AniPm.cs3",
+        "status": 1,
+        "version": 3,
+        "name": "AniPm",
+        "internalName": "AniPm",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Anime from ani.pm, subbed and dubbed. HLS up to 1080p with many subtitle languages.",
+        "fileSize": 39038,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Anime",
+            "AnimeMovie",
+            "OVA"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=ani.pm&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-05bb77f6d02246c432972a52c0b20f0aa7fe996218cd3442ddd4fd19dedcc8c9",
+        "jarFileSize": 176754,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/AniPm.jar",
+        "jarHash": "sha256-7474b1b311f63d8cf56aca21a3935ca4293eef9b1c6db947231ed08c318ce507"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Arc018.cs3",
+        "status": 1,
+        "version": 1,
+        "name": "Arc018",
+        "internalName": "Arc018",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Movies and TV series from ARC018, with HLS streams and subtitles.",
+        "fileSize": 37215,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Movie",
+            "TvSeries"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=arc018.stream&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-ea452f8bad1d77cace27a70068cdc27496792be97766ccc21dbf03e83865d317"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/CnoTo.cs3",
+        "status": 1,
+        "version": 3,
+        "name": "CnoTo",
+        "internalName": "CnoTo",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Movies, TV shows and anime from Cno.to. Plays Cno.to's own HLS servers (up to 4K) with subtitles in many languages.",
+        "fileSize": 47595,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Movie",
+            "TvSeries",
+            "Anime",
+            "AnimeMovie"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=cno.to&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-8d7df38041a3cad829c1151e96a8025943835197020686922c1d92af5b2bc0b7",
+        "jarFileSize": 242739,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/CnoTo.jar",
+        "jarHash": "sha256-9a187fc1b9e722d4885d41c803812f2a6a2bb267c799ad1e0aa0b2e4361bbe15"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Dulo.cs3",
+        "status": 1,
+        "version": 3,
+        "name": "Dulo",
+        "internalName": "Dulo",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Movies, TV shows and anime from dulo.mov (TMDB catalog). Plays dulo's own Pickle HLS (up to 4K) plus whichever extra servers its resolver finds (Cobalt, Breeze, Shinobi\u2026), with subtitles in ~20 languages.",
+        "fileSize": 54187,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Movie",
+            "TvSeries",
+            "Anime"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=dulo.mov&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-12091e297a057cdb54f04a4b8cfe0a3aa8b93292f6cc275e1ad93093f706c0e1",
+        "jarFileSize": 256400,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Dulo.jar",
+        "jarHash": "sha256-099efedc1f9c90a4477e9f072567cefac1b98b5953299ff11d25886c52030127"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Extractors.cs3",
+        "status": 1,
+        "version": 25,
+        "name": "Extractors",
+        "internalName": "Extractors",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Extractors for my sources",
+        "fileSize": 70979,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Others"
+        ],
+        "apiVersion": 1,
+        "fileHash": "sha256-61e20f1575e4cf5ef4936cc92982f8433418969c93f68481ccac072c685932fe"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Fetcharr.cs3",
+        "status": 1,
+        "version": 2,
+        "name": "Fetcharr",
+        "internalName": "Fetcharr",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Adds \"Send to Fetcharr\" and \"Send season to Fetcharr\" to the episode/movie action menu. The chosen link, its headers and subtitles are handed to the Fetcharr Android app, which queues the download on your Fetcharr server. Requires the Fetcharr app (com.istarvin.fetcharr). Torrent, magnet, DRM and split-audio sources can't be sent.",
+        "fileSize": 32112,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "apiVersion": 1,
+        "fileHash": "sha256-85e41f7bd46cc02922b0b690f23b2d29de234fa34b5f9d915ba454e2dc1c7546"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/FourKHDHub.cs3",
+        "status": 1,
+        "version": 4,
+        "name": "FourKHDHub",
+        "internalName": "FourKHDHub",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "4K and 1080p WEB-DL/BluRay movies, series and anime from 4KHDHub, many with Hindi audio. Streams HubCloud FSL mirrors; 10Gbps as download-only links.",
+        "fileSize": 55766,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Movie",
+            "TvSeries",
+            "Anime"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=4khdhub.one&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-9ba841e50aa4e04c0623c99b31e780be435c083627e8dca96d3d79c249f6e4b0"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/GoPlay.cs3",
+        "status": 1,
+        "version": 4,
+        "name": "GoPlay",
+        "internalName": "GoPlay",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Korean, Chinese, Japanese and Thai dramas, movies and variety shows from GoPlay. Solves GoPlay's access check in a hidden WebView.",
+        "fileSize": 50126,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "AsianDrama",
+            "Movie",
+            "TvSeries"
+        ],
+        "iconUrl": "https://assets.goplay.su/hearticon180.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-6b77adbc9be75ab835b900c2a68fe9b7d3cf3fcbe00a7f829e44e7ce8dfd62c3"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/KatDrama.cs3",
+        "status": 1,
+        "version": 5,
+        "name": "KatDrama",
+        "internalName": "KatDrama",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "K-, C-, J- and Thai dramas and Asian movies from k-drama.in (KatDrama), keyed by TMDB. HLS from the site's devcorp and KissKH servers with many subtitle languages, plus dood/mixdrop/streamtape mirrors.",
+        "fileSize": 45689,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "AsianDrama",
+            "Movie"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=k-drama.in&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-4e0f51641556cd9d434a75b7376be61cef0c690b227b8d31c92d23d42db1d375",
+        "jarFileSize": 208725,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/KatDrama.jar",
+        "jarHash": "sha256-d85ca4747fc1fdb379cdd7944d74a1b31979f31a6ae1fba604620c0b209341ca"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Kayoanime.cs3",
+        "status": 1,
+        "version": 6,
+        "name": "Kayoanime",
+        "internalName": "Kayoanime",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Anime from kayoanime.com: HEVC 1080p Dual Audio / Eng Sub releases hosted on Google Drive. Drive files are played through your own Google Drive proxy (Cloudflare Worker); set its API key in the plugin settings. Posts hosted on the site's Drive index mirrors play without it. Posts whose Drive folders are dead or only hold archives show no episodes.",
+        "fileSize": 94126,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Anime",
+            "AnimeMovie"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=kayoanime.com&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-6482f2c1a4b83ffa0a4a2cb55c04b881140165d77f8938aaaab06fc3bde1676f"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/KissKH.cs3",
+        "status": 1,
+        "version": 3,
+        "name": "KissKH",
+        "internalName": "KissKH",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Asian dramas, movies and anime from kisskh.ovh (its JSON API). Plays the site's own HLS, with subtitles in up to 9 languages (English, Indonesian, Malay, Arabic, Khmer, Tagalog\u2026).",
+        "fileSize": 31631,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "AsianDrama",
+            "Movie",
+            "Anime",
+            "TvSeries"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=kisskh.ovh&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-68af83e8d8033f1a774e562b7c9c998546f06bcc537e9e445f2d193117c2af28"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Miruro.cs3",
+        "status": 1,
+        "version": 3,
+        "name": "Miruro",
+        "internalName": "Miruro",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Anime from Miruro. Sub, soft-sub and dub tracks from several servers, with selectable subtitles.",
+        "fileSize": 66182,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Anime",
+            "AnimeMovie",
+            "OVA"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=miruro.tv&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-1d63873b92527af9c2e51ce3ad744d69821931c663ddbb31821e7ee15a95e6fa",
+        "jarFileSize": 291253,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Miruro.jar",
+        "jarHash": "sha256-31cf7f98585723d55db389f334fbc0816cc8d0dabbc3e0fbad9981d6002f4d11"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/MkvDrama.cs3",
+        "status": 3,
+        "version": 12,
+        "name": "MkvDrama",
+        "internalName": "MkvDrama",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Asian dramas and movies from MKVDrama. Standalone download-panel and container resolution; some mirrors require browser verification.",
+        "fileSize": 119929,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "AsianDrama",
+            "Movie"
+        ],
+        "iconUrl": "https://raw.githubusercontent.com/NropVox/cloudstream-extensions-nropvox/main/docs/icons/mkvdrama.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-5c416732dc09c2f00ca211fc8aac23774211fbebc3fe9f4c7dbb57c6f1f3d27e"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/MoviesMod.cs3",
+        "status": 1,
+        "version": 5,
+        "name": "MoviesMod",
+        "internalName": "MoviesMod",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Hollywood, dual-audio and anime movies and series from MoviesMod. Plays the DriveSeed mirrors of every quality: Cloud (R2) and Direct (worker) seek; Instant (Google) cannot seek and starts slowly.",
+        "fileSize": 46215,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Movie",
+            "TvSeries",
+            "Anime"
+        ],
+        "iconUrl": "https://moviesmod.tw/wp-content/uploads/2024/06/favicon-3-200x200.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-f0c1b89c6b44828766fef5396e95c2ab0c1a1024adc0f9aa933b01b1921d1b84",
+        "jarFileSize": 197200,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/MoviesMod.jar",
+        "jarHash": "sha256-364294ee6eea9881db1f1d73ce36588373c7573fc92a90f630b8f695ecf380b6"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Movy.cs3",
+        "status": 1,
+        "version": 3,
+        "name": "Movy",
+        "internalName": "Movy",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Movies and TV shows from movy.sx. Decrypts movy's stream resolvers and lists every working server.",
+        "fileSize": 52449,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Movie",
+            "TvSeries"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=movy.sx&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-f91a28aa245c71eca68d3a9360a37c67826fa46441b5919db275ab8776a32b85",
+        "jarFileSize": 245971,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Movy.jar",
+        "jarHash": "sha256-cf066f5c0d1846230323fccf1fea174f2981c1dbd2d6f4735b3fe21ffc86c8e0"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/NetMirror.cs3",
+        "status": 1,
+        "version": 1,
+        "name": "NetMirror",
+        "internalName": "NetMirror",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Movies and series from NetMirror, including regional and dubbed titles. Direct MP4 qualities and subtitles.",
+        "fileSize": 30075,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Movie",
+            "TvSeries"
+        ],
+        "iconUrl": "https://netmirror.plus/icon.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-8c6b50a9e80ee925d418d8abe69ba4ada5aaef987e82cb63e7fc558ce02f3aa4"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/NTVStream.cs3",
+        "status": 3,
+        "version": 2,
+        "name": "NTVStream",
+        "internalName": "NTVStream",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Live sports and TV from ntv.st: Server Titan matches (NCAA, NFL, NBA, soccer, motorsport, WWE\u2026) and the cdnlive / Falcon 24/7 channels. HLS; the Raptor, Phoenix and embedsports servers are not supported.",
+        "fileSize": 39083,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Live"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=ntv.st&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-8190bbb51c5b00d41aa19d901b4e2829c2c37841b0a900b1e36391d0e3bc7fb9"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/OmniStream.cs3",
+        "status": 3,
+        "version": 20,
+        "name": "OmniStream",
+        "internalName": "OmniStream",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Movies, TV shows, anime and Asian dramas from TMDB. Every title is looked up on Dulo, Movy, 7Movies, TonkaCine, Cno.to, Vegamovies, MoviesMod, 4KHDHub, MkvBase and NetMirror at once (plus KatDrama, KissKH, GoPlay, OnlyKDrama and MkvDrama for Asian titles, and AnimoTv, Ani.pm, Reanime and AnimeX for anime through AniList), with Vadapav files and OpenSubtitles subtitles by IMDb id; dead links are dropped and playback starts as soon as enough working ones are in. A Pixeldrain API key can be set in the plugin settings for Pixeldrain links. Also adds OmniAnime, an anime-only AniList catalog that asks the anime sites directly and the TMDB-keyed sources through an ani.zip mapping.",
+        "fileSize": 623722,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Movie",
+            "TvSeries",
+            "Anime",
+            "AnimeMovie",
+            "OVA",
+            "AsianDrama"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=themoviedb.org&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-a6699d27981ba975ae574f585311d3c3d5cf3f35061a96ab7687118059bcf423"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/OnlyKDrama.cs3",
+        "status": 2,
+        "version": 10,
+        "name": "OnlyKDrama",
+        "internalName": "OnlyKDrama",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Korean, Chinese, Japanese and Thai dramas and movies from OnlyKDrama, many dubbed in Hindi. Plays the site's HubCloud, XCloud, GDFlix and worker download links (MKV, 480p-2160p); TMBCloud and FilePress need a captcha and are skipped.",
+        "fileSize": 97022,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "AsianDrama",
+            "Movie"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=onlykdrama.shop&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-a6f70bc0cd1aee03204659be58a7a140b48186c43de12fb6b9d9f4724ce285dc"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Reanime.cs3",
+        "status": 1,
+        "version": 7,
+        "name": "Reanime",
+        "internalName": "Reanime",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Anime from reanime.to. Sub and dub HLS streams up to 1080p from the site's flixcloud player (HD-1 and HD-2 servers), with soft subtitles in many languages.",
+        "fileSize": 69959,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Anime",
+            "AnimeMovie",
+            "OVA"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=reanime.to&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-df4e8445aec54af81a42729b6a4f3abd1efabe10f22d1c70580cfef990f98ecf",
+        "jarFileSize": 299457,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Reanime.jar",
+        "jarHash": "sha256-f695d5809bdb46a08002471f7d3fadd42c72e71d69cd2384183f806cdb4ff579"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/SevenMovies.cs3",
+        "status": 1,
+        "version": 3,
+        "name": "SevenMovies",
+        "internalName": "SevenMovies",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Movies and TV shows from 7movies.ac with Vidrift sources and subtitles.",
+        "fileSize": 55688,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Movie",
+            "TvSeries"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=7movies.ac&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-cf15b71ef2f1caf540d36503b2de3f2a8854fbcb50ee79d532ee0761e761b967",
+        "jarFileSize": 309851,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/SevenMovies.jar",
+        "jarHash": "sha256-230402afd0b94fcaa95cabf78334588887d9e6f41d4ae85688f121ebd3a72fba"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/StreamCorner.cs3",
+        "status": 1,
+        "version": 13,
+        "name": "StreamCorner",
+        "internalName": "StreamCorner",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Live sports and TV from streamcorner.st: NBA (live and full-game replays), NFL/CFB, UEFA Nations League, soccer, all-sports schedules and 24/7 channels. The site encrypts its catalog, so the plugin runs its decoder in a hidden WebView. Supports plain HLS, Amazon ClearKey DASH and NBA replay streams; links take a few seconds.",
+        "fileSize": 130032,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Live"
+        ],
+        "iconUrl": "https://streamcorner.st/apple-touch-icon.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-5d4d2241d10521623f628d3bf3383bdd80bc56d0147820a29bd6719a5e90ddd2"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/StrmFree.cs3",
+        "status": 3,
+        "version": 1,
+        "name": "StrmFree",
+        "internalName": "StrmFree",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Live sports from strmfree.pk (StreamFree): NBA, NFL/NCAA, soccer, hockey, baseball, UFC/combat, F1, tennis and cricket events plus 24/7 sports channels. HLS, up to 5 sources per event with the broadcaster named. Events appear a few minutes before kick-off.",
+        "fileSize": 33317,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Live"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=strmfree.pk&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-9eef744b780cd59a733eb6ab8d7ba3220ff225d739d9323e3de07370cf955789"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/TonkaCine.cs3",
+        "status": 3,
+        "version": 6,
+        "name": "TonkaCine",
+        "internalName": "TonkaCine",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Movies, series, anime and cartoons from multi.tonkacine.watch.",
+        "fileSize": 50077,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Movie",
+            "TvSeries"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=multi.tonkacine.watch&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-dc2d4014370df3d515b78a950c567b3981477b56935021cd60093b0cac3d0854",
+        "jarFileSize": 247640,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/TonkaCine.jar",
+        "jarHash": "sha256-cf5e8c1b14fc5392e429300678d2f9b76cef6aa4a96d809e52ea9eed27b888c3"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/Vegamovies.cs3",
+        "status": 1,
+        "version": 6,
+        "name": "Vegamovies",
+        "internalName": "Vegamovies",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Bollywood, Hollywood, South Indian, anime and web series from Vegamovies. Streams V-Cloud, HubCloud and V-Drive mirrors; G-Direct and 10Gbps as download-only links.",
+        "fileSize": 60802,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Movie",
+            "TvSeries",
+            "Anime"
+        ],
+        "iconUrl": "https://new1.vegamovies.lease/images/apple-touch-icon.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-936ac3834287b88ea643bf821c16919a44a7f531aab29a0082493dd791cebcdd"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/ZLive.cs3",
+        "status": 1,
+        "version": 4,
+        "name": "ZLive",
+        "internalName": "ZLive",
+        "authors": [
+            "NropVox"
+        ],
+        "description": "Live sports and TV from zlive.st: ~250 channels (Sky Sports, TNT, beIN, DAZN, ESPN, NBA TV\u2026) and today's live events (NBA, NHL, soccer, NFL, motorsport). HLS, mostly 1080p, with now/next EPG where the site has it.",
+        "fileSize": 35092,
+        "repositoryUrl": "https://github.com/IstarVin/cloudstream-extensions-istarvin",
+        "language": "en",
+        "tvTypes": [
+            "Live"
+        ],
+        "iconUrl": "https://raw.githubusercontent.com/NropVox/cloudstream-extensions-nropvox/main/docs/icons/zlive.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-a969cbdf00e289a1a06fb76f0415c57d816c2236d1809b21295c9b295a080f02",
+        "jarFileSize": 151951,
+        "jarUrl": "https://raw.githubusercontent.com/IstarVin/cloudstream-extensions-istarvin/builds/ZLive.jar",
+        "jarHash": "sha256-762d40e5f118dbca2235337d0489dffb618de981d5a6f7b64de50c568fb0a22f"
+    }
+]
