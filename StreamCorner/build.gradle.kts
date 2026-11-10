@@ -1,10 +1,10 @@
-version = 9
+version = 10
 
 cloudstream {
     authors = listOf("NropVox")
     language = "en"
     description =
-        "Live sports and TV from streamcorner.st: NBA (live and full-game replays), MLB, NFL/CFB, soccer, all-sports schedules and 24/7 channels. " +
+        "Live sports and TV from streamcorner.st: NBA (live and full-game replays), NFL/CFB, UEFA Nations League, soccer, all-sports schedules and 24/7 channels. " +
         "The site encrypts its catalog, so the plugin runs its decoder in a hidden WebView. Supports plain HLS, Amazon ClearKey DASH and NBA replay streams; links take a few seconds."
 
     /**

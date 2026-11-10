@@ -22,10 +22,11 @@ object StreamCornerParser {
     val providers = listOf(
         Provider("channels", "CHANNELS", "TV Channels"),
         Provider("nba", "NBA", "NBA"),
-        Provider("mlb", "MLB", "MLB"),
         Provider("nfl", "NFL - CFB", "NFL & College Football"),
         Provider("admin", "ADMIN", "Events & 24/7"),
+        Provider("unl", "UEFA NATIONS LEAGUE", "UEFA Nations League"),
         Provider("alpha", "ALPHA", "Soccer · Alpha"),
+        Provider("charlie", "CHARLIE", "Soccer · Charlie"),
         Provider("extra003", "#003", "Soccer · #003"),
         Provider("beta", "BETA", "All Sports · Beta"),
         Provider("001", "#001", "All Sports · #001"),
@@ -43,8 +44,8 @@ object StreamCornerParser {
     private val preloadModule = Regex("""<link[^>]+rel="modulepreload"[^>]+href="(/assets/[A-Za-z0-9_-]+\.js)"""")
     private val entryModule = Regex("""<script[^>]+type="module"[^>]+src="(/assets/[A-Za-z0-9_-]+\.js)"""")
     private val workerFile = Regex("""new URL\("([A-Za-z0-9_-]+\.js)",import\.meta\.url\)""")
-    /** `{...e,<field>:token,<field>r:nonce}` in the data module: the worker's per-session handshake, added in late 2026. */
-    private val tokenField = Regex("""\{\.\.\.\w+,(_[0-9a-f]{16,}):\w+,\1r:\w+\}""")
+    /** `{...e,<field>:token,<field>r:nonce}` in the data module: the worker's per-session handshake; newer builds only send the token. */
+    private val tokenField = Regex("""\{\.\.\.\w+,(_[0-9a-f]{16,}):\w+(?:,\1r:\w+)?\}""")
     private val recursiveField = Regex("""[\"'](_[0-9a-f]{16,}:recursive)[\"']""")
     private val dataHost = Regex(""""(data\.[a-z0-9-]+\.workers\.dev)"""")
 

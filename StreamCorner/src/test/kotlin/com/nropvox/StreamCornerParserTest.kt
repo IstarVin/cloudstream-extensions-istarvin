@@ -41,6 +41,14 @@ class StreamCornerParserTest {
         assertNull(StreamCornerParser.bootstrap("""new URL("A.js",import.meta.url)""")!!.tokenField)
     }
 
+    // Verbatim from xUVM8YtV.js (2026-11-10): no nonce field accompanies the session token.
+    @Test fun dataModuleNamesTokenOnlyHandshake() {
+        val js = """const Mt=new URL("sbD8TB_a.js",import.meta.url).href;function kt(e){return{...e,_665aab5c72d70c0c43e6c179:ur}}"""
+        val boot = StreamCornerParser.bootstrap(js)!!
+        assertEquals("/assets/sbD8TB_a.js", boot.workerPath)
+        assertEquals("_665aab5c72d70c0c43e6c179", boot.tokenField)
+    }
+
     @Test fun dataModuleNamesRecursiveHandshake() {
         val js = """const St=new URL("B8c7l7Ub.js",import.meta.url).href;const Ac="_a267f53310e72a20a1b501d3:recursive";"""
         val boot = StreamCornerParser.bootstrap(js)!!
@@ -156,7 +164,7 @@ class StreamCornerParserTest {
 
     @Test fun pageUrlsRoundTrip() {
         val main = "https://streamcorner.st"
-        for ((provider, id) in listOf("nba" to "0022600129", "extra003" to "8fc3f7a58a82ecd493fdac1d6fd5898e", "beta" to "GRNT2b48b9a1bd7a94161b21", "channels" to "cnn", "001" to "48d59")) {
+        for ((provider, id) in listOf("unl" to "nations-league", "charlie" to "charlie-event", "nba" to "0022600129", "extra003" to "8fc3f7a58a82ecd493fdac1d6fd5898e", "beta" to "GRNT2b48b9a1bd7a94161b21", "channels" to "cnn", "001" to "48d59")) {
             assertEquals(provider to id, StreamCornerParser.pageRef(StreamCornerParser.pageUrl(main, provider, id)))
         }
         assertEquals("$main/nba/live/0022600129", StreamCornerParser.pageUrl(main, "nba", "0022600129"))
