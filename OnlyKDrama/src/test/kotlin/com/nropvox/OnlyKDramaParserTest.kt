@@ -16,6 +16,54 @@ class OnlyKDramaParserTest {
     private fun page(name: String, uri: String = base): Document =
         Jsoup.parse(javaClass.classLoader!!.getResource(name)!!.readText(), uri)
 
+    @Test fun cloudflareChallengesAreNotParsedAsContent() {
+        assertTrue(OnlyKDramaParser.challenged(403, "cloudflare", null, ""))
+        assertTrue(OnlyKDramaParser.challenged(503, "Cloudflare-nginx", null, ""))
+        assertTrue(OnlyKDramaParser.challenged(200, null, "challenge", ""))
+        assertTrue(OnlyKDramaParser.challenged(403, null, null,
+            "<title>Just a moment...</title><script src='/cdn-cgi/challenge-platform/h/g/orchestrate/chl_page/v1'></script>"))
+        assertFalse(OnlyKDramaParser.challenged(200, "cloudflare", null, page("show-100-days.html").html()))
+        assertFalse(OnlyKDramaParser.challenged(404, "cloudflare", null, "Page not found"))
+        assertFalse(OnlyKDramaParser.challenged(403, "nginx", null, "Forbidden"))
+        assertFalse(OnlyKDramaParser.challenged(200, "cloudflare", null,
+            "<title>Drama</title><script src='/cdn-cgi/challenge-platform/turnstile.js'></script>"))
+    }
+
+    @Test fun browserCookiesPreserveEqualsInClearance() {
+        assertEquals(mapOf("cf_clearance" to "abc=def==", "session" to "xyz"),
+            OnlyKDramaParser.cookies(" cf_clearance=abc=def==; session=xyz; empty=; invalid"))
+        assertTrue(OnlyKDramaParser.cookies("").isEmpty())
+    }
+
+    @Test fun verificationRequiresANewClearance() {
+        assertFalse(OnlyKDramaParser.freshClearance("cf_clearance=rejected; session=other", "rejected"))
+        assertFalse(OnlyKDramaParser.freshClearance("session=other", "rejected"))
+        assertFalse(OnlyKDramaParser.freshClearance("cf_clearance=", null))
+        assertTrue(OnlyKDramaParser.freshClearance("cf_clearance=renewed", "rejected"))
+        assertTrue(OnlyKDramaParser.freshClearance("cf_clearance=first", null))
+    }
+
+    @Test fun restFallbackKeepsTitleAndPlayableEpisodes() {
+        val full = page("show-100-days.html")
+        val content = full.selectFirst("div[itemprop=description]")!!.html()
+        val doc = OnlyKDramaParser.restDocument(OkRestPost(
+            content = OkRendered(content), title = OkRendered("100 Days My Prince (2018) Hindi Korean Drama")
+        ), "$base/drama/100-days-my-prince-2018-hindi-korean-drama/")!!
+        assertEquals(OnlyKDramaParser.title(full), OnlyKDramaParser.title(doc))
+        assertEquals(2018, OnlyKDramaParser.year(doc))
+        assertEquals(OnlyKDramaParser.entries(full), OnlyKDramaParser.entries(doc))
+        assertEquals(OnlyKDramaParser.plot(full), OnlyKDramaParser.plot(doc))
+    }
+
+    @Test fun restTitleIsDecodedAndMissingContentIsRejected() {
+        val doc = OnlyKDramaParser.restDocument(OkRestPost(
+            content = OkRendered("<p>Synopsis</p>"), title = OkRendered("Dali &amp; Cocky Prince (2021)")
+        ), base)!!
+        assertEquals("Dali & Cocky Prince (2021)", OnlyKDramaParser.title(doc))
+        assertNull(OnlyKDramaParser.restDocument(OkRestPost(), base))
+        assertNull(OnlyKDramaParser.restDocument(OkRestPost(content = OkRendered("")), base))
+    }
+
     @Test fun archiveCardsSkipSidebar() {
         val doc = page("archive-drama-p2.html")
         val cards = OnlyKDramaParser.cards(doc, base)

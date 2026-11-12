@@ -1,5 +1,6 @@
 package com.nropvox
 
+import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
@@ -8,6 +9,34 @@ import org.jsoup.nodes.Element
  * touches the network or the Cloudstream library, so every selector is covered by a JVM test against a saved page.
  */
 object OnlyKDramaParser {
+    /** Cloudflare can return challenges with a nonstandard status or omit its Server header. */
+    fun challenged(code: Int, server: String?, mitigated: String?, html: String): Boolean =
+        mitigated.equals("challenge", ignoreCase = true) ||
+            (code in listOf(403, 503) && server.orEmpty().startsWith("cloudflare", ignoreCase = true)) ||
+            (html.contains("/cdn-cgi/challenge-platform/", ignoreCase = true) &&
+                (html.contains("<title>Just a moment", ignoreCase = true) || html.contains("cf-chl-", ignoreCase = true)))
+
+    fun cookies(header: String): Map<String, String> = header.split(';').mapNotNull { part ->
+        val name = part.substringBefore('=').trim()
+        val value = part.substringAfter('=', "").trim()
+        if (name.isBlank() || value.isBlank()) null else name to value
+    }.toMap()
+
+    /** A rejected cookie still in WebView storage must never end a fresh verification early. */
+    fun freshClearance(header: String, rejected: String?): Boolean =
+        cookies(header)["cf_clearance"]?.let { it != rejected } == true
+
+    /** REST has the same download markup, but needs a title header for the standalone provider's load(). */
+    fun restDocument(post: OkRestPost, url: String): Document? {
+        val body = post.content?.rendered?.takeIf { it.isNotBlank() } ?: return null
+        return Jsoup.parse("<div class=\"wp-content\" itemprop=\"description\">$body</div>", url).apply {
+            post.title?.rendered?.let { title ->
+                val data = body().prependElement("div").addClass("sheader").appendElement("div").addClass("data")
+                data.appendElement("h1").text(Jsoup.parse(title).text())
+            }
+        }
+    }
+
     /** File host of a post link. Hosts rotate subdomains and TLDs (`new11.xcloud.asia`, `hubcloud.one`), so labels are matched. */
     enum class Host { HUBCLOUD, XCLOUD, GDFLIX, DIRECT, PIXELDRAIN, OTHER }
 

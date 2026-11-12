@@ -54,7 +54,13 @@ class OnlyKDrama(private val sharedPref: SharedPreferences? = null) : MainAPI() 
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val url = if (page <= 1) "$mainUrl/${request.data}" else "$mainUrl/${request.data}page/$page/"
-        val doc = OnlyKDramaSource.get(url).document
+        val doc = try {
+            OnlyKDramaSource.get(url).document
+        } catch (e: ErrorLoadingException) {
+            // An optional genre/archive challenge must not hide the working Latest Dramas row.
+            if (request.data == "drama/") throw e
+            return newHomePageResponse(request.name, emptyList(), hasNext = false)
+        }
         val cards = OnlyKDramaParser.cards(doc, mainUrl)
         return newHomePageResponse(request.name, cards.map { it.toSearchResponse() }, hasNext = OnlyKDramaParser.hasNext(doc))
     }
@@ -79,7 +85,7 @@ class OnlyKDrama(private val sharedPref: SharedPreferences? = null) : MainAPI() 
     }
 
     override suspend fun load(url: String): LoadResponse {
-        val doc = OnlyKDramaSource.get(url).document
+        val doc = OnlyKDramaSource.post(url)
         val title = OnlyKDramaParser.title(doc) ?: throw ErrorLoadingException("No title on $url")
         val entries = OnlyKDramaParser.entries(doc)
 

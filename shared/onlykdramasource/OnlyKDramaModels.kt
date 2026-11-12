@@ -22,7 +22,10 @@ data class OkLinks(@JsonProperty("files") val files: List<OkFile> = emptyList())
 
 /** A post of the WordPress REST API (`_fields=content`): the same body as the page, without its chrome. */
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class OkRestPost(@JsonProperty("content") val content: OkRendered? = null)
+data class OkRestPost(
+    @JsonProperty("content") val content: OkRendered? = null,
+    @JsonProperty("title") val title: OkRendered? = null,
+)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class OkRendered(@JsonProperty("rendered") val rendered: String? = null)
