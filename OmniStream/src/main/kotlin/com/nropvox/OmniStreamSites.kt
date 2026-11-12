@@ -100,6 +100,7 @@ internal object OmniStreamSites {
             val single = if (!link.series) link else if (link.totalSeasons == 1) link.copy(season = 1) else null
             listOfNotNull<suspend () -> Unit>(
                 { fourKHDHubFiles(link) },
+                { netMirrorTitles(link) },
                 // A show's search names the episode, so only the session is readied for it.
                 { if (link.series) MkvBaseSource.warm() else mkvBaseResults(link) },
                 single?.let { { vegamoviesPages(it) } },
@@ -120,6 +121,42 @@ internal object OmniStreamSites {
     private val OmniLink.years get() = listOfNotNull(year, airDate?.take(4)?.toIntOrNull()).distinct()
 
     private fun OmniLink.key(site: String) = "$site:$type:$id:${season ?: 0}"
+
+    suspend fun netMirror(link: OmniLink, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
+        val titles = netMirrorTitles(link) ?: return
+        for (title in titles) {
+            val ref = title.copy(season = link.season ?: 0, episode = link.episode ?: 0)
+            val found = safely(TAG, "NetMirror player") { NetMirrorSource.loadLinks(ref, "NetMirror", subtitleCallback, callback) }
+            if (found == true) return
+        }
+    }
+
+    /** Cache catalog IDs for the whole title; details and signed media are renewed at play time. */
+    private suspend fun netMirrorTitles(link: OmniLink) =
+        cached("netmirror:${link.type}:${link.id}") {
+            val titles = mutableListOf<NetMirrorParser.TitleRef>()
+            for (query in link.names) {
+                val hits = NetMirrorSource.search(query).items.mapNotNull { item ->
+                    val type = NetMirrorParser.text(item, "media_type")
+                    val id = NetMirrorParser.text(item, "id").takeIf { it.isNotEmpty() && it.all(Char::isDigit) }
+                        ?: return@mapNotNull null
+                    if (type != link.type) return@mapNotNull null
+                    // Series can be dated by their final season (Breaking Bad is listed as 2013).
+                    val year = if (link.series) null else NetMirrorParser.year(NetMirrorParser.text(item, "release_date"))
+                    SiteHit(NetMirrorParser.TitleRef(type, id), NetMirrorParser.cleanTitle(NetMirrorParser.text(item, "title")), year,
+                        series = type == "tv")
+                }
+                val refs = OmniStreamParser.matches(hits, link.names, link.years, null, link.series, null)
+                for (ref in refs.distinct().take(MAX_PAGES)) {
+                    val item = safely(TAG, "NetMirror title") { NetMirrorSource.details(ref) } ?: continue
+                    val tmdb = NetMirrorParser.text(item, "tm_id").toIntOrNull()?.takeIf { it > 0 }
+                    if (tmdb != null && tmdb != link.id) continue
+                    titles.add(ref)
+                }
+                if (titles.isNotEmpty()) break
+            }
+            titles.distinct().ifEmpty { null }
+        }
 
     suspend fun vegamovies(link: OmniLink, name: String, callback: (ExtractorLink) -> Unit) {
         val pages = vegamoviesPages(link) ?: return

@@ -1,7 +1,6 @@
 package com.nropvox
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.lagradost.api.Log
 import com.lagradost.cloudstream3.Actor
 import com.lagradost.cloudstream3.ActorData
 import com.lagradost.cloudstream3.ErrorLoadingException
@@ -24,27 +23,18 @@ import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newSearchResponseList
-import com.lagradost.cloudstream3.newSubtitleFile
 import com.lagradost.cloudstream3.newTvSeriesLoadResponse
 import com.lagradost.cloudstream3.newTvSeriesSearchResponse
 import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.ExtractorLinkType
-import com.lagradost.cloudstream3.utils.Qualities
-import com.lagradost.cloudstream3.utils.newExtractorLink
 
 /** NetMirror's own catalog and signed Artplayer pages; media uses its extension's referer. */
 class NetMirror : MainAPI() {
-    override var mainUrl = "https://netmirror.plus"
+    override var mainUrl = NetMirrorSource.SITE
     override var name = "NetMirror"
     override var lang = "en"
     override val hasMainPage = true
     override val hasQuickSearch = true
     override val supportedTypes = setOf(TvType.Movie, TvType.TvSeries)
-
-    private val api = "https://api2.imdb3.shop/api"
-    private val searchApi = "https://api2.imdb4.shop/api/search2"
-    private val mediaReferer = "https://movieboxonline.net/"
-    private val headers get() = mapOf("Referer" to "$mainUrl/")
 
     override val mainPage = mainPageOf(
         "/tranding/list?id=60&items_per_page=21" to "Trending Movies",
@@ -58,7 +48,7 @@ class NetMirror : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val result = NetMirrorParser.catalog(app.get("$api${request.data}&page=${(page - 1).coerceAtLeast(0)}", headers = headers).text)
+        val result = NetMirrorParser.catalog(app.get("${NetMirrorSource.API}${request.data}&page=${(page - 1).coerceAtLeast(0)}", headers = NetMirrorSource.headers).text)
         return newHomePageResponse(
             HomePageList(request.name, result.items.mapNotNull { card(it) }, isHorizontalImages = false),
             hasNext = result.hasNext
@@ -69,9 +59,7 @@ class NetMirror : MainAPI() {
 
     override suspend fun search(query: String, page: Int): SearchResponseList {
         if (query.isBlank()) return newSearchResponseList(emptyList(), hasNext = false)
-        val result = NetMirrorParser.catalog(app.get(
-            "$searchApi/${NetMirrorParser.encode(query.trim().lowercase())}?page=${(page - 1).coerceAtLeast(0)}", headers = headers
-        ).text)
+        val result = NetMirrorSource.search(query, page)
         return newSearchResponseList(result.items.mapNotNull { card(it) }, hasNext = result.hasNext)
     }
 
@@ -104,13 +92,9 @@ class NetMirror : MainAPI() {
         .takeIf { it.startsWith("https://") || it.startsWith("http://") }
         ?.let { if ('?' in it) it else "$it?x-oss-process=image/resize%2Cw_300" }
 
-    private suspend fun details(ref: NetMirrorParser.TitleRef): JsonNode =
-        NetMirrorParser.catalog(app.get("$api/${ref.type}/${ref.id}", headers = headers).text).items.firstOrNull()
-            ?: throw ErrorLoadingException("NetMirror could not find this title")
-
     override suspend fun load(url: String): LoadResponse {
         val ref = NetMirrorParser.reference(url) ?: throw ErrorLoadingException("Invalid NetMirror title URL")
-        val item = details(ref)
+        val item = NetMirrorSource.details(ref)
         val title = org.jsoup.parser.Parser.unescapeEntities(NetMirrorParser.text(item, "title"), false)
             .ifBlank { throw ErrorLoadingException("NetMirror returned a title without a name") }
         val response = if (ref.type == "movie") {
@@ -152,30 +136,7 @@ class NetMirror : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val ref = NetMirrorParser.reference(data) ?: return false
-        if (ref.type == "tv" && ref.episode <= 0) return false
-        // Fetch details and sign at play time: saved episodes never contain expired media URLs.
-        val item = details(ref)
-        val path = NetMirrorParser.playerPath(item, ref, System.currentTimeMillis() / 1000)
-        for (host in listOf("https://webvp.watch21.shop", "https://bet.watch22.shop", "https://limit.watch22.shop")) {
-            val player = try {
-                NetMirrorParser.player(app.get("$host$path", headers = headers, timeout = 25).text)
-            } catch (e: Exception) {
-                Log.w(name, "Player ${host}: ${e.message}")
-                continue
-            }
-            if (player.videos.isEmpty()) continue
-            player.subtitles.forEach { subtitleCallback(newSubtitleFile(it.label, it.url)) }
-            player.videos.forEach { video ->
-                callback(newExtractorLink(name, "$name ${video.label}", video.url,
-                    if (video.url.substringBefore('?').endsWith(".m3u8")) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
-                ) {
-                    quality = video.quality.takeIf { it > 0 } ?: Qualities.Unknown.value
-                    referer = if (java.net.URI(video.url).host == "bcdnt.hakunaymatata.com") "$host/" else mediaReferer
-                })
-            }
-            return true
-        }
-        return false
+        return NetMirrorSource.loadLinks(ref, name, subtitleCallback, callback)
     }
 
     private val genres = mapOf(

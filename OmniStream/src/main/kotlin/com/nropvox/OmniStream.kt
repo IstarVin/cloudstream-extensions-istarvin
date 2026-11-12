@@ -265,6 +265,7 @@ class OmniStream : MainAPI() {
             "MoviesMod" to { _, links -> find()?.let { link -> OmniStreamSites.moviesMod(link, "MoviesMod", links) } },
             "4KHDHub" to { _, links -> find()?.let { link -> OmniStreamSites.fourKHDHub(link, "4KHDHub", links) } },
             "MkvBase" to { _, links -> find()?.let { link -> OmniStreamSites.mkvBase(link, "MkvBase", links) } },
+            "NetMirror" to { subs, links -> find()?.let { link -> OmniStreamSites.netMirror(link, subs, links) } },
             // Both skip titles without an IMDb id.
             "Vadapav" to { _, links -> find()?.let { link -> OmniStremio.streams(OmniStremio.VADAPAV, link, "Vadapav", links) } },
             "OpenSubtitles" to { subs, _ -> find()?.let { link -> OmniStremio.subtitles(OmniStremio.OPENSUBTITLES, link, subs) } },

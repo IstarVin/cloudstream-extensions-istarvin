@@ -1,10 +1,10 @@
-version = 19
+version = 20
 
 cloudstream {
     authors = listOf("NropVox")
     language = "en"
     description =
-        "Movies, TV shows, anime and Asian dramas from TMDB. Every title is looked up on Dulo, Movy, 7Movies, TonkaCine, Cno.to, Vegamovies, MoviesMod, 4KHDHub and MkvBase at once (plus KatDrama, KissKH, GoPlay, OnlyKDrama and MkvDrama for Asian titles, and AnimoTv, Ani.pm, Reanime and AnimeX for anime through AniList), with Vadapav files and OpenSubtitles subtitles by IMDb id; dead links are dropped and playback starts as soon as enough working ones are in. A Pixeldrain API key can be set in the plugin settings for Pixeldrain links. Also adds OmniAnime, an anime-only AniList catalog that asks the anime sites directly and the TMDB-keyed sources through an ani.zip mapping."
+        "Movies, TV shows, anime and Asian dramas from TMDB. Every title is looked up on Dulo, Movy, 7Movies, TonkaCine, Cno.to, Vegamovies, MoviesMod, 4KHDHub, MkvBase and NetMirror at once (plus KatDrama, KissKH, GoPlay, OnlyKDrama and MkvDrama for Asian titles, and AnimoTv, Ani.pm, Reanime and AnimeX for anime through AniList), with Vadapav files and OpenSubtitles subtitles by IMDb id; dead links are dropped and playback starts as soon as enough working ones are in. A Pixeldrain API key can be set in the plugin settings for Pixeldrain links. Also adds OmniAnime, an anime-only AniList catalog that asks the anime sites directly and the TMDB-keyed sources through an ani.zip mapping."
 
     /**
      * Status int as the following:
@@ -31,6 +31,6 @@ dependencies {
 listOf(
     "dulosource", "movysource", "sevenmoviessource", "tonkacinesource", "cnotosource", "katdramasource", "animotvsource", "anipmsource",
     "nexdrive", "vegamoviessource", "moviesmodsource", "fourkhdhubsource", "kisskhsource", "goplaysource", "reanimesource", "animexsource",
-    "onlykdramasource", "mkvdramasource",
+    "onlykdramasource", "mkvdramasource", "netmirrorsource",
 )
     .forEach { android.sourceSets.getByName("main").kotlin.directories.add("../shared/$it") }

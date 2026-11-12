@@ -47,6 +47,14 @@ internal object NetMirrorParser {
 
     fun year(value: String): Int? = yearPattern.find(value)?.value?.toIntOrNull()
 
+    /** Catalog names append language tags and season ranges, e.g. `Breaking Bad [Hindi] S1-S5`. */
+    fun cleanTitle(value: String): String = Jsoup.parse(value).text()
+        .replace(Regex("""(?i)\s+S\d+(?:\s*[-–]\s*S?\d+)?\s*$"""), "")
+        .replace(Regex("""\s*\[[^\]]+]\s*$"""), "").trim()
+
+    fun hasEpisode(title: JsonNode, ref: TitleRef): Boolean = ref.type == "movie" ||
+        title.path("season").any { it.path("se").asInt() == ref.season && ref.episode in episodes(it) }
+
     fun episodes(season: JsonNode): List<Int> {
         val explicit = text(season, "allEp").ifBlank { text(season, "ep").takeIf { ',' in it }.orEmpty() }
         if (explicit.isNotBlank()) return explicit.split(',').mapNotNull { it.trim().toIntOrNull() }.filter { it > 0 }.distinct().sorted()

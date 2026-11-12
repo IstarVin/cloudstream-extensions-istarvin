@@ -30,6 +30,24 @@ class NetMirrorParserTest {
         assertNull(NetMirrorParser.reference("https://netmirror.plus/search/test"))
     }
 
+    @Test fun catalogNamesMatchWithoutLanguageAndSeasonSuffixes() {
+        val titles = NetMirrorParser.catalog(sample("search.json")).items
+        assertEquals(listOf("Breaking Bad", "Breaking Bad", "Breaking Bad"),
+            titles.map { NetMirrorParser.cleanTitle(NetMirrorParser.text(it, "title")) })
+        assertEquals("Tom & Jerry", NetMirrorParser.cleanTitle("Tom &amp; Jerry [Hindi]"))
+        assertEquals("S1m0ne", NetMirrorParser.cleanTitle("S1m0ne"))
+    }
+
+    @Test fun unavailableEpisodesDoNotFallBackToAnotherVideo() {
+        val title = NetMirrorParser.catalog(sample("series-detail.json")).items.single()
+        val ref = NetMirrorParser.TitleRef("tv", "7802", 1, 2)
+        assertTrue(NetMirrorParser.hasEpisode(title, ref))
+        assertFalse(NetMirrorParser.hasEpisode(title, ref.copy(episode = 3)))
+        assertFalse(NetMirrorParser.hasEpisode(title, ref.copy(season = 6)))
+        assertFalse(NetMirrorParser.hasEpisode(title, ref.copy(episode = 0)))
+        assertTrue(NetMirrorParser.hasEpisode(title, ref.copy(type = "movie")))
+    }
+
     @Test fun signatureMatchesCapturedFrontendRequest() {
         assertEquals("fe70500e204d2c3cbc3de05a2818ad727ef65de3757e5196ec51eaed679d3e95", NetMirrorParser.signature("1423191", 1794448786))
         val title = NetMirrorParser.catalog(sample("movie-detail.json")).items.single()

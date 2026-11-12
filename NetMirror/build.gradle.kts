@@ -8,3 +8,6 @@ cloudstream {
     tvTypes = listOf("Movie", "TvSeries")
     iconUrl = "https://netmirror.plus/icon.png"
 }
+
+// Catalog parsing and stream signing are shared with OmniStream.
+android.sourceSets.getByName("main").kotlin.directories.add("../shared/netmirrorsource")
