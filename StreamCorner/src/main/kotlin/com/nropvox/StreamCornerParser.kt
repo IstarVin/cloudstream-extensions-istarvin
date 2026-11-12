@@ -27,12 +27,13 @@ object StreamCornerParser {
         Provider("unl", "UEFA NATIONS LEAGUE", "UEFA Nations League"),
         Provider("alpha", "ALPHA", "Soccer · Alpha"),
         Provider("charlie", "CHARLIE", "Soccer · Charlie"),
-        Provider("extra003", "#003", "Soccer · #003"),
+        Provider("extra", "EXTRA", "Extra Sports"),
         Provider("beta", "BETA", "All Sports · Beta"),
         Provider("001", "#001", "All Sports · #001"),
     )
 
-    fun provider(key: String): Provider? = providers.firstOrNull { it.key == key }
+    // Keep saved links from before the site's grouped Extra catalog migration working.
+    fun provider(key: String): Provider? = providers.firstOrNull { it.key == if (key == "extra003") "extra" else key }
 
     /** Hard-coded in the data module as `qo`; used only when the module can't be read. */
     val fallbackHosts = listOf(
@@ -83,8 +84,13 @@ object StreamCornerParser {
 
     fun list(json: String): List<SCItem> {
         val data = replyData(json)
-        if (!data.isArray) return emptyList()
-        return data.mapNotNull { runCatching { mapper.treeToValue<SCItem>(it) }.getOrNull() }.filter { id(it) != null }
+        val items = when {
+            data.isArray -> data.toList()
+            // The Extra endpoint now returns provider-number groups, rather than a single list.
+            data.isObject -> data.elements().asSequence().filter { it.isArray }.flatMap { it.elements().asSequence() }.toList()
+            else -> emptyList()
+        }
+        return items.mapNotNull { runCatching { mapper.treeToValue<SCItem>(it) }.getOrNull() }.filter { id(it) != null }
     }
 
     fun detail(json: String): SCItem = mapper.treeToValue(replyData(json))

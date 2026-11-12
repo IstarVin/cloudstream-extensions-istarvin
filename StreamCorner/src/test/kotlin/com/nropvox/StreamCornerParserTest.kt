@@ -83,6 +83,18 @@ class StreamCornerParserTest {
         assertTrue(StreamCornerParser.poster(first)!!.startsWith("https://wsrv.nl/?url="))
     }
 
+    @Test fun extraCatalogUsesGroupedEndpoint() {
+        val extra = StreamCornerParser.provider("extra")!!
+        val message = StreamCornerParser.message("provider-list", extra, listOf("data.gigav.workers.dev"))
+        assertTrue(message.contains("/corner?p=extra\""))
+        assertEquals(extra, StreamCornerParser.provider("extra003"))
+        val items = StreamCornerParser.list("""{"requestId":7,"data":{"003":${text("list-extra003.json")},"empty":[],"metadata":"ignored"}}""")
+        assertEquals(StreamCornerParser.list(reply("list-extra003.json")), items)
+        assertTrue(items.isNotEmpty())
+        assertEquals("extra" to StreamCornerParser.id(items.first()),
+            StreamCornerParser.pageRef(StreamCornerParser.pageUrl("https://streamcorner.st", extra.key, StreamCornerParser.id(items.first())!!)))
+    }
+
     @Test fun nbaGamesUseTeams() {
         val games = StreamCornerParser.list(reply("list-nba.json"))
         assertEquals(15, games.size)

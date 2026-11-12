@@ -1,0 +1,38 @@
+[
+  {
+    "stream_id": "8fc3f7a58a82ecd493fdac1d6fd5898e",
+    "event_name": "Al Nassr x Al Kholood",
+    "category": "FOOTBALL",
+    "category_logo": "https://wsrv.nl/?url=https://www.thesportsdb.com/images/icons/svg/sports/soccer.svg",
+    "league": null,
+    "league_logo": "",
+    "home_team": null,
+    "home_team_logo": null,
+    "away_team": null,
+    "away_team_logo": null,
+    "poster": null,
+    "timestamp": null,
+    "start_time": null,
+    "end_time": null,
+    "time_utc": null,
+    "time_et": "11/01/26 01:00PM ET"
+  },
+  {
+    "stream_id": "e3f425d4b2e37d039b27e566815ae9fd",
+    "event_name": "América de Cali x Fortaleza CEIF",
+    "category": "FOOTBALL",
+    "category_logo": "https://wsrv.nl/?url=https://www.thesportsdb.com/images/icons/svg/sports/soccer.svg",
+    "league": null,
+    "league_logo": "",
+    "home_team": null,
+    "home_team_logo": null,
+    "away_team": null,
+    "away_team_logo": null,
+    "poster": null,
+    "timestamp": null,
+    "start_time": null,
+    "end_time": null,
+    "time_utc": null,
+    "time_et": "11/01/26 06:15PM ET"
+  }
+]

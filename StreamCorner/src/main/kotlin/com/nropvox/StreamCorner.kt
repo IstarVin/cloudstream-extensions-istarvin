@@ -68,7 +68,15 @@ class StreamCorner internal constructor(private val bridgeFactory: (String) -> S
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val provider = StreamCornerParser.provider(request.data) ?: throw ErrorLoadingException("Unknown row ${request.data}")
-        val items = if (page > 1) emptyList() else visible(provider).map { it.toSearchResponse(provider.key) }
+        val items = if (page > 1) emptyList() else try {
+            visible(provider).map { it.toSearchResponse(provider.key) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // Cloudstream discards the entire home page if any one of its parallel rows throws.
+            Log.w(name, "home ${provider.key}: ${e.message}")
+            emptyList()
+        }
         return newHomePageResponse(HomePageList(request.name, items, isHorizontalImages = true), hasNext = false)
     }
 
