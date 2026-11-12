@@ -1,0 +1,124 @@
+<!-- Artplayer quality/subtitle options extracted from the saved response. -->
+<script>
+const options = [
+{
+                                                html: 'اَلْعَرَبِيَّةُ',
+                        url: ('https://cacdn.hakunaymatata.com/subtitle/b99f4c385b2078d34058db8c3d993781.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9zdWJ0aXRsZS8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM3fX19XX0_&Signature=SMOPA6FjYpOrVWOsFsIUw~xQaz6RFUkbXRk9we0RVH3J4LUhWk41dEykajkVSuIk6IoNXZUmMixN9gO2EYz04psOLzEVHTEve5LQCdk5ohNvjgGIw~rBgYnNM2gBcJv-7Ez4pyncI8GUA27mgHeRpX03XaT7-885EROEcw3VSFNXOEZQd~49nXs1ju3mDBIBpvveT~VZEE3gNxPNxZautdqJTINMjuYhacXXeVMfRl7proxy1ZWDLdncvIsc04UnVXRADg4MqK8i2Yrj-1khX-Io-zfF49uj9ZhQHVCm68GBTLgRzm7qwNT0HWzLTr77ODSdDmvMT~g4~dx~Kn5oQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+                    },
+{
+                                                html: 'বাংলা',
+                        url: ('https://cacdn.hakunaymatata.com/msubt/1be29d06ca4781a957388bdbabe446f0.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9tc3VidC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM4fX19XX0_&Signature=Cswn90ajJujlGIpCvH5k24F9Xd6oPPYHL9jGCdF02atuGnsoiaN1mjjmjgY81-KnBgi2hGSdS9PET31XBCySHvyrUeo6L70Pti3tFkgm0Bt7i~Y7ng53cRv1695v0JK1bH8fvEz2HY6b~A0LFN0CV~CGDUzA75-uOZVJLgwGH8onGLtEqcHYmFw27PxBqWGPmOptc8-SLS6~s2x075vfbT4LlyT2kuOWWMwf9qSOPusQZSnlwEI4KGjyryJvEFepgmyJiZMBa976yLLVz~fiZWbLO6nanCQVkpqNHDR9NKFZAVZhIqf63Ptg7KNZN8MDzHEmQDje37W9jFiUmX8dQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+                    },
+{
+                                                default: true,
+                                                html: 'English',
+                        url: ('https://cacdn.hakunaymatata.com/subtitle/3d4c0c73a56f51f6a618b68b10b7907e.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9zdWJ0aXRsZS8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM3fX19XX0_&Signature=SMOPA6FjYpOrVWOsFsIUw~xQaz6RFUkbXRk9we0RVH3J4LUhWk41dEykajkVSuIk6IoNXZUmMixN9gO2EYz04psOLzEVHTEve5LQCdk5ohNvjgGIw~rBgYnNM2gBcJv-7Ez4pyncI8GUA27mgHeRpX03XaT7-885EROEcw3VSFNXOEZQd~49nXs1ju3mDBIBpvveT~VZEE3gNxPNxZautdqJTINMjuYhacXXeVMfRl7proxy1ZWDLdncvIsc04UnVXRADg4MqK8i2Yrj-1khX-Io-zfF49uj9ZhQHVCm68GBTLgRzm7qwNT0HWzLTr77ODSdDmvMT~g4~dx~Kn5oQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+                    },
+{
+                                                html: 'Filipino',
+                        url: ('https://cacdn.hakunaymatata.com/msubt/8f17fbf614c07b64f1e84c2b83ea88e5.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9tc3VidC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM4fX19XX0_&Signature=Cswn90ajJujlGIpCvH5k24F9Xd6oPPYHL9jGCdF02atuGnsoiaN1mjjmjgY81-KnBgi2hGSdS9PET31XBCySHvyrUeo6L70Pti3tFkgm0Bt7i~Y7ng53cRv1695v0JK1bH8fvEz2HY6b~A0LFN0CV~CGDUzA75-uOZVJLgwGH8onGLtEqcHYmFw27PxBqWGPmOptc8-SLS6~s2x075vfbT4LlyT2kuOWWMwf9qSOPusQZSnlwEI4KGjyryJvEFepgmyJiZMBa976yLLVz~fiZWbLO6nanCQVkpqNHDR9NKFZAVZhIqf63Ptg7KNZN8MDzHEmQDje37W9jFiUmX8dQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+                    },
+{
+                                                html: 'Français',
+                        url: ('https://cacdn.hakunaymatata.com/subtitle/b822e7bd497e0ab6ca75db277dee5542.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9zdWJ0aXRsZS8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM3fX19XX0_&Signature=SMOPA6FjYpOrVWOsFsIUw~xQaz6RFUkbXRk9we0RVH3J4LUhWk41dEykajkVSuIk6IoNXZUmMixN9gO2EYz04psOLzEVHTEve5LQCdk5ohNvjgGIw~rBgYnNM2gBcJv-7Ez4pyncI8GUA27mgHeRpX03XaT7-885EROEcw3VSFNXOEZQd~49nXs1ju3mDBIBpvveT~VZEE3gNxPNxZautdqJTINMjuYhacXXeVMfRl7proxy1ZWDLdncvIsc04UnVXRADg4MqK8i2Yrj-1khX-Io-zfF49uj9ZhQHVCm68GBTLgRzm7qwNT0HWzLTr77ODSdDmvMT~g4~dx~Kn5oQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+                    },
+{
+                                                html: 'हिन्दी',
+                        url: ('https://cacdn.hakunaymatata.com/msubt/44d1421ae00bf178eab1cd8b1ebe72a2.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9tc3VidC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM4fX19XX0_&Signature=Cswn90ajJujlGIpCvH5k24F9Xd6oPPYHL9jGCdF02atuGnsoiaN1mjjmjgY81-KnBgi2hGSdS9PET31XBCySHvyrUeo6L70Pti3tFkgm0Bt7i~Y7ng53cRv1695v0JK1bH8fvEz2HY6b~A0LFN0CV~CGDUzA75-uOZVJLgwGH8onGLtEqcHYmFw27PxBqWGPmOptc8-SLS6~s2x075vfbT4LlyT2kuOWWMwf9qSOPusQZSnlwEI4KGjyryJvEFepgmyJiZMBa976yLLVz~fiZWbLO6nanCQVkpqNHDR9NKFZAVZhIqf63Ptg7KNZN8MDzHEmQDje37W9jFiUmX8dQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+                    },
+{
+                                                html: 'Indonesian',
+                        url: ('https://cacdn.hakunaymatata.com/subtitle/642dbf2efdd911bd02b8d767a7915174.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9zdWJ0aXRsZS8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM3fX19XX0_&Signature=SMOPA6FjYpOrVWOsFsIUw~xQaz6RFUkbXRk9we0RVH3J4LUhWk41dEykajkVSuIk6IoNXZUmMixN9gO2EYz04psOLzEVHTEve5LQCdk5ohNvjgGIw~rBgYnNM2gBcJv-7Ez4pyncI8GUA27mgHeRpX03XaT7-885EROEcw3VSFNXOEZQd~49nXs1ju3mDBIBpvveT~VZEE3gNxPNxZautdqJTINMjuYhacXXeVMfRl7proxy1ZWDLdncvIsc04UnVXRADg4MqK8i2Yrj-1khX-Io-zfF49uj9ZhQHVCm68GBTLgRzm7qwNT0HWzLTr77ODSdDmvMT~g4~dx~Kn5oQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+                    },
+{
+                                                html: 'Malay',
+                        url: ('https://cacdn.hakunaymatata.com/msubt/b56df256a569183be19ccc6ee5463547.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9tc3VidC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM4fX19XX0_&Signature=Cswn90ajJujlGIpCvH5k24F9Xd6oPPYHL9jGCdF02atuGnsoiaN1mjjmjgY81-KnBgi2hGSdS9PET31XBCySHvyrUeo6L70Pti3tFkgm0Bt7i~Y7ng53cRv1695v0JK1bH8fvEz2HY6b~A0LFN0CV~CGDUzA75-uOZVJLgwGH8onGLtEqcHYmFw27PxBqWGPmOptc8-SLS6~s2x075vfbT4LlyT2kuOWWMwf9qSOPusQZSnlwEI4KGjyryJvEFepgmyJiZMBa976yLLVz~fiZWbLO6nanCQVkpqNHDR9NKFZAVZhIqf63Ptg7KNZN8MDzHEmQDje37W9jFiUmX8dQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+                    },
+{
+                                                html: 'ਪੰਜਾਬੀ',
+                        url: ('https://cacdn.hakunaymatata.com/msubt/6ef0cbaa0e3025f2b9ee9d7fb487c02e.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9tc3VidC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM4fX19XX0_&Signature=Cswn90ajJujlGIpCvH5k24F9Xd6oPPYHL9jGCdF02atuGnsoiaN1mjjmjgY81-KnBgi2hGSdS9PET31XBCySHvyrUeo6L70Pti3tFkgm0Bt7i~Y7ng53cRv1695v0JK1bH8fvEz2HY6b~A0LFN0CV~CGDUzA75-uOZVJLgwGH8onGLtEqcHYmFw27PxBqWGPmOptc8-SLS6~s2x075vfbT4LlyT2kuOWWMwf9qSOPusQZSnlwEI4KGjyryJvEFepgmyJiZMBa976yLLVz~fiZWbLO6nanCQVkpqNHDR9NKFZAVZhIqf63Ptg7KNZN8MDzHEmQDje37W9jFiUmX8dQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+                    },
+{
+                                                html: 'Português',
+                        url: ('https://cacdn.hakunaymatata.com/subtitle/56dee54f7dab3f7df7fb4e18ab5cf822.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9zdWJ0aXRsZS8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM3fX19XX0_&Signature=SMOPA6FjYpOrVWOsFsIUw~xQaz6RFUkbXRk9we0RVH3J4LUhWk41dEykajkVSuIk6IoNXZUmMixN9gO2EYz04psOLzEVHTEve5LQCdk5ohNvjgGIw~rBgYnNM2gBcJv-7Ez4pyncI8GUA27mgHeRpX03XaT7-885EROEcw3VSFNXOEZQd~49nXs1ju3mDBIBpvveT~VZEE3gNxPNxZautdqJTINMjuYhacXXeVMfRl7proxy1ZWDLdncvIsc04UnVXRADg4MqK8i2Yrj-1khX-Io-zfF49uj9ZhQHVCm68GBTLgRzm7qwNT0HWzLTr77ODSdDmvMT~g4~dx~Kn5oQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+                    },
+{
+                                                html: 'Русский',
+                        url: ('https://cacdn.hakunaymatata.com/msubt/08141feb6564b762c247a4b4b2964c6f.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9tc3VidC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM4fX19XX0_&Signature=Cswn90ajJujlGIpCvH5k24F9Xd6oPPYHL9jGCdF02atuGnsoiaN1mjjmjgY81-KnBgi2hGSdS9PET31XBCySHvyrUeo6L70Pti3tFkgm0Bt7i~Y7ng53cRv1695v0JK1bH8fvEz2HY6b~A0LFN0CV~CGDUzA75-uOZVJLgwGH8onGLtEqcHYmFw27PxBqWGPmOptc8-SLS6~s2x075vfbT4LlyT2kuOWWMwf9qSOPusQZSnlwEI4KGjyryJvEFepgmyJiZMBa976yLLVz~fiZWbLO6nanCQVkpqNHDR9NKFZAVZhIqf63Ptg7KNZN8MDzHEmQDje37W9jFiUmX8dQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+                    },
+{
+                                                html: 'اُردُو',
+                        url: ('https://cacdn.hakunaymatata.com/msubt/b052a268c21c16f5523446cb2769916b.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9tc3VidC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM4fX19XX0_&Signature=Cswn90ajJujlGIpCvH5k24F9Xd6oPPYHL9jGCdF02atuGnsoiaN1mjjmjgY81-KnBgi2hGSdS9PET31XBCySHvyrUeo6L70Pti3tFkgm0Bt7i~Y7ng53cRv1695v0JK1bH8fvEz2HY6b~A0LFN0CV~CGDUzA75-uOZVJLgwGH8onGLtEqcHYmFw27PxBqWGPmOptc8-SLS6~s2x075vfbT4LlyT2kuOWWMwf9qSOPusQZSnlwEI4KGjyryJvEFepgmyJiZMBa976yLLVz~fiZWbLO6nanCQVkpqNHDR9NKFZAVZhIqf63Ptg7KNZN8MDzHEmQDje37W9jFiUmX8dQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+                    },
+{
+                                                html: '中文',
+                        url: ('https://cacdn.hakunaymatata.com/subtitle/b1e442eac81a0627f5fd3c6ffa0eca8b.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9zdWJ0aXRsZS8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM3fX19XX0_&Signature=SMOPA6FjYpOrVWOsFsIUw~xQaz6RFUkbXRk9we0RVH3J4LUhWk41dEykajkVSuIk6IoNXZUmMixN9gO2EYz04psOLzEVHTEve5LQCdk5ohNvjgGIw~rBgYnNM2gBcJv-7Ez4pyncI8GUA27mgHeRpX03XaT7-885EROEcw3VSFNXOEZQd~49nXs1ju3mDBIBpvveT~VZEE3gNxPNxZautdqJTINMjuYhacXXeVMfRl7proxy1ZWDLdncvIsc04UnVXRADg4MqK8i2Yrj-1khX-Io-zfF49uj9ZhQHVCm68GBTLgRzm7qwNT0HWzLTr77ODSdDmvMT~g4~dx~Kn5oQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+                    },
+{               html: '360P',
+            url: 'https://bcdnxw.hakunaymatata.com/bt/ad047603b18afe1d194d5b9adb0c21a7.mp4?sign=0d135edfbd33d05bd805916a5c547b01&t=1794420169',
+        },
+{               html: '480P',
+            url: 'https://bcdnxw.hakunaymatata.com/bt/5f906e7114a60381e5753a890b5360a5.mp4?sign=4496926b20216727dd106e0e67d91d7e&t=1794420326',
+        },
+{               html: '720P',
+            url: 'https://bcdnxw.hakunaymatata.com/resource/500b601be87cc510e4eacb91e369d4a2.mp4?sign=606b6a97d35e0c042de0b7f4048dd775&t=1794420704',
+        },
+{               default: true,
+                        html: '1080P',
+            url: 'https://bcdnxw.hakunaymatata.com/resource/6e866b57952c462ef379b5aa7f34abce.mp4?sign=d5596d189e525e9a6cda39c78485acf8&t=1794418781',
+        },
+{
+                html: 'اَلْعَرَبِيَّةُ',
+        url: encodeURI('https://cacdn.hakunaymatata.com/subtitle/b99f4c385b2078d34058db8c3d993781.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9zdWJ0aXRsZS8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM3fX19XX0_&Signature=SMOPA6FjYpOrVWOsFsIUw~xQaz6RFUkbXRk9we0RVH3J4LUhWk41dEykajkVSuIk6IoNXZUmMixN9gO2EYz04psOLzEVHTEve5LQCdk5ohNvjgGIw~rBgYnNM2gBcJv-7Ez4pyncI8GUA27mgHeRpX03XaT7-885EROEcw3VSFNXOEZQd~49nXs1ju3mDBIBpvveT~VZEE3gNxPNxZautdqJTINMjuYhacXXeVMfRl7proxy1ZWDLdncvIsc04UnVXRADg4MqK8i2Yrj-1khX-Io-zfF49uj9ZhQHVCm68GBTLgRzm7qwNT0HWzLTr77ODSdDmvMT~g4~dx~Kn5oQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+    },
+{
+                html: 'বাংলা',
+        url: encodeURI('https://cacdn.hakunaymatata.com/msubt/1be29d06ca4781a957388bdbabe446f0.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9tc3VidC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM4fX19XX0_&Signature=Cswn90ajJujlGIpCvH5k24F9Xd6oPPYHL9jGCdF02atuGnsoiaN1mjjmjgY81-KnBgi2hGSdS9PET31XBCySHvyrUeo6L70Pti3tFkgm0Bt7i~Y7ng53cRv1695v0JK1bH8fvEz2HY6b~A0LFN0CV~CGDUzA75-uOZVJLgwGH8onGLtEqcHYmFw27PxBqWGPmOptc8-SLS6~s2x075vfbT4LlyT2kuOWWMwf9qSOPusQZSnlwEI4KGjyryJvEFepgmyJiZMBa976yLLVz~fiZWbLO6nanCQVkpqNHDR9NKFZAVZhIqf63Ptg7KNZN8MDzHEmQDje37W9jFiUmX8dQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+    },
+{
+                default: true,
+                html: 'English',
+        url: encodeURI('https://cacdn.hakunaymatata.com/subtitle/3d4c0c73a56f51f6a618b68b10b7907e.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9zdWJ0aXRsZS8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM3fX19XX0_&Signature=SMOPA6FjYpOrVWOsFsIUw~xQaz6RFUkbXRk9we0RVH3J4LUhWk41dEykajkVSuIk6IoNXZUmMixN9gO2EYz04psOLzEVHTEve5LQCdk5ohNvjgGIw~rBgYnNM2gBcJv-7Ez4pyncI8GUA27mgHeRpX03XaT7-885EROEcw3VSFNXOEZQd~49nXs1ju3mDBIBpvveT~VZEE3gNxPNxZautdqJTINMjuYhacXXeVMfRl7proxy1ZWDLdncvIsc04UnVXRADg4MqK8i2Yrj-1khX-Io-zfF49uj9ZhQHVCm68GBTLgRzm7qwNT0HWzLTr77ODSdDmvMT~g4~dx~Kn5oQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+    },
+{
+                html: 'Filipino',
+        url: encodeURI('https://cacdn.hakunaymatata.com/msubt/8f17fbf614c07b64f1e84c2b83ea88e5.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9tc3VidC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM4fX19XX0_&Signature=Cswn90ajJujlGIpCvH5k24F9Xd6oPPYHL9jGCdF02atuGnsoiaN1mjjmjgY81-KnBgi2hGSdS9PET31XBCySHvyrUeo6L70Pti3tFkgm0Bt7i~Y7ng53cRv1695v0JK1bH8fvEz2HY6b~A0LFN0CV~CGDUzA75-uOZVJLgwGH8onGLtEqcHYmFw27PxBqWGPmOptc8-SLS6~s2x075vfbT4LlyT2kuOWWMwf9qSOPusQZSnlwEI4KGjyryJvEFepgmyJiZMBa976yLLVz~fiZWbLO6nanCQVkpqNHDR9NKFZAVZhIqf63Ptg7KNZN8MDzHEmQDje37W9jFiUmX8dQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+    },
+{
+                html: 'Français',
+        url: encodeURI('https://cacdn.hakunaymatata.com/subtitle/b822e7bd497e0ab6ca75db277dee5542.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9zdWJ0aXRsZS8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM3fX19XX0_&Signature=SMOPA6FjYpOrVWOsFsIUw~xQaz6RFUkbXRk9we0RVH3J4LUhWk41dEykajkVSuIk6IoNXZUmMixN9gO2EYz04psOLzEVHTEve5LQCdk5ohNvjgGIw~rBgYnNM2gBcJv-7Ez4pyncI8GUA27mgHeRpX03XaT7-885EROEcw3VSFNXOEZQd~49nXs1ju3mDBIBpvveT~VZEE3gNxPNxZautdqJTINMjuYhacXXeVMfRl7proxy1ZWDLdncvIsc04UnVXRADg4MqK8i2Yrj-1khX-Io-zfF49uj9ZhQHVCm68GBTLgRzm7qwNT0HWzLTr77ODSdDmvMT~g4~dx~Kn5oQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+    },
+{
+                html: 'हिन्दी',
+        url: encodeURI('https://cacdn.hakunaymatata.com/msubt/44d1421ae00bf178eab1cd8b1ebe72a2.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9tc3VidC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM4fX19XX0_&Signature=Cswn90ajJujlGIpCvH5k24F9Xd6oPPYHL9jGCdF02atuGnsoiaN1mjjmjgY81-KnBgi2hGSdS9PET31XBCySHvyrUeo6L70Pti3tFkgm0Bt7i~Y7ng53cRv1695v0JK1bH8fvEz2HY6b~A0LFN0CV~CGDUzA75-uOZVJLgwGH8onGLtEqcHYmFw27PxBqWGPmOptc8-SLS6~s2x075vfbT4LlyT2kuOWWMwf9qSOPusQZSnlwEI4KGjyryJvEFepgmyJiZMBa976yLLVz~fiZWbLO6nanCQVkpqNHDR9NKFZAVZhIqf63Ptg7KNZN8MDzHEmQDje37W9jFiUmX8dQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+    },
+{
+                html: 'Indonesian',
+        url: encodeURI('https://cacdn.hakunaymatata.com/subtitle/642dbf2efdd911bd02b8d767a7915174.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9zdWJ0aXRsZS8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM3fX19XX0_&Signature=SMOPA6FjYpOrVWOsFsIUw~xQaz6RFUkbXRk9we0RVH3J4LUhWk41dEykajkVSuIk6IoNXZUmMixN9gO2EYz04psOLzEVHTEve5LQCdk5ohNvjgGIw~rBgYnNM2gBcJv-7Ez4pyncI8GUA27mgHeRpX03XaT7-885EROEcw3VSFNXOEZQd~49nXs1ju3mDBIBpvveT~VZEE3gNxPNxZautdqJTINMjuYhacXXeVMfRl7proxy1ZWDLdncvIsc04UnVXRADg4MqK8i2Yrj-1khX-Io-zfF49uj9ZhQHVCm68GBTLgRzm7qwNT0HWzLTr77ODSdDmvMT~g4~dx~Kn5oQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+    },
+{
+                html: 'Malay',
+        url: encodeURI('https://cacdn.hakunaymatata.com/msubt/b56df256a569183be19ccc6ee5463547.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9tc3VidC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM4fX19XX0_&Signature=Cswn90ajJujlGIpCvH5k24F9Xd6oPPYHL9jGCdF02atuGnsoiaN1mjjmjgY81-KnBgi2hGSdS9PET31XBCySHvyrUeo6L70Pti3tFkgm0Bt7i~Y7ng53cRv1695v0JK1bH8fvEz2HY6b~A0LFN0CV~CGDUzA75-uOZVJLgwGH8onGLtEqcHYmFw27PxBqWGPmOptc8-SLS6~s2x075vfbT4LlyT2kuOWWMwf9qSOPusQZSnlwEI4KGjyryJvEFepgmyJiZMBa976yLLVz~fiZWbLO6nanCQVkpqNHDR9NKFZAVZhIqf63Ptg7KNZN8MDzHEmQDje37W9jFiUmX8dQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+    },
+{
+                html: 'ਪੰਜਾਬੀ',
+        url: encodeURI('https://cacdn.hakunaymatata.com/msubt/6ef0cbaa0e3025f2b9ee9d7fb487c02e.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9tc3VidC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM4fX19XX0_&Signature=Cswn90ajJujlGIpCvH5k24F9Xd6oPPYHL9jGCdF02atuGnsoiaN1mjjmjgY81-KnBgi2hGSdS9PET31XBCySHvyrUeo6L70Pti3tFkgm0Bt7i~Y7ng53cRv1695v0JK1bH8fvEz2HY6b~A0LFN0CV~CGDUzA75-uOZVJLgwGH8onGLtEqcHYmFw27PxBqWGPmOptc8-SLS6~s2x075vfbT4LlyT2kuOWWMwf9qSOPusQZSnlwEI4KGjyryJvEFepgmyJiZMBa976yLLVz~fiZWbLO6nanCQVkpqNHDR9NKFZAVZhIqf63Ptg7KNZN8MDzHEmQDje37W9jFiUmX8dQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+    },
+{
+                html: 'Português',
+        url: encodeURI('https://cacdn.hakunaymatata.com/subtitle/56dee54f7dab3f7df7fb4e18ab5cf822.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9zdWJ0aXRsZS8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM3fX19XX0_&Signature=SMOPA6FjYpOrVWOsFsIUw~xQaz6RFUkbXRk9we0RVH3J4LUhWk41dEykajkVSuIk6IoNXZUmMixN9gO2EYz04psOLzEVHTEve5LQCdk5ohNvjgGIw~rBgYnNM2gBcJv-7Ez4pyncI8GUA27mgHeRpX03XaT7-885EROEcw3VSFNXOEZQd~49nXs1ju3mDBIBpvveT~VZEE3gNxPNxZautdqJTINMjuYhacXXeVMfRl7proxy1ZWDLdncvIsc04UnVXRADg4MqK8i2Yrj-1khX-Io-zfF49uj9ZhQHVCm68GBTLgRzm7qwNT0HWzLTr77ODSdDmvMT~g4~dx~Kn5oQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+    },
+{
+                html: 'Русский',
+        url: encodeURI('https://cacdn.hakunaymatata.com/msubt/08141feb6564b762c247a4b4b2964c6f.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9tc3VidC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM4fX19XX0_&Signature=Cswn90ajJujlGIpCvH5k24F9Xd6oPPYHL9jGCdF02atuGnsoiaN1mjjmjgY81-KnBgi2hGSdS9PET31XBCySHvyrUeo6L70Pti3tFkgm0Bt7i~Y7ng53cRv1695v0JK1bH8fvEz2HY6b~A0LFN0CV~CGDUzA75-uOZVJLgwGH8onGLtEqcHYmFw27PxBqWGPmOptc8-SLS6~s2x075vfbT4LlyT2kuOWWMwf9qSOPusQZSnlwEI4KGjyryJvEFepgmyJiZMBa976yLLVz~fiZWbLO6nanCQVkpqNHDR9NKFZAVZhIqf63Ptg7KNZN8MDzHEmQDje37W9jFiUmX8dQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+    },
+{
+                html: 'اُردُو',
+        url: encodeURI('https://cacdn.hakunaymatata.com/msubt/b052a268c21c16f5523446cb2769916b.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9tc3VidC8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM4fX19XX0_&Signature=Cswn90ajJujlGIpCvH5k24F9Xd6oPPYHL9jGCdF02atuGnsoiaN1mjjmjgY81-KnBgi2hGSdS9PET31XBCySHvyrUeo6L70Pti3tFkgm0Bt7i~Y7ng53cRv1695v0JK1bH8fvEz2HY6b~A0LFN0CV~CGDUzA75-uOZVJLgwGH8onGLtEqcHYmFw27PxBqWGPmOptc8-SLS6~s2x075vfbT4LlyT2kuOWWMwf9qSOPusQZSnlwEI4KGjyryJvEFepgmyJiZMBa976yLLVz~fiZWbLO6nanCQVkpqNHDR9NKFZAVZhIqf63Ptg7KNZN8MDzHEmQDje37W9jFiUmX8dQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+    },
+{
+                html: '中文',
+        url: encodeURI('https://cacdn.hakunaymatata.com/subtitle/b1e442eac81a0627f5fd3c6ffa0eca8b.srt?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYWNkbi5oYWt1bmF5bWF0YXRhLmNvbS9zdWJ0aXRsZS8qIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzk1MDI0ODM3fX19XX0_&Signature=SMOPA6FjYpOrVWOsFsIUw~xQaz6RFUkbXRk9we0RVH3J4LUhWk41dEykajkVSuIk6IoNXZUmMixN9gO2EYz04psOLzEVHTEve5LQCdk5ohNvjgGIw~rBgYnNM2gBcJv-7Ez4pyncI8GUA27mgHeRpX03XaT7-885EROEcw3VSFNXOEZQd~49nXs1ju3mDBIBpvveT~VZEE3gNxPNxZautdqJTINMjuYhacXXeVMfRl7proxy1ZWDLdncvIsc04UnVXRADg4MqK8i2Yrj-1khX-Io-zfF49uj9ZhQHVCm68GBTLgRzm7qwNT0HWzLTr77ODSdDmvMT~g4~dx~Kn5oQQ__&Key-Pair-Id=KMHN1LQ1HEUPL'),
+    }
+];
+</script>
