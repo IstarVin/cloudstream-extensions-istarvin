@@ -51,29 +51,47 @@ import java.util.concurrent.TimeUnit
  */
 class StreamCorner internal constructor(
     private val bridgeFactory: (String) -> StreamCornerBridge,
-    mirror: String = "",
+    private val mirror: () -> String = { "" },
 ) : MainAPI() {
-    /** The mirror chosen in the plugin settings, read once when the plugin loads; empty means the default site. */
-    override var mainUrl = mirror.trim().trimEnd('/').ifEmpty { DEFAULT_URL }
+    override var mainUrl = mirrorUrl()
     override var name = "StreamCorner"
     override var lang = "en"
     override val hasMainPage = true
     override val hasQuickSearch = false
     override val supportedTypes = setOf(TvType.Live)
 
-    private val bridge by lazy { bridgeFactory(mainUrl) }
-    private val drm by lazy { StreamCornerDrmResolver(bridge, mainUrl, ::fetchPlaylist) }
-    private val bootstrapLock = Mutex()
-    @Volatile private var bootstrap: Pair<SCBootstrap, Long>? = null
-    private val lists = ConcurrentHashMap<String, Pair<List<SCItem>, Long>>()
-    private val details = ConcurrentHashMap<String, Pair<SCItem, Long>>()
+    /** Each request keeps one session, so a settings change cannot mix origins or repopulate the new caches. */
+    private inner class Session(val origin: String) {
+        val bridge by lazy { bridgeFactory(origin) }
+        val drm by lazy { StreamCornerDrmResolver(bridge, origin, ::fetchPlaylist) }
+        val bootstrapLock = Mutex()
+        @Volatile var bootstrap: Pair<SCBootstrap, Long>? = null
+        val lists = ConcurrentHashMap<String, Pair<List<SCItem>, Long>>()
+        val details = ConcurrentHashMap<String, Pair<SCItem, Long>>()
+    }
+
+    private var activeSession = Session(mainUrl)
+
+    private fun mirrorUrl() = mirror().trim().trimEnd('/').ifEmpty { DEFAULT_URL }
+
+    @Synchronized
+    private fun session(): Session {
+        val origin = mirrorUrl()
+        if (activeSession.origin != origin) {
+            activeSession = Session(origin)
+            mainUrl = origin
+            // Previous requests may finish; their worker releases itself after its idle timeout.
+        }
+        return activeSession
+    }
 
     override val mainPage = mainPageOf(*StreamCornerParser.providers.map { it.key to it.row }.toTypedArray())
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
+        val session = session()
         val provider = StreamCornerParser.provider(request.data) ?: throw ErrorLoadingException("Unknown row ${request.data}")
         val items = if (page > 1) emptyList() else try {
-            visible(provider).map { it.toSearchResponse(provider.key) }
+            visible(session, provider).map { it.toSearchResponse(session, provider.key) }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -85,6 +103,7 @@ class StreamCorner internal constructor(
     }
 
     override suspend fun search(query: String, page: Int): SearchResponseList {
+        val session = session()
         val q = query.trim()
         if (q.isEmpty() || page > 1) return newSearchResponseList(emptyList(), hasNext = false)
         // The site has no search; match the schedules it already shows.
@@ -92,14 +111,14 @@ class StreamCorner internal constructor(
             StreamCornerParser.providers.map { provider ->
                 async {
                     val items = try {
-                        visible(provider)
+                        visible(session, provider)
                     } catch (e: CancellationException) {
                         throw e
                     } catch (e: Exception) {
                         Log.w(name, "search ${provider.key}: ${e.message}")
                         emptyList()
                     }
-                    items.filter { it.matches(q) }.map { it.toSearchResponse(provider.key) }
+                    items.filter { it.matches(q) }.map { it.toSearchResponse(session, provider.key) }
                 }
             }.awaitAll().flatten()
         }
@@ -109,16 +128,17 @@ class StreamCorner internal constructor(
     private fun SCItem.matches(q: String): Boolean =
         listOfNotNull(StreamCornerParser.title(this), league, category, homeTeam, awayTeam).any { it.contains(q, ignoreCase = true) }
 
-    private fun SCItem.toSearchResponse(provider: String): SearchResponse =
-        newLiveSearchResponse(StreamCornerParser.title(this)!!, StreamCornerParser.pageUrl(mainUrl, provider, StreamCornerParser.id(this)!!), TvType.Live) {
+    private fun SCItem.toSearchResponse(session: Session, provider: String): SearchResponse =
+        newLiveSearchResponse(StreamCornerParser.title(this)!!, StreamCornerParser.pageUrl(session.origin, provider, StreamCornerParser.id(this)!!), TvType.Live) {
             posterUrl = StreamCornerParser.poster(this@toSearchResponse)
         }
 
     override suspend fun load(url: String): LoadResponse {
+        val session = session()
         val (key, id) = StreamCornerParser.pageRef(url) ?: throw ErrorLoadingException("Not a streamcorner.st stream URL: $url")
         val provider = StreamCornerParser.provider(key) ?: throw ErrorLoadingException("Unsupported streamcorner.st section: $key")
-        val item = detail(provider, id)
-        val pageUrl = StreamCornerParser.pageUrl(mainUrl, key, id)
+        val item = detail(session, provider, id)
+        val pageUrl = StreamCornerParser.pageUrl(session.origin, key, id)
         val title = StreamCornerParser.title(item) ?: throw ErrorLoadingException("$id is no longer listed on streamcorner.st")
         val now = System.currentTimeMillis()
         val sources = StreamCornerParser.sources(item)
@@ -130,8 +150,8 @@ class StreamCorner internal constructor(
                 if (sources.isEmpty()) "No streams yet; the site adds them shortly before the start." else null,
             ).joinToString("\n\n")
             tags = listOfNotNull(provider.row, item.league?.ifBlank { null }, item.category?.ifBlank { null }).distinct()
-            recommendations = runCatching { visible(provider) }.getOrDefault(emptyList())
-                .filter { StreamCornerParser.id(it) != id }.take(24).map { it.toSearchResponse(key) }
+            recommendations = runCatching { visible(session, provider) }.getOrDefault(emptyList())
+                .filter { StreamCornerParser.id(it) != id }.take(24).map { it.toSearchResponse(session, key) }
         }
     }
 
@@ -141,9 +161,10 @@ class StreamCorner internal constructor(
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
+        val session = session()
         val (providerKey, id) = StreamCornerParser.pageRef(data) ?: return false
         val provider = StreamCornerParser.provider(providerKey) ?: return false
-        val sources = StreamCornerParser.sources(detail(provider, id, refresh = true))
+        val sources = StreamCornerParser.sources(detail(session, provider, id, refresh = true))
         if (sources.isEmpty()) return false
 
         // Each embed is a WebView; a few at once keeps the phone responsive and the player's wait bounded.
@@ -153,15 +174,15 @@ class StreamCorner internal constructor(
                 async {
                     permits.withPermit {
                         try {
-                            val decoded = if (drm.supports(embed)) try {
-                                drm.resolve(embed)
+                            val decoded = if (session.drm.supports(embed)) try {
+                                session.drm.resolve(embed)
                             } catch (e: CancellationException) {
                                 throw e
                             } catch (e: Exception) {
                                 Log.w(name, "$label decoder failed: ${e.javaClass.simpleName} ${e.message}")
                                 null
                             } else null
-                            val manifest = if (decoded != null || StreamCornerParser.isManifest(embed)) null else bridge.manifest(embed, EMBED_TIMEOUT_MS)
+                            val manifest = if (decoded != null || StreamCornerParser.isManifest(embed)) null else session.bridge.manifest(embed, EMBED_TIMEOUT_MS)
                             val url = decoded?.url ?: manifest?.url ?: embed.takeIf { StreamCornerParser.isManifest(it) }
                             if (url == null) {
                                 Log.w(name, "no playlist from $label $embed")
@@ -298,45 +319,45 @@ class StreamCorner internal constructor(
     }
 
     /** A provider's schedule as the site would show it: ended events dropped, except NBA games with replays. */
-    private suspend fun visible(provider: StreamCornerParser.Provider): List<SCItem> =
-        StreamCornerParser.sorted(list(provider), System.currentTimeMillis(), keepEnded = provider.key == "nba")
+    private suspend fun visible(session: Session, provider: StreamCornerParser.Provider): List<SCItem> =
+        StreamCornerParser.sorted(list(session, provider), System.currentTimeMillis(), keepEnded = provider.key == "nba")
             .filter { StreamCornerParser.title(it) != null }
 
-    private suspend fun list(provider: StreamCornerParser.Provider): List<SCItem> {
-        lists[provider.key]?.takeIf { fresh(it.second, LIST_TTL_MS) }?.let { return it.first }
-        val boot = bootstrap()
-        val reply = bridge.call(boot.workerPath, StreamCornerParser.message("provider-list", provider, hosts(boot)), boot.tokenField)
-        return StreamCornerParser.list(reply).also { lists[provider.key] = it to System.currentTimeMillis() }
+    private suspend fun list(session: Session, provider: StreamCornerParser.Provider): List<SCItem> {
+        session.lists[provider.key]?.takeIf { fresh(it.second, LIST_TTL_MS) }?.let { return it.first }
+        val boot = bootstrap(session)
+        val reply = session.bridge.call(boot.workerPath, StreamCornerParser.message("provider-list", provider, hosts(boot)), boot.tokenField)
+        return StreamCornerParser.list(reply).also { session.lists[provider.key] = it to System.currentTimeMillis() }
     }
 
-    private suspend fun detail(provider: StreamCornerParser.Provider, id: String, refresh: Boolean = false): SCItem {
+    private suspend fun detail(session: Session, provider: StreamCornerParser.Provider, id: String, refresh: Boolean = false): SCItem {
         val cacheKey = "${provider.key}:$id"
-        if (!refresh) details[cacheKey]?.takeIf { fresh(it.second, DETAIL_TTL_MS) }?.let { return it.first }
-        val boot = bootstrap()
+        if (!refresh) session.details[cacheKey]?.takeIf { fresh(it.second, DETAIL_TTL_MS) }?.let { return it.first }
+        val boot = bootstrap(session)
         val reply = try {
-            bridge.call(boot.workerPath, StreamCornerParser.message("provider-detail", provider, hosts(boot), id), boot.tokenField)
+            session.bridge.call(boot.workerPath, StreamCornerParser.message("provider-detail", provider, hosts(boot), id), boot.tokenField)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             throw ErrorLoadingException(e.message ?: "StreamCorner request failed")
         }
-        return StreamCornerParser.detail(reply).also { details[cacheKey] = it to System.currentTimeMillis() }
+        return StreamCornerParser.detail(reply).also { session.details[cacheKey] = it to System.currentTimeMillis() }
     }
 
     /** The site hands its worker five random data hosts per request; the worker falls back through them. */
     private fun hosts(boot: SCBootstrap) = boot.hosts.shuffled().take(HOSTS_PER_REQUEST)
 
     /** Worker script and data hosts, read from the homepage's modules since both change with each site build. */
-    private suspend fun bootstrap(): SCBootstrap {
-        bootstrap?.takeIf { fresh(it.second, BOOTSTRAP_TTL_MS) }?.let { return it.first }
-        return bootstrapLock.withLock {
-            bootstrap?.takeIf { fresh(it.second, BOOTSTRAP_TTL_MS) }?.let { return@withLock it.first }
-            val html = app.get("$mainUrl/").text
+    private suspend fun bootstrap(session: Session): SCBootstrap {
+        session.bootstrap?.takeIf { fresh(it.second, BOOTSTRAP_TTL_MS) }?.let { return it.first }
+        return session.bootstrapLock.withLock {
+            session.bootstrap?.takeIf { fresh(it.second, BOOTSTRAP_TTL_MS) }?.let { return@withLock it.first }
+            val html = app.get("${session.origin}/").text
             val found = StreamCornerParser.modulePaths(html).firstNotNullOfOrNull { path ->
-                StreamCornerParser.bootstrap(app.get("$mainUrl$path", referer = "$mainUrl/").text)
-            } ?: bootstrap?.first ?: throw ErrorLoadingException("streamcorner.st changed: no data worker found in its scripts")
+                StreamCornerParser.bootstrap(app.get("${session.origin}$path", referer = "${session.origin}/").text)
+            } ?: session.bootstrap?.first ?: throw ErrorLoadingException("streamcorner.st changed: no data worker found in its scripts")
             Log.i(name, "worker ${found.workerPath}, ${found.hosts.size} data hosts")
-            found.also { bootstrap = it to System.currentTimeMillis() }
+            found.also { session.bootstrap = it to System.currentTimeMillis() }
         }
     }
 

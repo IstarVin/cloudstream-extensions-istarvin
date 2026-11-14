@@ -14,7 +14,7 @@ class StreamCornerPlugin : Plugin() {
          */
         const val SETTINGS_SCHEMA = """[
             {"file": "${StreamCorner.PREF_FILE}", "key": "${StreamCorner.MIRROR_KEY}", "type": "string", "label": "Mirror URL",
-             "help": "Use another StreamCorner mirror (the current ones are listed at ${StreamCorner.MIRRORS_PAGE}). Leave it empty to use the default. Restart the app after changing it.",
+             "help": "Use another StreamCorner mirror (the current ones are listed at ${StreamCorner.MIRRORS_PAGE}). Leave it empty to use the default. Refresh StreamCorner after changing it; no restart needed.",
              "default": "${StreamCorner.DEFAULT_URL}"}
         ]"""
     }
@@ -23,15 +23,16 @@ class StreamCornerPlugin : Plugin() {
     override fun load(context: Context) {
         val app = context.applicationContext
         val sharedPref = context.getSharedPreferences(StreamCorner.PREF_FILE, Context.MODE_PRIVATE)
-        val mirror = sharedPref.getString(StreamCorner.MIRROR_KEY, "").orEmpty()
-        registerMainAPI(StreamCorner({ origin -> StreamCornerBridge(app, origin) }, mirror))
+        registerMainAPI(StreamCorner({ origin -> StreamCornerBridge(app, origin) }) {
+            sharedPref.getString(StreamCorner.MIRROR_KEY, "").orEmpty()
+        })
 
         openSettings = { ctx ->
             val activity = ctx as AppCompatActivity
             if (!activity.isFinishing && !activity.isDestroyed) {
                 PluginSettingsSheet(
                     this, "StreamCorner", streamCornerSettings(sharedPref),
-                    "Changes take effect after you restart the app. Links you already opened keep their cached streams.",
+                    "Mirror changes apply to new requests. Refresh StreamCorner to reload listings. Links you already opened keep their cached streams.",
                 ).show(activity.supportFragmentManager, "streamcorner_settings")
             }
         }
