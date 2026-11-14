@@ -1,0 +1,13 @@
+#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-INDEPENDENT-SEGMENTS
+#EXT-X-TARGETDURATION:6
+#EXT-X-MEDIA-SEQUENCE:41934
+#EXTINF:3.840,
+https://p16-oec-general-useast5.ttcdn-us.com/obj/tos-useast5-i-omjb5zjo8w-tx/a05d65f418fe4aa49744ffeeed9c90dd#sf=%2Flive%2Fskyf11080p%2F20710.js
+#EXTINF:5.600,
+https://p16-oec-general-useast5.ttcdn-us.com/obj/tos-useast5-i-omjb5zjo8w-tx/363972daf4504cf8bcdeae99d2b1d629#sf=https%3A%2F%2Fcdn1.strmfree.st%2Flive%2Fskyf11080p%2F20711.js
+#EXTINF:2.280,
+https://p16-oec-general-useast5.ttcdn-us.com/obj/tos-useast5-i-omjb5zjo8w-tx/fbfcf32c97844ee7b646da4e7dd00c79#sf=https%3A%2F%2Fcdn1.strmfree.st%2Flive%2Fskyf11080p%2F20712.js
+#EXTINF:4.360,
+https://p16-oec-general-useast5.ttcdn-us.com/obj/tos-useast5-i-omjb5zjo8w-tx/aedc2c01db49472288fd2747437d0f87#sf=https%3A%2F%2Fcdn1.strmfree.st%2Flive%2Fskyf11080p%2F20713.js

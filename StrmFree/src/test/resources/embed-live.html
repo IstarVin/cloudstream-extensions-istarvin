@@ -1,0 +1,75 @@
+    <title>Sky Sports F1 | Live Stream</title>
+...
+        let player = null;
+        let isSandboxed = false;
+
+        const STREAM_NAME = 'Sky Sports F1';
+        const SOURCE_SUFFIX = '';
+        const QUALITY = '1080p';
+        const VARIANT = 'skyf1' + QUALITY + SOURCE_SUFFIX;
+        const AUTOSTART = getAutostartFromURL();
+        const IS_LIVE = true;
+        const LIVE_CHECK_MS = 10000;
+        const P2P_ENABLED = true;
+
+        const p2pConfig = {
+            live: true,
+            token: "streamfree",
+            channelId: `${STREAM_NAME}_${QUALITY}${SOURCE_SUFFIX}`.replace(/\s/g, '_'),
+            announce: "https://ann.cdn-lab.shop/v1",
+            showSlogan: false,
+            sharePlaylist: false,
+            startFromSegmentOffset: 0,
+            trickleICE: true
+        };
+        if (window.SF_DEBUG) {
+            p2pConfig.getStats = (p2pDown, p2pUp, httpDown) => sfDebug.p2pStats(p2pDown, p2pUp, httpDown);
+        }
+
+        function getAutostartFromURL() {
+            if (!window.__isOwnSite) return false;
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('autostart') === '1';
+        }
+
+        const _0x = {"1080p": {"_e": 1794661931, "_n": "198882c21dd20871", "_t": "RlDZj7QRosUkbTGqS6QgBQ"}, "2160p": {"_e": 1794661931, "_n": "198882c21dd20871", "_t": "f5I1O5nlaB_wZm9vxJNAFQ"}, "540p": {"_e": 1794661931, "_n": "198882c21dd20871", "_t": "AnvZIHJH1fbKbCLJb3LWQg"}, "720p": {"_e": 1794661931, "_n": "198882c21dd20871", "_t": "AB3ZnrBS9atEbEHfrdmgyg"}};
+
+        const isAppleDevice = (() => {
+            const ua = navigator.userAgent;
+            const iOS = /iPad|iPhone|iPod/.test(navigator.platform) ||
+                ("MacIntel" === navigator.platform && navigator.maxTouchPoints > 1);
+            const macSafari = /Macintosh/.test(ua) && /Safari/.test(ua) && !/Chrome|Chromium|Edg|OPR/.test(ua);
+            return iOS || macSafari;
+        })();
+
+        async function getStreamSource() {
+            try {
+                const data = await window.sfFetch('/get-stream-key/skyf1').then(r => r.json());
+
+                if (data.is_external && data.external_url) {
+                    return data.external_url;
+                }
+
+                const serverName = data.server_name || 'origin';
+
+                let url;
+                if (serverName === 'externalcdn') {
+                    url = `/live-externalcdn/${VARIANT}/index.m3u8`;
+                } else if (serverName !== 'origin') {
+                    url = `/live-cdn/${VARIANT}/index.m3u8`;
+                } else {
+                    url = `/live/${VARIANT}/index.m3u8`;
+                }
+                const p = _0x[QUALITY];
+                if (p) {
+                    url += `?_t=${p._t}&_e=${p._e}&_n=${p._n}`;
+                }
+
+                sfDebug.log('SRC', `server=${serverName} ${url.split('?')[0]}`);
+                return url;
+            } catch (error) {
+                sfDebug.log('SRC', `get-stream-key failed (${error}), falling back to origin`, true);
+                return `/live/${VARIANT}/index.m3u8`;
+            }
+        }
+
