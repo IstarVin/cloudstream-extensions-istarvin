@@ -1,0 +1,75 @@
+    <title>Wales vs Norway | Live Stream</title>
+...
+        let player = null;
+        let isSandboxed = false;
+
+        const STREAM_NAME = 'Wales vs Norway';
+        const SOURCE_SUFFIX = '';
+        const QUALITY = '1080p';
+        const VARIANT = 'wales-vs-norway' + QUALITY + SOURCE_SUFFIX;
+        const AUTOSTART = getAutostartFromURL();
+        const IS_LIVE = false;
+        const LIVE_CHECK_MS = 10000;
+        const P2P_ENABLED = true;
+
+        const p2pConfig = {
+            live: true,
+            token: "streamfree",
+            channelId: `${STREAM_NAME}_${QUALITY}${SOURCE_SUFFIX}`.replace(/\s/g, '_'),
+            announce: "https://ann.cdn-lab.shop/v1",
+            showSlogan: false,
+            sharePlaylist: false,
+            startFromSegmentOffset: 0,
+            trickleICE: true
+        };
+        if (window.SF_DEBUG) {
+            p2pConfig.getStats = (p2pDown, p2pUp, httpDown) => sfDebug.p2pStats(p2pDown, p2pUp, httpDown);
+        }
+
+        function getAutostartFromURL() {
+            if (!window.__isOwnSite) return false;
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('autostart') === '1';
+        }
+
+        const _0x = {"1080p": {"_e": 1794662198, "_n": "535784e21f227fe2", "_t": "ZzcVJL1Gw36fqdqSYSQoLw"}, "2160p": {"_e": 1794662198, "_n": "535784e21f227fe2", "_t": "DG4l4w38WlDVm23_8FIseA"}, "540p": {"_e": 1794662198, "_n": "535784e21f227fe2", "_t": "ypyGpjdRaU_e0LXkqTL32w"}, "720p": {"_e": 1794662198, "_n": "535784e21f227fe2", "_t": "GibVsSopHVz0ZjNtHSw0eA"}};
+
+        const isAppleDevice = (() => {
+            const ua = navigator.userAgent;
+            const iOS = /iPad|iPhone|iPod/.test(navigator.platform) ||
+                ("MacIntel" === navigator.platform && navigator.maxTouchPoints > 1);
+            const macSafari = /Macintosh/.test(ua) && /Safari/.test(ua) && !/Chrome|Chromium|Edg|OPR/.test(ua);
+            return iOS || macSafari;
+        })();
+
+        async function getStreamSource() {
+            try {
+                const data = await window.sfFetch('/get-stream-key/wales-vs-norway').then(r => r.json());
+
+                if (data.is_external && data.external_url) {
+                    return data.external_url;
+                }
+
+                const serverName = data.server_name || 'origin';
+
+                let url;
+                if (serverName === 'externalcdn') {
+                    url = `/live-externalcdn/${VARIANT}/index.m3u8`;
+                } else if (serverName !== 'origin') {
+                    url = `/live-cdn/${VARIANT}/index.m3u8`;
+                } else {
+                    url = `/live/${VARIANT}/index.m3u8`;
+                }
+                const p = _0x[QUALITY];
+                if (p) {
+                    url += `?_t=${p._t}&_e=${p._e}&_n=${p._n}`;
+                }
+
+                sfDebug.log('SRC', `server=${serverName} ${url.split('?')[0]}`);
+                return url;
+            } catch (error) {
+                sfDebug.log('SRC', `get-stream-key failed (${error}), falling back to origin`, true);
+                return `/live/${VARIANT}/index.m3u8`;
+            }
+        }
+
