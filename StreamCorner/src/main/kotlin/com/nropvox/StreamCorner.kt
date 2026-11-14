@@ -49,8 +49,12 @@ import java.util.concurrent.TimeUnit
  * behind an encrypted request/reply that only the site's own worker speaks, so [StreamCornerBridge] runs that worker
  * in a WebView. Amazon embeds carry ClearKey configuration; other embeds are framed to capture their playlist.
  */
-class StreamCorner internal constructor(private val bridgeFactory: (String) -> StreamCornerBridge) : MainAPI() {
-    override var mainUrl = "https://streamcorner.st"
+class StreamCorner internal constructor(
+    private val bridgeFactory: (String) -> StreamCornerBridge,
+    mirror: String = "",
+) : MainAPI() {
+    /** The mirror chosen in the plugin settings, read once when the plugin loads; empty means the default site. */
+    override var mainUrl = mirror.trim().trimEnd('/').ifEmpty { DEFAULT_URL }
     override var name = "StreamCorner"
     override var lang = "en"
     override val hasMainPage = true
@@ -339,6 +343,15 @@ class StreamCorner internal constructor(private val bridgeFactory: (String) -> S
     private fun fresh(at: Long, ttl: Long) = System.currentTimeMillis() - at < ttl
 
     companion object {
+        const val DEFAULT_URL = "https://streamcorner.st"
+        /** The mirrors listed at [MIRRORS_PAGE] (read 2026-11-14); the page is the authority when they rotate. */
+        val MIRRORS = listOf(
+            DEFAULT_URL, "https://streamcorner.foo", "https://streamcorner.cloud",
+            "https://streamcorner.fun", "https://cornerstream.tech",
+        )
+        const val PREF_FILE = "StreamCorner"
+        const val MIRROR_KEY = "mirror_url"
+        const val MIRRORS_PAGE = "https://beacons.ai/streamcorner"
         private const val HOSTS_PER_REQUEST = 5
         private const val EMBED_PARALLEL = 3
         private const val EMBED_TIMEOUT_MS = 20_000L

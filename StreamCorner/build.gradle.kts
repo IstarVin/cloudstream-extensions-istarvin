@@ -1,4 +1,4 @@
-version = 11
+version = 12
 
 cloudstream {
     authors = listOf("NropVox")
@@ -17,6 +17,8 @@ cloudstream {
     status = 1 // will be 3 if unspecified
     tvTypes = listOf("Live")
     iconUrl = "https://streamcorner.st/apple-touch-icon.png"
+
+    requiresResources = true
 }
 
 android {
@@ -31,5 +33,9 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEa
 }
 
 dependencies {
+    implementation("com.google.android.material:material:1.13.0")
     testImplementation("junit:junit:4.13.2")
 }
+
+// The settings sheet (OmniStream's design) is shared: src/main/res is a symlink to shared/settingsui/res.
+android.sourceSets.getByName("main").kotlin.directories.add("../shared/settingsui")

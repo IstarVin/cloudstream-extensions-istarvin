@@ -57,6 +57,8 @@ class SettingField(
     val linkUrl: String = "",
     /** Offers a Check button; it runs off the main thread. */
     val check: (suspend (String) -> SettingCheck)? = null,
+    /** Ready-made values (label to value) listed under the description; tapping one fills the input. */
+    val presets: List<Pair<String, String>> = emptyList(),
 ) {
     enum class Kind { SECRET, URL }
 }
@@ -167,6 +169,26 @@ class PluginSettingsSheet(
         }
         view.find<TextView>("fieldDescription").text = field.description
         view.find<TextView>("fieldLabel").text = field.label
+        (view.find<View>("fieldDescription").parent as? ViewGroup)?.let { parent ->
+            val at = parent.indexOfChild(view.find("fieldDescription")) + 1
+            field.presets.forEachIndexed { i, (label, value) ->
+                val chip = TextView(context).apply {
+                    text = label
+                    textSize = 14f
+                    setTextColor(WHITE)
+                    isFocusable = true
+                    isClickable = true
+                    setPadding(dp(14f).toInt(), dp(10f).toInt(), dp(14f).toInt(), dp(10f).toInt())
+                    background = states(shape(CARD, 8f, stroke = INPUT_STROKE), pressed = shape(PRESSED, 8f, stroke = INPUT_STROKE),
+                        focused = shape(CARD, 8f, stroke = WHITE, strokeWidth = 2f))
+                    setOnClickListener {
+                        view.find<EditText>("fieldInput").apply { setText(value); setSelection(length()) }
+                    }
+                }
+                parent.addView(chip, at + i, ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                    .apply { topMargin = dp(if (i == 0) 12f else 6f).toInt() })
+            }
+        }
         input.hint = field.hint
         remove.text = field.clearLabel
         link.text = field.linkText
