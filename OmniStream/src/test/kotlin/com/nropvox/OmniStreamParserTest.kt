@@ -24,6 +24,9 @@ class OmniStreamParserTest {
 
     private fun target(id: Int, episode: Int) = OmniStreamParser.AniTarget(id, episode)
 
+    /** The pick without the titles it carries, which have their own test. */
+    private fun plain(target: OmniStreamParser.AniTarget?) = target?.copy(titles = emptyList())
+
     @Test fun reanimeSubtitlesKeepTextTracksAndDropBitmaps() {
         // Tracks as the flixcloud embed lists them (Attack on Titan): ASS, OCR'd SRT and the SUP (PGS) it was OCR'd from.
         val embed = """subtitles:[{url:"https://vault-95.rundowncdn.top/subtitles/dc83/dc83_eng_3.ass",language:"English (English [MTBB])",format:"ass",default:true},""" +
@@ -37,29 +40,29 @@ class OmniStreamParserTest {
     }
 
     @Test fun oneTmdbSeasonSplitsIntoAniListCours() {
-        assertEquals(target(113415, 1), OmniStreamParser.pickSeries(jjk, 1, 1, jjkAni, jjkNames))
-        assertEquals(target(113415, 24), OmniStreamParser.pickSeries(jjk, 1, 24, jjkAni, jjkNames))
-        assertEquals(target(145064, 1), OmniStreamParser.pickSeries(jjk, 1, 25, jjkAni, jjkNames))
-        assertEquals(target(145064, 23), OmniStreamParser.pickSeries(jjk, 1, 47, jjkAni, jjkNames))
+        assertEquals(target(113415, 1), plain(OmniStreamParser.pickSeries(jjk, 1, 1, jjkAni, jjkNames)))
+        assertEquals(target(113415, 24), plain(OmniStreamParser.pickSeries(jjk, 1, 24, jjkAni, jjkNames)))
+        assertEquals(target(145064, 1), plain(OmniStreamParser.pickSeries(jjk, 1, 25, jjkAni, jjkNames)))
+        assertEquals(target(145064, 23), plain(OmniStreamParser.pickSeries(jjk, 1, 47, jjkAni, jjkNames)))
     }
 
     @Test fun doublePremiereCountsBothEpisodes() {
         // JJK season 3 premiered with TMDB episodes 48 and 49 on the same day.
-        assertEquals(target(172463, 1), OmniStreamParser.pickSeries(jjk, 1, 48, jjkAni, jjkNames))
-        assertEquals(target(172463, 2), OmniStreamParser.pickSeries(jjk, 1, 49, jjkAni, jjkNames))
+        assertEquals(target(172463, 1), plain(OmniStreamParser.pickSeries(jjk, 1, 48, jjkAni, jjkNames)))
+        assertEquals(target(172463, 2), plain(OmniStreamParser.pickSeries(jjk, 1, 49, jjkAni, jjkNames)))
     }
 
     @Test fun splitSeasonsAndFinalParts() {
         val aot = show("tmdb-episodes-1429-attack-on-titan.json")
         val ani = OmniStreamParser.candidates(text("anilist-attack-on-titan-series.json"))
         val names = listOf("Attack on Titan", "進撃の巨人")
-        assertEquals(target(16498, 25), OmniStreamParser.pickSeries(aot, 1, 25, ani, names))
+        assertEquals(target(16498, 25), plain(OmniStreamParser.pickSeries(aot, 1, 25, ani, names)))
         // Junior High (TV, 2015) is a spin-off that aired between seasons 1 and 2; it must never be picked.
-        assertEquals(target(20958, 1), OmniStreamParser.pickSeries(aot, 2, 1, ani, names))
-        assertEquals(target(99147, 12), OmniStreamParser.pickSeries(aot, 3, 12, ani, names))
-        assertEquals(target(104578, 1), OmniStreamParser.pickSeries(aot, 3, 13, ani, names))
-        assertEquals(target(110277, 16), OmniStreamParser.pickSeries(aot, 4, 16, ani, names))
-        assertEquals(target(131681, 1), OmniStreamParser.pickSeries(aot, 4, 17, ani, names))
+        assertEquals(target(20958, 1), plain(OmniStreamParser.pickSeries(aot, 2, 1, ani, names)))
+        assertEquals(target(99147, 12), plain(OmniStreamParser.pickSeries(aot, 3, 12, ani, names)))
+        assertEquals(target(104578, 1), plain(OmniStreamParser.pickSeries(aot, 3, 13, ani, names)))
+        assertEquals(target(110277, 16), plain(OmniStreamParser.pickSeries(aot, 4, 16, ani, names)))
+        assertEquals(target(131681, 1), plain(OmniStreamParser.pickSeries(aot, 4, 17, ani, names)))
     }
 
     @Test fun spinOffMinisAreNotEpisodes() {
@@ -67,9 +70,9 @@ class OmniStreamParserTest {
         val ani = OmniStreamParser.candidates(text("anilist-frieren-series.json"))
         val names = listOf("Frieren: Beyond Journey's End", "葬送のフリーレン")
         // The chibi ONAs share the native title and start mid-season; the main entries must still win.
-        assertEquals(target(154587, 6), OmniStreamParser.pickSeries(frieren, 1, 6, ani, names))
-        assertEquals(target(154587, 28), OmniStreamParser.pickSeries(frieren, 1, 28, ani, names))
-        assertEquals(target(182255, 1), OmniStreamParser.pickSeries(frieren, 1, 29, ani, names))
+        assertEquals(target(154587, 6), plain(OmniStreamParser.pickSeries(frieren, 1, 6, ani, names)))
+        assertEquals(target(154587, 28), plain(OmniStreamParser.pickSeries(frieren, 1, 28, ani, names)))
+        assertEquals(target(182255, 1), plain(OmniStreamParser.pickSeries(frieren, 1, 29, ani, names)))
     }
 
     @Test fun noGuessWhenNothingFits() {
@@ -83,7 +86,10 @@ class OmniStreamParserTest {
     @Test fun moviesMatchByReleaseDate() {
         val ani = OmniStreamParser.candidates(text("anilist-jujutsu-kaisen-0-movie.json"))
         val names = listOf("Jujutsu Kaisen 0", "劇場版 呪術廻戦 0")
-        assertEquals(target(131573, 1), OmniStreamParser.pickMovie("2021-12-24", ani, names))
+        assertEquals(target(131573, 1), plain(OmniStreamParser.pickMovie("2021-12-24", ani, names)))
+        // The entry's AniList names travel with the pick, for the sites that are searched by title.
+        val titles = OmniStreamParser.pickMovie("2021-12-24", ani, names)!!.titles
+        assertTrue(titles.any { it.contains("Jujutsu Kaisen 0", ignoreCase = true) })
         assertNull(OmniStreamParser.pickMovie("2016-12-24", ani, names))
         assertNull(OmniStreamParser.pickMovie(null, ani, names))
     }

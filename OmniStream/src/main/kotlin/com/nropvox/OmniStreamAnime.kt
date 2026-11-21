@@ -89,6 +89,11 @@ internal object OmniStreamAnime {
                 listOf("sub", "dub").amap { lang -> AnimeXSource.load(slug, found.episode, lang, "AnimeX", subs, links) }
             }
         },
+        "KotoPlay" to { subs, links ->
+            find()?.let { found ->
+                KotoPlaySource.load(found.anilistId, found.malId, found.titles, found.episode, listOf("sub", "dub"), "KotoPlay", subs, links)
+            }
+        },
     )
 
     private suspend fun search(name: String, formats: List<String>): List<OmniStreamParser.AniCandidate> {

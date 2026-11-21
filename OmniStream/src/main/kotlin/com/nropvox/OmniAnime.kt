@@ -41,7 +41,7 @@ import kotlinx.coroutines.coroutineScope
 
 /**
  * OmniAnime: OmniStream for anime only, on an AniList catalog. AniList entries are what the anime sites key their
- * episodes by, so AnimoTv, Ani.pm, Reanime and AnimeX are asked straight away with no title matching, while
+ * episodes by, so AnimoTv, Ani.pm, Reanime, AnimeX and KotoPlay are asked straight away with no title matching, while
  * [OmniAnimeMap] places the episode on TMDB for OmniStream's TMDB-keyed sources, sites and Stremio addons. All of them
  * run in one [OmniLinkRace]. Episode names and stills come from ani.zip.
  */
@@ -214,7 +214,7 @@ class OmniAnime : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val anime = parseJson<OmniAnimeLink>(data)
-        val target = OmniStreamParser.AniTarget(anime.anilistId, anime.episode, anime.malId ?: 0)
+        val target = OmniStreamParser.AniTarget(anime.anilistId, anime.episode, anime.malId ?: 0, anime.titles)
         val sources = OmniStreamAnime.sources { target } + OmniStream.tmdbSources(once { OmniAnimeMap.link(anime) })
         return OmniLinkRace(name, subtitleCallback, callback).run(sources)
     }

@@ -38,7 +38,7 @@ import java.net.URLEncoder
  * OmniStream: a TMDB catalog (movies, shows, anime, Asian drama) whose links come from every TMDB-keyed source in
  * this repo at once (Dulo, Movy, 7Movies, TonkaCine, Cno.to, plus KatDrama for Asian titles), the sites it finds the
  * title on by search ([OmniStreamSites]: Vegamovies, MoviesMod, 4KHDHub, MkvBase, plus KissKH and GoPlay for Asian
- * titles), and for anime also the AniList-keyed AnimoTv, Ani.pm, Reanime and AnimeX after a TMDB → AniList lookup. Their
+ * titles), and for anime also the AniList-keyed AnimoTv, Ani.pm, Reanime, AnimeX and KotoPlay after a TMDB → AniList lookup. Their
  * resolvers are compiled in from `shared/`, and [OmniLinkRace] runs them in parallel against a deadline. Titles with
  * an IMDb id also get Vadapav's files and OpenSubtitles' subtitles from their Stremio addons ([OmniStremio]).
  */

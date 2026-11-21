@@ -46,8 +46,11 @@ object OmniStreamParser {
 
     data class AniCandidate(val id: Int, val format: String?, val episodes: Int?, val startDay: Int?, val titles: List<String>)
 
-    /** [malId] is 0 when unknown (Reanime reads it as "none"). */
-    data class AniTarget(val anilistId: Int, val episode: Int, val malId: Int = 0)
+    /**
+     * [malId] is 0 when unknown (Reanime reads it as "none"). [titles] are the entry's names on AniList, for the sites
+     * that can't look an AniList id up and have to be searched by title (KotoPlay).
+     */
+    data class AniTarget(val anilistId: Int, val episode: Int, val malId: Int = 0, val titles: List<String> = emptyList())
 
     private val seriesFormats = setOf("TV", "TV_SHORT", "ONA")
 
@@ -88,7 +91,7 @@ object OmniStreamParser {
             other.season > 0 && day >= since && (other.season < season || (other.season == season && other.episode <= episode))
         }
         if (ordinal < 1 || (chosen.episodes != null && ordinal > chosen.episodes)) return null
-        return AniTarget(chosen.id, ordinal)
+        return AniTarget(chosen.id, ordinal, titles = chosen.titles)
     }
 
     /** A film: the matching AniList movie released closest to TMDB's date, within a year. */
@@ -98,7 +101,7 @@ object OmniStreamParser {
             .filter { it.format == "MOVIE" && it.startDay != null && kotlin.math.abs(it.startDay - released) <= 365 }
             .filter { titleMatches(it.titles, names) }
             .minByOrNull { kotlin.math.abs(it.startDay!! - released) }
-            ?.let { AniTarget(it.id, 1) }
+            ?.let { AniTarget(it.id, 1, titles = it.titles) }
     }
 
     /** Season entries are named after the show ("JUJUTSU KAISEN Season 2"), so one title must start with the other. */
